@@ -7,25 +7,18 @@ tiemdaelt: default to 5sec, the time to sleep betwen each scan.
 """
 
 from os import path
-from configparser import ConfigParser
+import json
 
 import data
 
-def creat_conf(values={'timedelta': 5}):
-    config = ConfigParser()
-    for key in values.keys():
-        config['DEFAULT'] = {key: values[key]}
-    with open(FILE_CONFIG, 'w') as configfile:
-        config.write(configfile)
-
 def read_config():
-    values = dict()
     with open(data.FILE_CONFIG, 'r') as configfile:
-        config.read(configfile)
-        values['imedelta'] = config['DEFAULT']['timedelta']
+        values = json.load(configfile)
+    for key in values.keys():
+        if key in data.INT_VALUES:
+            values[key] == int(values[key])
     return values
 
-def save_config(values):
-    config['DEFAULT'] = {'timedelta': values['timedelta']}
+def save_config(values={'timedelta': 5, 'archive_file': 'archive.zip'}):
     with open(data.FILE_CONFIG, 'w') as configfile:
-        config.write(configfile)
+        json.dump(values, configfile)

@@ -3,7 +3,7 @@
 import sys
 
 def tell(message):
-    """Tell to user a message"""
+    """Tell to user a message."""
     print(message)
 
 def get_dir():
