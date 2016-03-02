@@ -14,3 +14,11 @@ def get_dir():
     else:
         directory = sys.argv[1]
     return directory
+
+def combine_list(list1, list2):
+    """Return a list with only the element in the two lists."""
+    list3 = list()
+    for value in list1:
+        if value in list2:
+            list3.append(value)
+    return list3
