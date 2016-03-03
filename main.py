@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from sample import mod
-from sample import conf
-from sample.watcher import Watcher
+from smw_core import mod
+from smw_core import conf
+from smw_core.watcher import Watcher
 
 if __name__ == '__main__':
     DIR = mod.get_dir()
