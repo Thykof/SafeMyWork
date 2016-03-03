@@ -1,27 +1,27 @@
 # -*- coding: utf-8 -*-
 
-from os import path, walk, stat
+from os import path, walk, stat, mkdir
 from glob import glob
 from .mod import tell, combine_list
-from time import time, sleep
+from time import sleep
+import shutil
 
 class Watcher(object):
     """docstring for Watcher"""
     def __init__(self, directory, config):
         super(Watcher, self).__init__()
-        self.DIR = directory  # Directory watch
+        self.delicate_dir = directory  # Directory watch
         self.archive_dir = config['archive_dir']
 
     def start(self):
         while True:
-            tell('Watching...')
-            files = self.list_files(self.DIR)
-            print(files)
-            to_save = self.compare_files(files)
-            for filename in to_save:
+            tell('===WATCHING===')
+            unsaved_files = self.list_files(self.delicate_dir)
+            files_to_save = self.compare_files(unsaved_files)
+            for filename in files_to_save:
                 self.archive_file(filename)
 
-            break  # Dev
+            sleep(15)
 
     def list_files(self, directory):
         """Return list of files in given dir.
@@ -34,13 +34,12 @@ class Watcher(object):
             for filenames in files:
                 filename = path.join(root, filenames)
                 position = filename.find('/')
-                list_files.append(filename[position:])
+                list_files.append(filename[position+1:])
         return list_files
 
     def compare_files(self, unsaved_files):
         """Return a list of files need to save."""
         saved_files = self.list_files(self.archive_dir)
-        print(self.archive_dir, saved_files)
         files_to_save = list()
         if unsaved_files != saved_files:
             for unsaved_file in unsaved_files:
@@ -50,8 +49,8 @@ class Watcher(object):
 
         list_files = combine_list(unsaved_files, saved_files)
         for filename in list_files:
-            saved_file_stat = stat(self.archive_dir + filename)
-            unsaved_file_stat = stat(self.DIR + filename)
+            saved_file_stat = stat(path.join(self.archive_dir, filename))
+            unsaved_file_stat = stat(path.join(self.delicate_dir, filename))
             if saved_file_stat.st_mtime < unsaved_file_stat.st_mtime:
                 files_to_save.append(filename)
                 tell('Update: ' + filename)
@@ -61,5 +60,18 @@ class Watcher(object):
                 tell('Skipping ' + filename)
         return files_to_save
 
-    def archive_file(self, file):
-        pass
+    def archive_file(self, filename):
+        position = filename.find('/')
+        filename_ = filename  # Keep original filename
+        while position != -1:
+            folder = filename_[:position]
+            try:
+                mkdir(path.join(self.archive_dir, folder))
+            except FileExistsError:
+                pass
+            filename_ = filename_[position+1:]
+            position = filename_.find('/')
+
+        archived_file = shutil.copy2(path.join(self.delicate_dir, filename), path.join(self.archive_dir, filename))
+
+        tell('Archived: ' + archived_file)

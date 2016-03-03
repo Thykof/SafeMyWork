@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import os
-
 from sample import mod
 from sample import conf
 from sample.watcher import Watcher
@@ -13,5 +11,6 @@ if __name__ == '__main__':
     except FileNotFoundError:
         conf.save_config()  # Initialize config
         config = conf.read_config()
+    mod.create_archive_dir(config['archive_dir'])
     watcher = Watcher(DIR, config)
     watcher.start()
