@@ -21,7 +21,7 @@ class Watcher(object):
             for filename in files_to_save:
                 self.archive_file(filename)
 
-            sleep(15)
+            sleep(15)  # 15s for develop branch
 
     def list_files(self, directory):
         """Return list of files in given dir.
