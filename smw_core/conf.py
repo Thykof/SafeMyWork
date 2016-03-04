@@ -19,6 +19,8 @@ def read_config():
             values[key] == int(values[key])
     return values
 
-def save_config(values={'timedelta': 5, 'archive_dir': 'safe_docs'}):
+def save_config(values=None):
+    if values is None:
+        values = {'timedelta': 5, 'archive_dir': 'safe_docs'}
     with open(FILE_CONFIG, 'w') as configfile:
         json.dump(values, configfile)
