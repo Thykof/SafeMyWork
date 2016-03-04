@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+"""Define some fonctions."""
+
 import sys
 from os import path, mkdir
 

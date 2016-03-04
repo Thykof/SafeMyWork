@@ -1,15 +1,11 @@
 # -*- coding: utf-8 -*-
 
-"""Monitoring configuration variables.
-
-tiemdaelt: default to 5sec, the time to sleep betwen each scan.
-
-"""
+"""Monitoring configuration variables."""
 
 from os import path
 import json
 
-from .data import FILE_CONFIG, INT_VALUES
+from .data import FILE_CONFIG, INT_VALUES, DEFAULT_CONFIG
 
 def read_config():
     with open(FILE_CONFIG, 'r') as configfile:
@@ -19,8 +15,6 @@ def read_config():
             values[key] == int(values[key])
     return values
 
-def save_config(values=None):
-    if values is None:
-        values = {'timedelta': 5, 'archive_dir': 'safe_docs'}
+def save_config(values=DEFAULT_CONFIG):
     with open(FILE_CONFIG, 'w') as configfile:
         json.dump(values, configfile)

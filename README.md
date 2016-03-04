@@ -2,10 +2,11 @@
 SafeMyWork save all files in the given directory in another directory to keep your work safe and avoid losing data.
 
 ## Version
-##### Current state
+Current version is 0.1.
+#### Current state
  - feature/outline
 
-##### TODO
+#### TODO
  - watch different directories
  - specify files to exclude
  - make an history of each files

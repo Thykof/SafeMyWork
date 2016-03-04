@@ -11,7 +11,7 @@ with open('LICENSE') as f:
 
 setup(
     name='SafeMyWork',
-    version='0.0.1',
+    version='0.1',
     description='Little app to save your work.',
     long_description=readme,
     author='Thykof',

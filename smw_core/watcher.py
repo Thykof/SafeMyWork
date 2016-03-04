@@ -7,13 +7,13 @@ from time import sleep
 import shutil
 
 class Watcher(object):
-    """docstring for Watcher"""
     def __init__(self, directory, config):
         super(Watcher, self).__init__()
         self.delicate_dir = directory  # Directory watch
         self.archive_dir = config['archive_dir']
 
     def start(self):
+        """Start watching."""
         while True:
             tell('===WATCHING===')
             unsaved_files = self.list_files(self.delicate_dir)
@@ -61,6 +61,7 @@ class Watcher(object):
         return files_to_save
 
     def archive_file(self, filename):
+        """Copy the file arg in the archive directory."""
         position = filename.find('/')
         filename_ = filename  # Keep original filename
         while position != -1:
