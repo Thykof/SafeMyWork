@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""Monitoring configuration variables.
-
-tiemdaelt: default to 5sec, the time to sleep betwen each scan.
-
-"""
+"""Monitoring configuration variables."""
 
 from os import path
 import json
