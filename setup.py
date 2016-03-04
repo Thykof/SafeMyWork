@@ -19,4 +19,10 @@ setup(
     url='https://github.com/Thykof/SafeMyWork',
     license=license,
     packages=find_packages(exclude=('tests', 'docs'))
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 3'
+    ],
 )
