@@ -6,6 +6,8 @@ Current version is 0.1.
 #### Current state
  - feature/outline
 
+Work in progress...
+
 #### TODO
  - watch different directories
  - specify files to exclude
@@ -17,3 +19,9 @@ Current version is 0.1.
 SafeMyWork is intend for people who handle lot of files which can be texts, images, songs.
 
 Run SafeMyWork and give it a directory to watch. Then while you are working, every ten minutes all files in this directory will be copy in another directory. As the result of keeping them safe if you does not save your work or delete accidentally files.
+
+## How to use it ?
+Run `python3 main.py <path-to-your-dir>` to start. The given path is the directory watching. You don't need extra requirement.
+
+## License
+SafeMyWork is under the GNU GPL v3 license.
