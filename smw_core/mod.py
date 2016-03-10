@@ -14,12 +14,8 @@ def get_dir():
     if len(sys.argv) == 1:
         tell('Please give a directory to watch.')
         sys.exit()
-    elif len(sys.argv) > 2:
-        tell('Only one dir please.')
-        sys.exit()
     else:
-        directory = sys.argv[1]
-    return directory
+        return sys.argv[1:]
 
 def combine_list(list1, list2):
     """Return a list with only the element in the two lists."""
@@ -29,6 +25,9 @@ def combine_list(list1, list2):
             list3.append(value)
     return list3
 
-def create_archive_dir(archive_dir):
+def create_archive_dir(archive_dir, delicate_dir):
     if not path.exists(archive_dir):
         mkdir(archive_dir)
+    for directory in delicate_dir:
+        if not path.exists(path.join(archive_dir, directory)):
+            mkdir(path.join(archive_dir, directory))
