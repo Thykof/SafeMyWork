@@ -2,20 +2,11 @@
 
 """Define some fonctions."""
 
-import sys
 from os import path, mkdir
 
 def tell(message):
     """Tell to user a message."""
     print(message)
-
-def get_dir():
-    """Return dir to watch."""
-    if len(sys.argv) == 1:
-        tell('Please give a directory to watch.')
-        sys.exit()
-    else:
-        return sys.argv[1:]
 
 def combine_list(list1, list2):
     """Return a list with only the element in the two lists."""

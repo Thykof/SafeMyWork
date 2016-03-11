@@ -4,4 +4,10 @@
 
 FILE_CONFIG = 'SMW_conf_file.ini'
 INT_VALUES = ['tiemdelta']
-DEFAULT_CONFIG = {'timedelta': 5, 'archive_dir': 'safe_docs'}
+DEFAULT_CONFIG = {
+    'time_delta': 3,
+    'archive_dir': 'safe_docs',
+    'delicate_dirs': [],
+    'exclude_dirs': [],
+    'exclude_files': []
+}
