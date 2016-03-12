@@ -8,6 +8,6 @@ from smw_core.watcher import Watcher
 
 if __name__ == '__main__':
     config = conf.get_config()
-    watcher = Watcher(config)
     atexit.register(conf.save_config, config)
+    watcher = Watcher(config)
     watcher.start()
