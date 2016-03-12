@@ -57,8 +57,14 @@ class Watcher(object):
         if unsaved_files != saved_files:
             for unsaved_file in unsaved_files:
                 if unsaved_file not in saved_files:
-                    files_to_save.append(unsaved_file)
-                    mod.tell('Add: ' + unsaved_file)
+                    try:
+                        mod.tell('Add: ' + unsaved_file)
+                    except UnicodeEncodeError:
+                        mod.tell('Error, see errors.log')
+                        with open('errors.log', 'a', errors='replace', encoding='utf8') as myfile:
+                            myfile.write('UnicodeEncodeError, file ignore: ' + unsaved_file + '\n')
+                    else:
+                        files_to_save.append(unsaved_file)
 
         list_files = mod.combine_list(unsaved_files, saved_files)
         for filename in list_files:
