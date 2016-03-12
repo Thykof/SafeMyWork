@@ -13,6 +13,6 @@ def quit(config):
 
 if __name__ == '__main__':
     config = conf.get_config()
-    watcher = Watcher(quit)
-    atexit.register()
+    atexit.register(quit, config)
+    watcher = Watcher(config)
     watcher.start()
