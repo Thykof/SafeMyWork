@@ -7,6 +7,8 @@ from os import path, mkdir
 def tell(message):
     """Tell to user a message."""
     print(message)
+    with open('output.log', 'a') as myfile:
+        myfile.write(message + '\n')
 
 def combine_list(list1, list2):
     """Return a list with only the element in the two lists."""

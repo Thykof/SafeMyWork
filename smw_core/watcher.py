@@ -28,6 +28,7 @@ class Watcher(object):
                     for filename in files_to_save:
                         self.archive_file(filename, delicate_dir)
 
+            mod.tell('Done')
             sleep(self.config['time_delta'])
 
     def list_files(self, path_dir):
