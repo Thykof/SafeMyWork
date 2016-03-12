@@ -51,26 +51,47 @@ class Watcher(object):
                 list_dirs.append(delicate_dir[position+1:])
         return list_dirs
 
+    def filter_files(self, filename):
+        """Return True if filename must be archive."""
+        new_files_to_save = list()
+        # Filter extension:
+        ext_pos = filename.rfind('.')
+        ext = filename[ext_pos+1:].lower()
+        ext_ok = False if ext in self.config['exclude_ext'] else True
+        # Filter files:
+        file_ok = False if filename in self.config['exclude_files'] else True
+        # Filter directories:
+        directory = path.split(filename)[0]
+        dir_ok = False if directory in self.config['exclude_dirs'] else True
+
+        if ext_ok and file_ok and dir_ok:
+            return True
+        else:
+            mod.tell('Exclude: ' + filename)
+            return False
+
     def compare_files(self, unsaved_files, saved_files, delicate_dir):
         """Return a list of files need to save."""
         files_to_save = list()
         if unsaved_files != saved_files:
             for unsaved_file in unsaved_files:
                 if unsaved_file not in saved_files:
-                    files_to_save.append(unsaved_file)
-                    mod.tell('Add: ' + unsaved_file)
+                    if self.filter_files(unsaved_file):
+                        mod.tell('Add: ' + unsaved_file)
+                        files_to_save.append(unsaved_file)
 
         list_files = mod.combine_list(unsaved_files, saved_files)
         for filename in list_files:
             saved_file_stat = stat(path.join(self.archive_dir, delicate_dir, filename))
             unsaved_file_stat = stat(path.join(delicate_dir, filename))
             if saved_file_stat.st_mtime < unsaved_file_stat.st_mtime:
-                files_to_save.append(filename)
-                mod.tell('Update: ' + filename)
+                if self.filter_files(filename):
+                    mod.tell('Update: ' + filename)
+                    files_to_save.append(filename)
             elif saved_file_stat.st_mtime > unsaved_file_stat.st_mtime:
                 mod.tell('Saved file have been modified !')
             else:
-                mod.tell('Skipping ' + filename)
+                mod.tell('Skipping: ' + filename)
         return files_to_save
 
     def create_safe_dirs(self, delicate_dir):
@@ -80,7 +101,6 @@ class Watcher(object):
             path_dir = path.join(self.archive_dir, path.basename(delicate_dir), directory)
             if not path.exists(path_dir):
                 mkdir(path_dir)
-
 
     def archive_file(self, filename, delicate_dir):
         """Copy the file arg in the archive directory."""

@@ -6,11 +6,11 @@ Current version is 0.1.
 #### Current state
  - feature/outline
  - watch different directories
+ - specify files and extensions to exclude
 
 Work in progress...
 
 #### TODO
- - specify files to exclude
  - make an history of each files
  - compress files
  - interface (gtk)

@@ -9,5 +9,6 @@ DEFAULT_CONFIG = {
     'archive_dir': 'safe_docs',
     'delicate_dirs': [],
     'exclude_dirs': [],
-    'exclude_files': []
+    'exclude_files': [],
+    'exclude_ext': []
 }

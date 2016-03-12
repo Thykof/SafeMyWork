@@ -11,16 +11,22 @@ from .mod import tell
 
 def read_config():
     with open(FILE_CONFIG, 'r') as configfile:
-        values = json.load(configfile)
-    for key in values.keys():
+        config = json.load(configfile)
+    # Convert keys:
+    for key in config.keys():
         if key in INT_VALUES:
-            values[key] == int(values[key])
-    return values
+            config[key] == int(config[key])
+    # Lower extensions:
+    list_ext = list()
+    for ext in config['exclude_ext']:
+        list_ext.append(ext.lower())
+    config['exclude_ext'] = list_ext
+    return config
 
-def save_config(values=DEFAULT_CONFIG):
+def save_config(config=DEFAULT_CONFIG):
     tell('Saving config')
     with open(FILE_CONFIG, 'w') as configfile:
-        json.dump(values, configfile, indent=4)
+        json.dump(config, configfile, indent=4)
 
 def get_dir_from_argv():
     """Return dir to watch.
