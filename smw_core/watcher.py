@@ -21,23 +21,35 @@ class Watcher(object):
             mod.tell('===WATCHING===')
             for delicate_dir in self.delicate_dir:
                 unsaved_files = self.list_files(delicate_dir)
-                saved_files = self.list_files(path.join(self.archive_dir, delicate_dir))
+                saved_files = self.list_files(path.join(self.archive_dir, path.basename(delicate_dir)))
                 files_to_save = self.compare_files(unsaved_files, saved_files, delicate_dir)
-                for filename in files_to_save:
+                if len(files_to_save) > 0:
                     self.create_safe_dirs(delicate_dir)
-                    self.archive_file(filename, delicate_dir)
+                    for filename in files_to_save:
+                        self.archive_file(filename, delicate_dir)
 
+            break
             sleep(self.config['time_delta'])
 
-    def list_files(self, delicate_dir):
-        """Return list of files in given dir."""
+    def list_files(self, path_dir):
+        """Return list of files in the given path."""
         list_files = list()
-        for root, directories, files in walk(delicate_dir):
+        for root, directories, files in walk(path_dir):
             for filenames in files:
                 filename = path.join(root, filenames)
-                position = len(delicate_dir)
+                position = len(path_dir)
                 list_files.append(filename[position+1:])
         return list_files
+
+    def list_dirs(self, path_dir):
+        """Return list of directories in the given path."""
+        list_dirs = list()
+        for root, directories, files in walk(path_dir):
+            for directory in directories:
+                delicate_dir = path.join(root, directory)
+                position = len(path_dir)
+                list_dirs.append(delicate_dir[position+1:])
+        return list_dirs
 
     def compare_files(self, unsaved_files, saved_files, delicate_dir):
         """Return a list of files need to save."""
@@ -62,12 +74,17 @@ class Watcher(object):
         return files_to_save
 
     def create_safe_dirs(self, delicate_dir):
-        for root, directories, files in walk(delicate_dir):
-            directory = path.join(self.archive_dir, root)
-            if not path.exists(directory):
-                mkdir(directory)
+        """Make all directories from delicate dir in archive dir."""
+        dirs = self.list_dirs(delicate_dir)
+        for directory in dirs:
+            path_dir = path.join(self.archive_dir, path.basename(delicate_dir), directory)
+            if not path.exists(path_dir):
+                mkdir(path_dir)
+
 
     def archive_file(self, filename, delicate_dir):
         """Copy the file arg in the archive directory."""
-        archived_file = shutil.copy2(path.join(delicate_dir, filename), path.join(self.archive_dir, delicate_dir, filename))
+        src = path.join(delicate_dir, filename)
+        dst = path.join(self.archive_dir, path.basename(delicate_dir), filename)
+        archived_file = shutil.copy2(src, dst)
         mod.tell('Archived: ' + archived_file)

@@ -20,5 +20,6 @@ def create_archive_dir(archive_dir, delicate_dir):
     if not path.exists(archive_dir):
         mkdir(archive_dir)
     for directory in delicate_dir:
-        if not path.exists(path.join(archive_dir, directory)):
-            mkdir(path.join(archive_dir, directory))
+        dir_to_create = path.join(archive_dir, path.basename(directory))
+        if not path.exists(dir_to_create):
+            mkdir(dir_to_create)
