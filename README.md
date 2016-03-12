@@ -1,6 +1,8 @@
 # Safe My work
 SafeMyWork save all files in the given directory in another directory to keep your work safe and avoid losing data.
 
+[![Documentation Status](https://readthedocs.org/projects/safemywork/badge/?version=latest)](http://safemywork.readthedocs.org/en/latest/?badge=latest)
+
 ## Version
 Current version is 0.1.
 #### Current state

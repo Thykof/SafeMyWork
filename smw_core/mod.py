@@ -5,13 +5,27 @@
 from os import path, mkdir
 
 def tell(message):
-    """Tell to user a message."""
+    """Tell to user a message.
+
+    :func:`print` the message and write it in *output.log* file.
+
+    :param message: the message
+    :type message: ``str``
+    """
     print(message)
     with open('output.log', 'a') as myfile:
         myfile.write(message + '\n')
 
 def combine_list(list1, list2):
-    """Return a list with only the element in the two lists."""
+    """Create a list with only elements in common of the two lists.
+
+    :param list1: the first list
+    :type list1: ``list``
+    :param list2: the second list
+    :type list2: ``list``
+    :returns: the created list
+    :rtype: ``list``
+    """
     list3 = list()
     for value in list1:
         if value in list2:
@@ -19,6 +33,13 @@ def combine_list(list1, list2):
     return list3
 
 def create_archive_dir(archive_dir, delicate_dir):
+    """Create all directories use for archiving.
+
+    :param archive_dir: the archive directory
+    :type archive_dir: ``str``
+    :param delicate_dir: directories to watch
+    :type delicate_dir: ``list``
+    """
     if not path.exists(archive_dir):
         mkdir(archive_dir)
     for directory in delicate_dir:

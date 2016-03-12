@@ -10,6 +10,14 @@ from .data import FILE_CONFIG, INT_VALUES, DEFAULT_CONFIG
 from .mod import tell
 
 def read_config():
+    """Read the configuration file using :mod:`json`.
+
+    Convert the *time_delta* setting.
+    Lower case extensions.
+
+    :returns: settings
+    :rtype: ``dict``
+    """
     with open(FILE_CONFIG, 'r') as configfile:
         config = json.load(configfile)
     # Convert keys:
@@ -24,14 +32,20 @@ def read_config():
     return config
 
 def save_config(config=DEFAULT_CONFIG):
+    """Save the settings in the configurations file using :mod:`json`.
+
+    :param config: settings
+    :type config: ``dict``
+    """
     tell('Saving config')
     with open(FILE_CONFIG, 'w') as configfile:
         json.dump(config, configfile, indent=4)
 
 def get_dir_from_argv():
-    """Return dir to watch.
+    """Get the directory to watch from command line arguments.
 
-    Return a list, only existing directories.
+    :returns: Existing directories
+    :rype: ``list``
     """
     if len(sys.argv) == 1:
         return []
@@ -43,6 +57,15 @@ def get_dir_from_argv():
         return delicate_dirs
 
 def get_config():
+    """Manage getting settings.
+
+    Searche for the configurations file.
+    Create if it doesn't exists.
+    Use :func:`get_dir_from_argv`.
+
+    :returns: settings
+    :rtype: ``dict``
+    """
     if not path.exists(FILE_CONFIG):
         save_config()
         tell('No delicate directory')

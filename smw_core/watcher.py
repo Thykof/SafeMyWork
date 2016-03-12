@@ -7,6 +7,7 @@ import shutil
 from smw_core import mod
 
 class Watcher(object):
+    """A class that manage safing files."""
     def __init__(self, config):
         super(Watcher, self).__init__()
         self.config = config
@@ -16,7 +17,14 @@ class Watcher(object):
         mod.create_archive_dir(self.archive_dir, self.delicate_dir)
 
     def start(self):
-        """Start watching."""
+        """Start **watching**.
+
+        - list unsaved files
+        - list saved files
+        - compare them
+        - archive the new files
+        - wait for the *time_delta* setting
+        """
         while True:
             mod.tell('===WATCHING===')
             for delicate_dir in self.delicate_dir:
@@ -32,7 +40,13 @@ class Watcher(object):
             sleep(self.config['time_delta'])
 
     def list_files(self, path_dir):
-        """Return list of files in the given path."""
+        """List all files in the given *path_dir*.
+
+        :param path_dir: The path of the directory.
+        :type path_dir: ``str``
+        :returns: The list of files
+        :rtype: ``list``
+        """
         list_files = list()
         for root, directories, files in walk(path_dir):
             for filenames in files:
@@ -42,7 +56,11 @@ class Watcher(object):
         return list_files
 
     def list_dirs(self, path_dir):
-        """Return list of directories in the given path."""
+        """List all directories in the given *path_dir*.
+
+        .. seealso::
+            Like :func:`list_files`
+        """
         list_dirs = list()
         for root, directories, files in walk(path_dir):
             for directory in directories:
@@ -52,7 +70,13 @@ class Watcher(object):
         return list_dirs
 
     def filter_files(self, filename):
-        """Return True if filename must be archive."""
+        """Return ``True`` if *filename* must be archive.
+
+        :param filename: the filename
+        :type filename: ``str``
+        :returns: ``True`` or ``False``
+        :rtype: ``bool``
+        """
         new_files_to_save = list()
         # Filter extension:
         ext_pos = filename.rfind('.')
@@ -71,7 +95,17 @@ class Watcher(object):
             return False
 
     def compare_files(self, unsaved_files, saved_files, delicate_dir):
-        """Return a list of files need to save."""
+        """List all files that need to be save.
+
+        :param unsaved_files: the unsaved files
+        :type unsaved_files: ``list``
+        :param saved_files: the files already saved
+        :type saved_files: ``list``
+        :param delicate_dir: the directory watching
+        :type delicate_dir: ``str``
+        :returns: The files need to ba save
+        :rtype: ``list``
+        """
         files_to_save = list()
         if unsaved_files != saved_files:
             for unsaved_file in unsaved_files:
@@ -95,7 +129,11 @@ class Watcher(object):
         return files_to_save
 
     def create_safe_dirs(self, delicate_dir):
-        """Make all directories from delicate dir in archive dir."""
+        """Make all directories from *delicate_dir* in archive directory.
+
+        :param delicate_dir: the directory watching
+        :type delicate_dir: ``str``
+        """
         dirs = self.list_dirs(delicate_dir)
         for directory in dirs:
             path_dir = path.join(self.archive_dir, path.basename(delicate_dir), directory)
@@ -103,7 +141,13 @@ class Watcher(object):
                 mkdir(path_dir)
 
     def archive_file(self, filename, delicate_dir):
-        """Copy the file arg in the archive directory."""
+        """Copy the *filename* in the archive directory.
+
+        :param filename: filename of the file to save
+        :type filename: ``str``
+        :param delicate_dir: the directory watching
+        :type delicate_dir: ``str``
+        """
         src = path.join(delicate_dir, filename)
         dst = path.join(self.archive_dir, path.basename(delicate_dir), filename)
         archived_file = shutil.copy2(src, dst)
