@@ -19,7 +19,7 @@ setup(
     author_email='nathan.seva@outlook.fr',
     url='https://github.com/Thykof/SafeMyWork',
     license=license,
-    packages=find_packages(exclude=('tests', 'docs'))
+    packages=find_packages(exclude=('tests', 'docs')),
     classifiers=[
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
