@@ -5,11 +5,11 @@ SafeMyWork save all files in the given directory in another directory to keep yo
 Current version is 0.1.
 #### Current state
  - feature/outline
+ - watch different directories
 
 Work in progress...
 
 #### TODO
- - watch different directories
  - specify files to exclude
  - make an history of each files
  - compress files
