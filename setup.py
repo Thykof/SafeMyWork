@@ -18,6 +18,8 @@ setup(
     author='Thykof',
     author_email='nathan.seva@outlook.fr',
     url='https://github.com/Thykof/SafeMyWork',
+    setup_requires='pytest-runner',
+    tests_require='pytest',
     license=license,
     packages=find_packages(exclude=('tests', 'docs')),
     classifiers=[

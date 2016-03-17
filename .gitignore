@@ -1,4 +1,8 @@
 SMW_conf_file.ini
+test_conf_file.ini
+notes.txt
+delicate_dir/
+safe_docs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
