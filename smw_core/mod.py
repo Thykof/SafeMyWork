@@ -4,16 +4,18 @@
 
 from os import path, mkdir
 
-def tell(message):
+def tell(message, target='output.log'):
     """Tell to user a message.
 
     :func:`print` the message and write it in *output.log* file.
 
     :param message: the message
     :type message: ``str``
+    :param target: The file, default to *output.log*
+    :type target: ``str``
     """
     print(message)
-    with open('output.log', 'a') as myfile:
+    with open(target, 'a') as myfile:
         myfile.write(message + '\n')
 
 def combine_list(list1, list2):

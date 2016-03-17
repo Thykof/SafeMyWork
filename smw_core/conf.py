@@ -41,17 +41,19 @@ def save_config(config=DEFAULT_CONFIG):
     with open(FILE_CONFIG, 'w') as configfile:
         json.dump(config, configfile, indent=4)
 
-def get_dir_from_argv():
+def get_dir_from_argv(argv=sys.argv):
     """Get the directory to watch from command line arguments.
 
+    :param argv: default to sys.argv, given for tests
+    :type argv: ``list``
     :returns: Existing directories
     :rype: ``list``
     """
-    if len(sys.argv) == 1:
+    if len(argv) == 1:
         return []
     else:
         delicate_dirs = list()
-        for directory in sys.argv[1:]:
+        for directory in argv[1:]:
             if path.exists(directory):
                 delicate_dirs.append(directory)
         return delicate_dirs

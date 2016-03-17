@@ -2,6 +2,7 @@
 SafeMyWork save all files in the given directory in another directory to keep your work safe and avoid losing data.
 
 [![Documentation Status](https://readthedocs.org/projects/safemywork/badge/?version=latest)](http://safemywork.readthedocs.org/en/latest/?badge=latest)
+[![Build Status](https://travis-ci.org/Thykof/SafeMyWork.svg?branch=develop)](https://travis-ci.org/Thykof/SafeMyWork)
 
 ## Version
 Current version is 0.1.

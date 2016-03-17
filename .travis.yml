@@ -1,0 +1,13 @@
+language: python
+python:
+  - "3.4"
+
+branches:
+  only:
+    - master
+    - develop
+    - win
+
+script:
+  - "python3 setup.py test"
+# or "python3 -m py.test"
