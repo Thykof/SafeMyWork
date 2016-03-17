@@ -11,7 +11,7 @@ def tell(message, target='output.log'):
 
     :param message: the message
     :type message: ``str``
-    :param target: The file, default to *output.log*
+    :param target: the file, default to *output.log*
     :type target: ``str``
     """
     print(message)

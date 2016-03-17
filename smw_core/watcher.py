@@ -42,9 +42,9 @@ class Watcher(object):
     def list_files(self, path_dir):
         """List all files in the given *path_dir*.
 
-        :param path_dir: The path of the directory.
+        :param path_dir: the path of the directory.
         :type path_dir: ``str``
-        :returns: The list of files
+        :returns: the list of files
         :rtype: ``list``
         """
         list_files = list()
@@ -102,7 +102,7 @@ class Watcher(object):
         :type saved_files: ``list``
         :param delicate_dir: the directory watching
         :type delicate_dir: ``str``
-        :returns: The files need to ba save
+        :returns: the files need to ba save
         :rtype: ``list``
         """
         files_to_save = list()

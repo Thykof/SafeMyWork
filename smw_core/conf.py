@@ -15,6 +15,8 @@ def read_config(conf_file=CONF_FILE):
     Convert the *time_delta* setting.
     Lower case extensions.
 
+    :param conf_file: the configuration file
+    :type conf_file: ``str``
     :returns: settings
     :rtype: ``dict``
     """
@@ -36,6 +38,8 @@ def save_config(config=DEFAULT_CONFIG, conf_file=CONF_FILE):
 
     :param config: settings
     :type config: ``dict``
+    :param conf_file: the configuration file
+    :type conf_file: ``str``
     """
     tell('Saving config')
     with open(conf_file, 'w') as configfile:
@@ -46,7 +50,7 @@ def get_dir_from_argv(argv=sys.argv):
 
     :param argv: default to sys.argv, given for tests
     :type argv: ``list``
-    :returns: Existing directories
+    :returns: existing directories
     :rype: ``list``
     """
     if len(argv) == 1:
@@ -65,6 +69,8 @@ def get_config(conf_file=CONF_FILE):
     Create if it doesn't exists.
     Use :func:`get_dir_from_argv`.
 
+    :param conf_file: the configuration file
+    :type conf_file: ``str``
     :returns: settings
     :rtype: ``dict``
     """
