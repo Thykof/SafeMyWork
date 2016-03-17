@@ -1,7 +1,7 @@
 # Safe My work
 SafeMyWork save all files in the given directory in another directory to keep your work safe and avoid losing data.
 
-[![Documentation Status](https://readthedocs.org/projects/safemywork/badge/?version=develop)](http://safemywork.readthedocs.org/en/latest/?badge=develop)
+[![Documentation Status](https://readthedocs.org/projects/safemywork/badge/?version=develop)](http://safemywork.readthedocs.org/en/develop)
 [![Build Status](https://travis-ci.org/Thykof/SafeMyWork.svg?branch=develop)](https://travis-ci.org/Thykof/SafeMyWork)
 [![Code Health](https://landscape.io/github/Thykof/SafeMyWork/develop/landscape.svg?style=flat)](https://landscape.io/github/Thykof/SafeMyWork/develop)
 

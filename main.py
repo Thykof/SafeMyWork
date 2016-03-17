@@ -18,6 +18,7 @@ if __name__ == '__main__':
     config = conf.get_config()
     if config is None:
         mod.tell('No delicate directory')
+        mod.tell('Save config')
         sys.exit()
     atexit.register(quit_, config)
     watcher = Watcher(config)

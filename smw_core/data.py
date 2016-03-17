@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 CONF_FILE = 'SMW_conf_file.ini'
-INT_VALUES = ['tiemdelta']
 DEFAULT_CONFIG = {
     'time_delta': 600,
     'archive_dir': 'safe_docs',

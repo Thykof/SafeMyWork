@@ -6,8 +6,8 @@
 Welcome to SafeMyWork's documentation!
 **************************************
 
-.. image:: https://readthedocs.org/projects/safemywork/badge/?version=latest
-  :target: http://safemywork.readthedocs.org/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/safemywork/badge/?version=develop
+  :target: http://safemywork.readthedocs.org/en/develop
   :alt: Documentation Status
 
 How it work

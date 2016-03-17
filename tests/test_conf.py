@@ -19,7 +19,6 @@ class TestConf(BaseTestConf):
 
     def test_read_config(self):
         config = conf.read_config('test_conf_file.ini')
-        assert config['time_delta'] == 20
         assert config['exclude_ext'] == ['pdf', 'json']
 
     def test_get_dir_from_argv(self):

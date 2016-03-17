@@ -6,12 +6,11 @@ from os import path
 import sys
 import json
 
-from .data import CONF_FILE, INT_VALUES, DEFAULT_CONFIG
+from .data import CONF_FILE, DEFAULT_CONFIG
 
 def read_config(conf_file=CONF_FILE):
     """Read the configuration file using :mod:`json`.
 
-    Convert the *time_delta* setting.
     Lower case extensions.
 
     :param conf_file: the configuration file
@@ -21,11 +20,6 @@ def read_config(conf_file=CONF_FILE):
     """
     with open(conf_file, 'r') as configfile:
         config = json.load(configfile)
-    # Convert keys:
-    for key in config.keys():
-        if key in INT_VALUES:
-            value = int(config[key])
-            config[key] == value
     # Lower extensions:
     list_ext = list()
     for ext in config['exclude_ext']:
@@ -33,7 +27,7 @@ def read_config(conf_file=CONF_FILE):
     config['exclude_ext'] = list_ext
     return config
 
-def save_config(config=DEFAULT_CONFIG, conf_file=CONF_FILE):
+def save_config(config=None, conf_file=CONF_FILE):
     """Save the settings in the configurations file using :mod:`json`.
 
     :param config: settings
@@ -41,10 +35,12 @@ def save_config(config=DEFAULT_CONFIG, conf_file=CONF_FILE):
     :param conf_file: the configuration file
     :type conf_file: ``str``
     """
+    if config is None:
+        config = DEFAULT_CONFIG
     with open(conf_file, 'w') as configfile:
         json.dump(config, configfile, indent=4)
 
-def get_dir_from_argv(argv=sys.argv):
+def get_dir_from_argv(argv=None):
     """Get the directory to watch from command line arguments.
 
     :param argv: default to sys.argv, given for tests
@@ -52,6 +48,8 @@ def get_dir_from_argv(argv=sys.argv):
     :returns: existing directories
     :rype: ``list``
     """
+    if argv is None:
+        argv = sys.argv
     if len(argv) == 1:
         return []
     else:
