@@ -34,7 +34,8 @@ class Watcher(object):
                 if len(files_to_save) > 0:
                     self.create_safe_dirs(delicate_dir)
                     for filename in files_to_save:
-                        self.archive_file(filename, delicate_dir)
+                        archived_file = self.archive_file(filename, delicate_dir)
+                        mod.tell('Archived: ' + archived_file)
 
             mod.tell('Done')
             sleep(self.config['time_delta'])
@@ -90,7 +91,6 @@ class Watcher(object):
         if ext_ok and file_ok and dir_ok:
             return True
         else:
-            mod.tell('Exclude: ' + filename)
             return False
 
     def compare_files(self, unsaved_files, saved_files, delicate_dir):
@@ -112,6 +112,8 @@ class Watcher(object):
                     if self.filter_files(unsaved_file):
                         mod.tell('Add: ' + unsaved_file)
                         files_to_save.append(unsaved_file)
+                    else:
+                        mod.tell('Exclude: ' + unsaved_file)
 
         list_files = mod.combine_list(unsaved_files, saved_files)
         for filename in list_files:
@@ -121,6 +123,8 @@ class Watcher(object):
                 if self.filter_files(filename):
                     mod.tell('Update: ' + filename)
                     files_to_save.append(filename)
+                else:
+                    mod.tell('Exclude: ' + filename)
             elif saved_file_stat.st_mtime > unsaved_file_stat.st_mtime:
                 mod.tell('Saved file have been modified !')
             else:
@@ -150,4 +154,4 @@ class Watcher(object):
         src = path.join(delicate_dir, filename)
         dst = path.join(self.archive_dir, path.basename(delicate_dir), filename)
         archived_file = shutil.copy2(src, dst)
-        mod.tell('Archived: ' + archived_file)
+        return archived_file

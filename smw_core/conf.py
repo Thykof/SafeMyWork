@@ -7,7 +7,6 @@ import sys
 import json
 
 from .data import CONF_FILE, INT_VALUES, DEFAULT_CONFIG
-from .mod import tell
 
 def read_config(conf_file=CONF_FILE):
     """Read the configuration file using :mod:`json`.
@@ -42,7 +41,6 @@ def save_config(config=DEFAULT_CONFIG, conf_file=CONF_FILE):
     :param conf_file: the configuration file
     :type conf_file: ``str``
     """
-    tell('Saving config')
     with open(conf_file, 'w') as configfile:
         json.dump(config, configfile, indent=4)
 
@@ -77,14 +75,12 @@ def get_config(conf_file=CONF_FILE):
     """
     if not path.exists(conf_file):
         save_config(conf_file=conf_file)
-        tell('No delicate directory')
-        sys.exit()
+        return None
     else:
         config = read_config(conf_file)
         delicate_dirs = get_dir_from_argv()
         config['delicate_dirs'].extend(delicate_dirs)
         if config['delicate_dirs'] == []:
-            tell('No delicate directory')
-            sys.exit()
+            return None
 
     return config
