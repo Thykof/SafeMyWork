@@ -77,7 +77,6 @@ class Watcher(object):
         :returns: ``True`` or ``False``
         :rtype: ``bool``
         """
-        new_files_to_save = list()
         # Filter extension:
         ext_pos = filename.rfind('.')
         ext = filename[ext_pos+1:].lower()

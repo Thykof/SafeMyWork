@@ -15,10 +15,10 @@ class BaseTestConf(object):
 
 class TestConf(BaseTestConf):
     def test_save_config(self):
-        conf.save_config(self.default_config)
+        conf.save_config(self.default_config, 'test_conf_file.ini')
 
     def test_read_config(self):
-        config = conf.read_config()
+        config = conf.read_config('test_conf_file.ini')
         assert config['time_delta'] == 20
         assert config['exclude_ext'] == ['pdf', 'json']
 
@@ -29,4 +29,4 @@ class TestConf(BaseTestConf):
         assert dirs == ['docs']
 
     def test_get_config(self):
-        conf.get_config()
+        conf.get_config('test_conf_file.ini')

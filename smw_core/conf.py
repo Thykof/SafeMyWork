@@ -6,10 +6,10 @@ from os import path
 import sys
 import json
 
-from .data import FILE_CONFIG, INT_VALUES, DEFAULT_CONFIG
+from .data import CONF_FILE, INT_VALUES, DEFAULT_CONFIG
 from .mod import tell
 
-def read_config():
+def read_config(conf_file=CONF_FILE):
     """Read the configuration file using :mod:`json`.
 
     Convert the *time_delta* setting.
@@ -18,7 +18,7 @@ def read_config():
     :returns: settings
     :rtype: ``dict``
     """
-    with open(FILE_CONFIG, 'r') as configfile:
+    with open(conf_file, 'r') as configfile:
         config = json.load(configfile)
     # Convert keys:
     for key in config.keys():
@@ -31,14 +31,14 @@ def read_config():
     config['exclude_ext'] = list_ext
     return config
 
-def save_config(config=DEFAULT_CONFIG):
+def save_config(config=DEFAULT_CONFIG, conf_file=CONF_FILE):
     """Save the settings in the configurations file using :mod:`json`.
 
     :param config: settings
     :type config: ``dict``
     """
     tell('Saving config')
-    with open(FILE_CONFIG, 'w') as configfile:
+    with open(conf_file, 'w') as configfile:
         json.dump(config, configfile, indent=4)
 
 def get_dir_from_argv(argv=sys.argv):
@@ -58,7 +58,7 @@ def get_dir_from_argv(argv=sys.argv):
                 delicate_dirs.append(directory)
         return delicate_dirs
 
-def get_config():
+def get_config(conf_file=CONF_FILE):
     """Manage getting settings.
 
     Searche for the configurations file.
@@ -68,12 +68,12 @@ def get_config():
     :returns: settings
     :rtype: ``dict``
     """
-    if not path.exists(FILE_CONFIG):
-        save_config()
+    if not path.exists(conf_file):
+        save_config(conf_file=conf_file)
         tell('No delicate directory')
         sys.exit()
     else:
-        config = read_config()
+        config = read_config(conf_file)
         delicate_dirs = get_dir_from_argv()
         config['delicate_dirs'].extend(delicate_dirs)
         if config['delicate_dirs'] == []:

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-FILE_CONFIG = 'SMW_conf_file.ini'
+CONF_FILE = 'SMW_conf_file.ini'
 INT_VALUES = ['tiemdelta']
 DEFAULT_CONFIG = {
     'time_delta': 600,
