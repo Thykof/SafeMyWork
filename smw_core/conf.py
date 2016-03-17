@@ -25,7 +25,8 @@ def read_config(conf_file=CONF_FILE):
     # Convert keys:
     for key in config.keys():
         if key in INT_VALUES:
-            config[key] == int(config[key])
+            value = int(config[key])
+            config[key] == value
     # Lower extensions:
     list_ext = list()
     for ext in config['exclude_ext']:

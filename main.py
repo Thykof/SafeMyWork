@@ -3,7 +3,6 @@
 import atexit
 import sys
 
-from smw_core import mod
 from smw_core import conf
 from smw_core.watcher import Watcher
 
