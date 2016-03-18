@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from setuptools import find_packages
-from cx_Freeze import setup, Executable
+try:
+    from cx_Freeze import setup, Executable
+except ImportError:
+    from setuptools import setup
 
 with open('README.md') as f:
     readme = f.read()

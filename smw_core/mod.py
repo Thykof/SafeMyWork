@@ -17,9 +17,9 @@ def tell(message, target='output.log'):
     try:
         print(message)
     except UnicodeEncodeError:
-            message = message.encode('ascii', 'replace')
-            message = message.decode('ascii', 'replace')
-            print(message)
+        message = message.encode('ascii', 'replace')
+        message = message.decode('ascii', 'replace')
+        print(message)
 
     with open(target, 'a', errors='replace', encoding='utf8') as myfile:
         myfile.write(str(message) + '\n')
