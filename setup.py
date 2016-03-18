@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from setuptools import find_packages
-try:
-    from cx_Freeze import setup, Executable
-except ImportError:
-    from setuptools import setup
+from setuptools import setup, find_packages
 
 with open('README.md') as f:
     readme = f.read()
@@ -13,7 +9,6 @@ with open('LICENSE') as f:
     license = f.read()
 
 setup(
-    executables = [Executable("SafeMyWork.py")],
     name='SafeMyWork',
     version='0.2',
     description='Little app to save your work.',
