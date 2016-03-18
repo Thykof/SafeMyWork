@@ -6,7 +6,7 @@ SafeMyWork save all files in the given directory in another directory to keep yo
 [![Code Health](https://landscape.io/github/Thykof/SafeMyWork/win/landscape.svg?style=flat)](https://landscape.io/github/Thykof/SafeMyWork/win)
 
 ## Version
-Current version is 0.1.
+Current version is 0.2.
 #### Current state
  - feature/outline
  - watch different directories

@@ -15,7 +15,7 @@ with open('LICENSE') as f:
 setup(
     executables = [Executable("SafeMyWork.py")],
     name='SafeMyWork',
-    version='0.1',
+    version='0.2',
     description='Little app to save your work.',
     long_description=readme,
     author='Thykof',
