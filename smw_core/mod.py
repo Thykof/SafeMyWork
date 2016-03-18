@@ -14,9 +14,15 @@ def tell(message, target='output.log'):
     :param target: the file, default to *output.log*
     :type target: ``str``
     """
-    print(message)
-    with open(target, 'a') as myfile:
-        myfile.write(message + '\n')
+    try:
+        print(message)
+    except UnicodeEncodeError:
+            message = message.encode('ascii', 'replace')
+            message = message.decode('ascii', 'replace')
+            print(message)
+
+    with open(target, 'a', errors='replace', encoding='utf8') as myfile:
+        myfile.write(str(message) + '\n')
 
 def combine_list(list1, list2):
     """Create a list with only elements in common of the two lists.
