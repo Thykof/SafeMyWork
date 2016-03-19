@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+#!/usr/bin/python3
 
-from smw_core import watcher
 from os import path, mkdir
+
+from watcher import watcher
 
 class BaseTestWatcher(object):
     def setup_method(self, test_method):

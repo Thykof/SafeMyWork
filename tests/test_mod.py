@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+#!/usr/bin/python3
 
-from smw_core import mod
 from os import path
+
+from watcher import mod
 
 class BaseTestMod(object):
     def setup_method(self, test_method):

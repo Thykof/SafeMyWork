@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+#!/usr/bin/python3
 
-from smw_core import conf
+from watcher import conf
 
 class BaseTestConf(object):
     def setup_method(self, test_method):

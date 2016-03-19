@@ -18,19 +18,19 @@ How it work
 
 Main body
 +++++++++
-.. automodule:: smw_core.watcher
+.. automodule:: watcher.watcher
   :members:
   :undoc-members:
 
 Managing configurations
 +++++++++++++++++++++++
-.. automodule:: smw_core.conf
+.. automodule:: watcher.conf
   :members:
   :undoc-members:
 
 A module for simple functions
 +++++++++++++++++++++++++++++
-.. automodule:: smw_core.mod
+.. automodule:: watcher.mod
   :members:
   :undoc-members:
 

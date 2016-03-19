@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#!/usr/bin/python3
 
 CONF_FILE = 'SMW_conf_file.ini'
 DEFAULT_CONFIG = {

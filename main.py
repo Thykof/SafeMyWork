@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
+#!/usr/bin/python3
 
 import atexit
 import sys
 
-from smw_core import conf
-from smw_core import mod
-from smw_core.watcher import Watcher
+from watcher import conf
+from watcher import mod
+from watcher.watcher import Watcher
+from interface.interface import Interface
 
 def quit_(config):
     mod.tell('Save config')
@@ -22,4 +24,6 @@ if __name__ == '__main__':
         sys.exit()
     atexit.register(quit_, config)
     watcher = Watcher(config)
-    watcher.start()
+    root = Interface()
+    root.set_watcher(watcher)
+    root.run()
