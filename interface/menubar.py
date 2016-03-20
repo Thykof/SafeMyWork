@@ -13,12 +13,8 @@ def create_menus(self):
     action_Settings.connect('activate', self.settings)
     action_group.add_action(action_Settings)
 
-    action_AddFolder = Gtk.Action(name='AddFolder', label='Ajouter un dossier')
-    action_AddFolder.connect('activate', self.add_dir)
-    action_group.add_action(action_AddFolder)
-
     action_Quit = Gtk.Action(name='Quit', label='Quitter')
-    action_Quit.connect('activate', self.quit)
+    action_Quit.connect('activate', self.quit_app)
     action_group.add_action(action_Quit)
 
     action_ActionMenu = Gtk.Action(name="ActionMenu", label="Action")
@@ -48,7 +44,7 @@ def create_menus(self):
     action_group.add_action(action_About)
 
     uimanager = Gtk.UIManager()
-    uimanager.add_ui_from_file('interface/interface.ui')
+    uimanager.add_ui_from_file('interface/menubar.ui')
     uimanager.insert_action_group(action_group)
 
-    return uimanager.get_widget("/MenuBar"), uimanager.get_widget("/Toolbar")
+    return uimanager.get_widget("/MenuBar")

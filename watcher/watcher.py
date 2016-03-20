@@ -12,10 +12,9 @@ class Watcher(object):
     def __init__(self, config):
         super(Watcher, self).__init__()
         self.config = config
-        self.delicate_dir = config['delicate_dirs']  # Directory watch
         self.archive_dir = config['archive_dir']
 
-        create_archive_dir(self.archive_dir, self.delicate_dir)
+        create_archive_dir(self.archive_dir, self.config['delicate_dirs'])
 
     def watch(self):
         """Start **watching**.
@@ -27,7 +26,7 @@ class Watcher(object):
         - wait for the *time_delta* setting
         """
         tell('===WATCHING===')
-        for delicate_dir in self.delicate_dir:
+        for delicate_dir in self.config['delicate_dirs']:
             unsaved_files = self.list_files(delicate_dir)
             saved_files = self.list_files(path.join(self.archive_dir, path.basename(delicate_dir)))
             files_to_save = self.compare_files(unsaved_files, saved_files, delicate_dir)

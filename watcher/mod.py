@@ -4,7 +4,6 @@
 """Define some fonctions."""
 
 from os import path, mkdir
-from time import sleep, time
 
 def tell(message, target='output.log'):
     """Tell to user a message.

@@ -4,21 +4,44 @@
 from gi.repository import Gtk
 from threading import Timer
 
-from .menu import create_menus
+from .menubar import create_menus
 from .tools import about
 
 class Interface(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self, title='SafeMyWork 1.0')
-        self.set_default_size(800, 400)
-        self.connect('destroy', Gtk.main_quit)
+        self.set_position(Gtk.WindowPosition.CENTER)
+        self.connect('delete-event', self.quit_app)
 
-        grid = Gtk.Grid()
-        self.add(grid)
+        self.grid = Gtk.Grid(column_spacing=20, row_spacing=20)
+        self.add(self.grid)
 
-        menus = create_menus(self)
-        grid.add(menus[0])
-        grid.attach(menus[1], 0, 0, 1, 1)
+        self.create_buttons()
+        self.grid.add(create_menus(self))
+
+        self.thread = None
+
+    def create_buttons(self):
+        button_show_saved = Gtk.Button.new_with_label('Fichiers sauvés')
+        button_show_saved.connect('clicked', self.show_saved)
+        button_check_now = Gtk.Button.new_with_label('Scanner maintenant')
+        button_check_now.connect('clicked', self.check_now)
+        label_watch = Gtk.Label('Scan :')
+        switch_start = Gtk.Switch()
+        switch_start.connect('notify::active', self.on_switch_activated)
+        switch_start.set_active(False)
+
+        self.grid.attach(button_show_saved, 0, 0, 1, 1)
+        self.grid.attach(button_check_now, 1, 0 , 1, 1)
+        self.grid.attach(label_watch, 0, 1 , 1, 1)
+        self.grid.attach(switch_start, 1, 1 , 1 , 1)
+        switch_start.do_grab_focus(switch_start)
+
+    def on_switch_activated(self, switch, *args):
+        if switch.get_active():
+            self.start_watching()
+        else:
+            self.stop_watching()
 
     def set_watcher(self, watcher):
         self.watcher = watcher
@@ -33,16 +56,15 @@ class Interface(Gtk.Window):
         self.thread.start()
 
     def stop_watching(self, *args):
-        self.thread.cancel()
-
-    def add_dir(self, *args):
-        pass
+        if self.thread is not None:
+            self.thread.cancel()
 
     def show_saved(self, *args):
         pass
 
-    def quit(self, *args):
+    def quit_app(self, *args):
         Gtk.main_quit()
+        self.stop_watching()
 
     def settings(self, *args):
         pass

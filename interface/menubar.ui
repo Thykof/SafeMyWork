@@ -2,25 +2,17 @@
 <ui>
   <menubar name="MenuBar">
     <menu action="FileMenu">
+      <menuitem action="OpenSaved" />
       <menuitem action="Settings" />
-      <menuitem action="AddFolder" />
       <menuitem action="Quit" />
     </menu>
     <menu action="ActionMenu">
       <menuitem action="Start" />
       <menuitem action="Stop" />
       <menuitem action="CheckNow" />
-      <menuitem action="OpenSaved" />
     </menu>
     <menu action="HelpMenu">
       <menuitem action="About" />
     </menu>
   </menubar>
-  <toolbar name="Toolbar">
-    <toolitem action="Start" />
-    <toolitem action="Stop" />
-    <toolitem action="AddFolder" />
-    <toolitem action="OpenSaved" />
-    <toolitem action="CheckNow" />
-   </toolbar>
 </ui>
