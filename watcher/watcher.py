@@ -12,9 +12,6 @@ class Watcher(object):
     def __init__(self, config):
         super(Watcher, self).__init__()
         self.config = config
-        self.archive_dir = config['archive_dir']
-
-        create_archive_dir(self.archive_dir, self.config['delicate_dirs'])
 
     def watch(self):
         """Start **watching**.
@@ -25,10 +22,11 @@ class Watcher(object):
         - archive the new files
         - wait for the *time_delta* setting
         """
+        create_archive_dir(self.config['archive_dir'], self.config['delicate_dirs'])
         tell('===WATCHING===')
         for delicate_dir in self.config['delicate_dirs']:
             unsaved_files = self.list_files(delicate_dir)
-            saved_files = self.list_files(path.join(self.archive_dir, path.basename(delicate_dir)))
+            saved_files = self.list_files(path.join(self.config['archive_dir'], path.basename(delicate_dir)))
             files_to_save = self.compare_files(unsaved_files, saved_files, delicate_dir)
             if len(files_to_save) > 0:
                 self.create_safe_dirs(delicate_dir)
@@ -114,7 +112,7 @@ class Watcher(object):
 
         list_files = combine_list(unsaved_files, saved_files)
         for filename in list_files:
-            saved_file_stat = stat(path.join(self.archive_dir, delicate_dir, filename))
+            saved_file_stat = stat(path.join(self.config['archive_dir'], delicate_dir, filename))
             unsaved_file_stat = stat(path.join(delicate_dir, filename))
             if saved_file_stat.st_mtime < unsaved_file_stat.st_mtime:
                 if self.filter_files(filename):
@@ -136,7 +134,7 @@ class Watcher(object):
         """
         dirs = self.list_dirs(delicate_dir)
         for directory in dirs:
-            path_dir = path.join(self.archive_dir, path.basename(delicate_dir), directory)
+            path_dir = path.join(self.config['archive_dir'], path.basename(delicate_dir), directory)
             if not path.exists(path_dir):
                 mkdir(path_dir)
 
@@ -149,6 +147,6 @@ class Watcher(object):
         :type delicate_dir: ``str``
         """
         src = path.join(delicate_dir, filename)
-        dst = path.join(self.archive_dir, path.basename(delicate_dir), filename)
+        dst = path.join(self.config['archive_dir'], path.basename(delicate_dir), filename)
         archived_file = shutil.copy2(src, dst)
         return archived_file

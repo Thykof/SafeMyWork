@@ -80,6 +80,5 @@ def get_config(conf_file=CONF_FILE):
         delicate_dirs = get_dir_from_argv()
         config['delicate_dirs'].extend(delicate_dirs)
         if config['delicate_dirs'] == []:
-            return None
-
+            return dict()
     return config
