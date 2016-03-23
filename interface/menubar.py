@@ -29,7 +29,7 @@ def create_menus(self):
     action_group.add_action(action_Stop)
 
     action_CheckNow = Gtk.Action(name='CheckNow', label='Scanner maintenant')
-    action_CheckNow.connect('activate', self.check_now)
+    action_CheckNow.connect('activate', self.watch_now)
     action_group.add_action(action_CheckNow)
 
     action_OpenSaved = Gtk.Action(name='OpenSaved', label='Afficher les fichiers sauvegardés')

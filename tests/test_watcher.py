@@ -10,7 +10,7 @@ class BaseTestWatcher(object):
         self.default_config = {
             'time_delta': 20,
             'archive_dir': 'safe_docs',
-            'delicate_dirs': ["a_delicate_dir/folderA"],
+            'watched_dirs': ["a_delicate_dir/folderA"],
             'exclude_dirs': ['a_delicate_dir/notthatfolder'],
             'exclude_files': ['a_delicate_dir/notthatfile.txt'],
             'exclude_ext': ['pdf', 'json']

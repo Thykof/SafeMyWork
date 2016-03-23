@@ -22,16 +22,16 @@ class Watcher(object):
         - archive the new files
         - wait for the *time_delta* setting
         """
-        create_archive_dir(self.config['archive_dir'], self.config['delicate_dirs'])
+        create_archive_dir(self.config['archive_dir'], self.config['watched_dirs'])
         tell('===WATCHING===')
-        for delicate_dir in self.config['delicate_dirs']:
-            unsaved_files = self.list_files(delicate_dir)
-            saved_files = self.list_files(path.join(self.config['archive_dir'], path.basename(delicate_dir)))
-            files_to_save = self.compare_files(unsaved_files, saved_files, delicate_dir)
+        for watched_dir in self.config['watched_dirs']:
+            unsaved_files = self.list_files(watched_dir)
+            saved_files = self.list_files(path.join(self.config['archive_dir'], path.basename(watched_dir)))
+            files_to_save = self.compare_files(unsaved_files, saved_files, watched_dir)
             if len(files_to_save) > 0:
-                self.create_safe_dirs(delicate_dir)
+                self.create_safe_dirs(watched_dir)
                 for filename in files_to_save:
-                    archived_file = self.archive_file(filename, delicate_dir)
+                    archived_file = self.archive_file(filename, watched_dir)
                     tell('Archived: ' + archived_file)
             tell('Done')
 
@@ -60,9 +60,9 @@ class Watcher(object):
         list_dirs = list()
         for root, directories, files in walk(path_dir):
             for directory in directories:
-                delicate_dir = path.join(root, directory)
+                watched_dir = path.join(root, directory)
                 position = len(path_dir)
-                list_dirs.append(delicate_dir[position+1:])
+                list_dirs.append(watched_dir[position+1:])
         return list_dirs
 
     def filter_files(self, filename):
@@ -88,15 +88,15 @@ class Watcher(object):
         else:
             return False
 
-    def compare_files(self, unsaved_files, saved_files, delicate_dir):
+    def compare_files(self, unsaved_files, saved_files, watched_dir):
         """List all files that need to be save.
 
         :param unsaved_files: the unsaved files
         :type unsaved_files: ``list``
         :param saved_files: the files already saved
         :type saved_files: ``list``
-        :param delicate_dir: the directory watching
-        :type delicate_dir: ``str``
+        :param watched_dir: the directory watching
+        :type watched_dir: ``str``
         :returns: the files need to ba save
         :rtype: ``list``
         """
@@ -112,8 +112,8 @@ class Watcher(object):
 
         list_files = combine_list(unsaved_files, saved_files)
         for filename in list_files:
-            saved_file_stat = stat(path.join(self.config['archive_dir'], delicate_dir, filename))
-            unsaved_file_stat = stat(path.join(delicate_dir, filename))
+            saved_file_stat = stat(path.join(self.config['archive_dir'], watched_dir, filename))
+            unsaved_file_stat = stat(path.join(watched_dir, filename))
             if saved_file_stat.st_mtime < unsaved_file_stat.st_mtime:
                 if self.filter_files(filename):
                     tell('Update: ' + filename)
@@ -126,27 +126,27 @@ class Watcher(object):
                 tell('Skipping: ' + filename)
         return files_to_save
 
-    def create_safe_dirs(self, delicate_dir):
-        """Make all directories from *delicate_dir* in archive directory.
+    def create_safe_dirs(self, watched_dir):
+        """Make all directories from *watched_dir* in archive directory.
 
-        :param delicate_dir: the directory watching
-        :type delicate_dir: ``str``
+        :param watched_dir: the directory watching
+        :type watched_dir: ``str``
         """
-        dirs = self.list_dirs(delicate_dir)
+        dirs = self.list_dirs(watched_dir)
         for directory in dirs:
-            path_dir = path.join(self.config['archive_dir'], path.basename(delicate_dir), directory)
+            path_dir = path.join(self.config['archive_dir'], path.basename(watched_dir), directory)
             if not path.exists(path_dir):
                 mkdir(path_dir)
 
-    def archive_file(self, filename, delicate_dir):
+    def archive_file(self, filename, watched_dir):
         """Copy the *filename* in the archive directory.
 
         :param filename: filename of the file to save
         :type filename: ``str``
-        :param delicate_dir: the directory watching
-        :type delicate_dir: ``str``
+        :param watched_dir: the directory watching
+        :type watched_dir: ``str``
         """
-        src = path.join(delicate_dir, filename)
-        dst = path.join(self.config['archive_dir'], path.basename(delicate_dir), filename)
+        src = path.join(watched_dir, filename)
+        dst = path.join(self.config['archive_dir'], path.basename(watched_dir), filename)
         archived_file = shutil.copy2(src, dst)
         return archived_file

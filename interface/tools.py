@@ -16,20 +16,53 @@ def about():
     dialog.destroy()
 
 def initialize_interface(self):
-    grid = Gtk.Grid(column_spacing=20, row_spacing=20)
+    self.grid = Gtk.Grid(column_spacing=5, row_spacing=5)
+    self.text = Gtk.Label('En attente...')
+    # Toolbar:
     button_show_saved = Gtk.Button.new_with_label('Fichiers sauvés')
     button_show_saved.connect('clicked', self.show_saved)
     button_check_now = Gtk.Button.new_with_label('Scanner maintenant')
-    button_check_now.connect('clicked', self.check_now)
-    label_watch = Gtk.Label('Scan :')
-    switch_start = Gtk.Switch()
-    switch_start.connect('notify::active', self.on_switch_activated)
-    switch_start.set_active(False)
+    button_check_now.connect('clicked', self.watch_now)
+    # Watching:
+    self.switch_start = Gtk.Switch()
+    self.switch_start.connect('notify::active', on_switch_activated, self)
+    self.switch_start.set_active(False)
+    # Watched dirs:
+    self.watched_list = Gtk.ComboBoxText.new_with_entry()
+    self.watched_list.connect('changed', on_changed_watched)
+    button_add_watched = Gtk.Button.new_with_label('Ajouter')
+    button_add_watched.connect('clicked', self.add_watched_dir)
+    button_del_watched = Gtk.Button.new_with_label('Supprimer')
+    button_del_watched.connect('clicked', self.del_watched_dir)
+    self.spinner = Gtk.Spinner()
 
-    grid.attach(button_show_saved, 0, 0, 1, 1)
-    grid.attach(button_check_now, 1, 0 , 1, 1)
-    grid.attach(label_watch, 0, 1 , 1, 1)
-    grid.attach(switch_start, 1, 1 , 1 , 1)
-    switch_start.do_grab_focus(switch_start)
+    # pack:
+    hbox = Gtk.Box(spacing=6)
+    hbox.pack_start(self.text, True, True, 0)
+    hbox.pack_start(self.switch_start, True, True, 0)
+    hbox.pack_start(self.spinner, True, True, 0)
+    self.grid.attach(hbox, 0, 1, 2, 1)
 
-    return grid
+    self.grid.attach(button_show_saved, 0, 0, 1, 1)
+    self.grid.attach(button_check_now, 1, 0 , 1, 1)
+    self.grid.attach(self.watched_list, 0, 2, 2, 1)
+    self.grid.attach(button_add_watched, 0, 3, 1, 1)
+    self.grid.attach(button_del_watched, 1, 3, 1, 1)
+
+def on_changed_ext(ext_list):
+    tree_iter = ext_list.get_active_iter()
+    if tree_iter != None:
+        model = ext_list.get_model()
+        print(model)
+    else:
+        entry = ext_list.get_child()
+        print("Entered: " + entry.get_text())
+
+def on_changed_watched(watched_list):
+    pass
+
+def on_switch_activated(switch, active, self):
+    if switch.get_active():
+        self.watching()
+    else:
+        self.cancel_watching()
