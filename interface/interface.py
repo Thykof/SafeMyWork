@@ -4,12 +4,21 @@
 from gi.repository import Gtk
 import threading
 from os import path
+from platform import system
 
 from .menubar import create_menus
-from .tools import about, initialize_interface
-from .dialog import show_watched_dialog, del_dir_dialog
-import watcher
+from .tools import about, MainGrid
+from .dialog import edit_settings_dialog, del_dir_dialog
 from watcher.watcher import Watcher
+import watcher
+
+SYSTEM = system()
+if SYSTEM == 'Linux':
+    from subprocess import Popen
+elif SYSTEM == 'Windows':
+    from os import startfile
+else:
+    watcher.mod.tell('Import Error')
 
 class Interface(Gtk.Window):
     def __init__(self, config):
@@ -18,8 +27,8 @@ class Interface(Gtk.Window):
         self.set_border_width(5)
         self.connect('delete-event', self.quit_app)
 
-        initialize_interface(self)
-        self.switch_start.do_grab_focus(self.switch_start)
+        self.grid = MainGrid(self)
+        self.grid.switch_start.do_grab_focus(self.grid.switch_start)
         self.grid.add(create_menus(self))
         self.add(self.grid)
 
@@ -31,9 +40,7 @@ class Interface(Gtk.Window):
 
     def initialize_config(self):
         for watched_dir in self.config['watched_dirs']:
-            self.watched_list.append_text(watched_dir)
-        for ext in self.config['exclude_ext']:
-            self.ext_list.append_text(ext)
+            self.grid.watched_list.append_text(watched_dir)
 
     def run(self):
         self.show_all()
@@ -49,62 +56,60 @@ class Interface(Gtk.Window):
         watcher.conf.save_config(config)
 
     def start_watching(self, *args):
-        if not self.switch_start.get_active():
-            self.switch_start.set_active(True)
+        if not self.grid.switch_start.get_active():
+            self.grid.switch_start.set_active(True)
 
     def watching(self, *args):
-        self.text.set_text('Scan en cours')
-        self.spinner.start()
+        self.grid.text.set_text('Scan en cours')
+        self.grid.spinner.start()
         self.watcher.watch()
-        self.spinner.stop()
-        self.thread = threading.Timer(self.watcher.config['time_delta'], self.watching)
+        self.grid.spinner.stop()
+        self.thread = threading.Timer(self.config['time_delta'], self.watching)
         self.thread.start()
 
     def stop_watching(self, action=None):
-        if self.switch_start.get_active():
-            self.switch_start.set_active(False)
+        if self.grid.switch_start.get_active():
+            self.grid.switch_start.set_active(False)
 
     def cancel_watching(self):
-        self.text.set_text('Scan annulé')
+        self.grid.text.set_text('Scan annulé')
         if self.thread is not None:
             self.thread.cancel()
 
     def show_saved(self, *args):
-        pass
-
-    def show_watched(self, *args):
-        show_watched_dialog(self)
+        if SYSTEM == 'Linux':
+            Popen(['xdg-open', self.config['archive_dir']])
+        elif SYSTEM == 'Windows':
+            startfile(self.config['archive_dir'])
 
     def settings(self, *args):
-        self.show_watched()
+        edit_settings_dialog(self)
 
     def watch_now(self, *args):
-        self.spinner.start()
+        self.grid.spinner.start()
         self.watcher.watch()
-        self.spinner.stop()
+        self.grid.spinner.stop()
 
     def add_watched_dir(self, button):
-        tree_iter = self.watched_list.get_active_iter()
+        tree_iter = self.grid.watched_list.get_active_iter()
         if tree_iter is None:
-            new_dir = self.watched_list.get_child().get_text()
+            new_dir = self.grid.watched_list.get_child().get_text()
             if new_dir != '' and new_dir not in self.config['watched_dirs'] and path.exists(new_dir):
-                print("add dir: " + new_dir)
-                self.watched_list.append_text(new_dir)
+                self.grid.watched_list.append_text(new_dir)
                 self.config['watched_dirs'].append(new_dir)
-                self.text.set_text('Dossier ajouté')
+                self.grid.text.set_text('Dossier ajouté')
 
     def del_watched_dir(self, button):
-        tree_iter = self.watched_list.get_active_iter()
+        tree_iter = self.grid.watched_list.get_active_iter()
         if tree_iter is not None:
-            model = self.watched_list.get_model()
+            model = self.grid.watched_list.get_model()
             directory = model[tree_iter][0]
             must_del, dialog = del_dir_dialog(self, directory)
             dialog.destroy()
             if must_del:
-                print("delete dir :" + directory)
                 self.config['watched_dirs'].remove(directory)
-                self.watched_list.remove(int(self.watched_list.get_active()))
-                self.text.set_text('Dossier supprimé')
+                self.grid.watched_list.remove(int(self.grid.watched_list.get_active()))
+                self.grid.text.set_text('Dossier supprimé')
 
     def about(self, *args):
         about()

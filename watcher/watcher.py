@@ -2,7 +2,6 @@
 #!/usr/bin/python3
 
 from os import path, walk, stat, mkdir
-from time import sleep
 import shutil
 
 from .mod import tell, create_archive_dir, combine_list

@@ -15,54 +15,62 @@ def about():
     dialog.run()
     dialog.destroy()
 
-def initialize_interface(self):
-    self.grid = Gtk.Grid(column_spacing=5, row_spacing=5)
-    self.text = Gtk.Label('En attente...')
-    # Toolbar:
-    button_show_saved = Gtk.Button.new_with_label('Fichiers sauvés')
-    button_show_saved.connect('clicked', self.show_saved)
-    button_check_now = Gtk.Button.new_with_label('Scanner maintenant')
-    button_check_now.connect('clicked', self.watch_now)
-    # Watching:
-    self.switch_start = Gtk.Switch()
-    self.switch_start.connect('notify::active', on_switch_activated, self)
-    self.switch_start.set_active(False)
-    # Watched dirs:
-    self.watched_list = Gtk.ComboBoxText.new_with_entry()
-    self.watched_list.connect('changed', on_changed_watched)
-    button_add_watched = Gtk.Button.new_with_label('Ajouter')
-    button_add_watched.connect('clicked', self.add_watched_dir)
-    button_del_watched = Gtk.Button.new_with_label('Supprimer')
-    button_del_watched.connect('clicked', self.del_watched_dir)
-    self.spinner = Gtk.Spinner()
+class MainGrid(Gtk.Grid):
+    """docstring for Grid"""
+    def __init__(self, root):
+        super(MainGrid, self).__init__()
+        self.root = root
+        self.set_column_spacing(5)
+        self.set_row_spacing(5)
+        self.initialize_grid()
 
-    # pack:
-    hbox = Gtk.Box(spacing=6)
-    hbox.pack_start(self.text, True, True, 0)
-    hbox.pack_start(self.switch_start, True, True, 0)
-    hbox.pack_start(self.spinner, True, True, 0)
-    self.grid.attach(hbox, 0, 1, 2, 1)
+    def initialize_grid(self):
+        self.text = Gtk.Label('En attente...')
+        # Toolbar:
+        button_show_saved = Gtk.Button.new_with_label('Fichiers sauvés')
+        button_show_saved.connect('clicked', self.root.show_saved)
+        button_check_now = Gtk.Button.new_with_label('Scanner maintenant')
+        button_check_now.connect('clicked', self.root.watch_now)
+        # Watching:
+        self.switch_start = Gtk.Switch()
+        self.switch_start.connect('notify::active', self.on_switch_activated)
+        self.switch_start.set_active(False)
+        # Watched dirs:
+        self.watched_list = Gtk.ComboBoxText.new_with_entry()
+        self.watched_list.connect('changed', self.on_changed_watched)
+        button_add_watched = Gtk.Button.new_with_label('Ajouter')
+        button_add_watched.connect('clicked', self.root.add_watched_dir)
+        button_del_watched = Gtk.Button.new_with_label('Supprimer')
+        button_del_watched.connect('clicked', self.root.del_watched_dir)
+        self.spinner = Gtk.Spinner()
 
-    self.grid.attach(button_show_saved, 0, 0, 1, 1)
-    self.grid.attach(button_check_now, 1, 0 , 1, 1)
-    self.grid.attach(self.watched_list, 0, 2, 2, 1)
-    self.grid.attach(button_add_watched, 0, 3, 1, 1)
-    self.grid.attach(button_del_watched, 1, 3, 1, 1)
+        # pack:
+        hbox = Gtk.Box(spacing=6)
+        hbox.pack_start(self.text, True, True, 0)
+        hbox.pack_start(self.switch_start, True, True, 0)
+        hbox.pack_start(self.spinner, True, True, 0)
+        self.attach(hbox, 0, 1, 2, 1)
 
-def on_changed_ext(ext_list):
-    tree_iter = ext_list.get_active_iter()
-    if tree_iter != None:
-        model = ext_list.get_model()
-        print(model)
-    else:
-        entry = ext_list.get_child()
-        print("Entered: " + entry.get_text())
+        self.attach(button_show_saved, 0, 0, 1, 1)
+        self.attach(button_check_now, 1, 0 , 1, 1)
+        self.attach(self.watched_list, 0, 2, 2, 1)
+        self.attach(button_add_watched, 0, 3, 1, 1)
+        self.attach(button_del_watched, 1, 3, 1, 1)
 
-def on_changed_watched(watched_list):
-    pass
+    def on_changed_ext(self, ext_list):
+        tree_iter = ext_list.get_active_iter()
+        if tree_iter != None:
+            model = ext_list.get_model()
+            print(model)
+        else:
+            entry = ext_list.get_child()
+            print("Entered: " + entry.get_text())
 
-def on_switch_activated(switch, active, self):
-    if switch.get_active():
-        self.watching()
-    else:
-        self.cancel_watching()
+    def on_changed_watched(self, watched_list):
+        pass
+
+    def on_switch_activated(self, switch, active):
+        if switch.get_active():
+            self.root.watching()
+        else:
+            self.root.cancel_watching()

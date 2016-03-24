@@ -3,7 +3,7 @@
 
 from gi.repository import Gtk
 
-def show_watched_dialog(self):
+def edit_settings_dialog(self):
     dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO,
         Gtk.ButtonsType.OK, "Dossiers surveillés")
     dialog.format_secondary_text(str(self.config))
