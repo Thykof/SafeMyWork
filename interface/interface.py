@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/python3
 
+import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 import threading
 from os import path
@@ -28,9 +30,13 @@ class Interface(Gtk.Window):
         self.connect('delete-event', self.quit_app)
 
         self.grid = MainGrid(self)
-        self.grid.switch_start.do_grab_focus(self.grid.switch_start)
-        self.grid.add(create_menus(self))
         self.add(self.grid)
+        self.grid.switch_start.do_grab_focus(self.grid.switch_start)
+
+        menubar = create_menus(self)
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        box.pack_start(menubar, False, False, 0)
+        self.grid.add(box)
 
         self.thread = None
         self.config = config
@@ -62,7 +68,7 @@ class Interface(Gtk.Window):
     def watching(self, *args):
         self.grid.text.set_text('Scan en cours')
         self.grid.spinner.start()
-        self.watcher.watch()
+        self.watch_now()
         self.grid.spinner.stop()
         self.thread = threading.Timer(self.config['time_delta'], self.watching)
         self.thread.start()

@@ -1,7 +1,29 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/python3
 
+import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
+
+UI_INFO = """
+<ui>
+  <menubar name="MenuBar">
+    <menu action="FileMenu">
+      <menuitem action="OpenSaved" />
+      <menuitem action="Settings" />
+      <menuitem action="Quit" />
+    </menu>
+    <menu action="ActionMenu">
+      <menuitem action="Start" />
+      <menuitem action="Stop" />
+      <menuitem action="CheckNow" />
+    </menu>
+    <menu action="HelpMenu">
+      <menuitem action="About" />
+    </menu>
+  </menubar>
+</ui>
+"""
 
 def create_menus(self):
     action_group = Gtk.ActionGroup(name='menu')
@@ -44,7 +66,8 @@ def create_menus(self):
     action_group.add_action(action_About)
 
     uimanager = Gtk.UIManager()
-    uimanager.add_ui_from_file('interface/menubar.ui')
+    uimanager.add_ui_from_string(UI_INFO)
     uimanager.insert_action_group(action_group)
+    menubar = uimanager.get_widget("/MenuBar")
 
-    return uimanager.get_widget("/MenuBar")
+    return menubar
