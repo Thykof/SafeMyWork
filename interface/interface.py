@@ -38,9 +38,10 @@ class Interface(Gtk.Window):
         box.pack_start(menubar, False, False, 0)
         self.grid.add(box)
 
-        self.thread = None
         self.config = config
-        self.watcher = Watcher(config)
+        self.watcher = Watcher(self.config)
+        self.timer = None
+        self.thread = None
 
         self.initialize_config()
 
@@ -56,31 +57,43 @@ class Interface(Gtk.Window):
         Gtk.main_quit()
         self.save_config(self.config)
         self.stop_watching()
+        self.abort_watch()
 
     def save_config(self, config=watcher.data.DEFAULT_CONFIG):
         watcher.mod.tell('Save config')
         watcher.conf.save_config(config)
 
-    def start_watching(self, *args):
-        if not self.grid.switch_start.get_active():
-            self.grid.switch_start.set_active(True)
-
-    def watching(self, *args):
-        self.grid.text.set_text('Scan en cours')
+    def watch(self, loop):
+        """Launch watch"""
         self.grid.spinner.start()
-        self.watch_now()
+        self.watcher.watch()
         self.grid.spinner.stop()
-        self.thread = threading.Timer(self.config['time_delta'], self.watching)
-        self.thread.start()
+        if loop:
+            self.timer = threading.Timer(self.config['time_delta'], self.start_watching, args=(loop,))
+            self.timer.start()
 
-    def stop_watching(self, action=None):
-        if self.grid.switch_start.get_active():
-            self.grid.switch_start.set_active(False)
+    def start_watching(self, loop):
+        """Start watching : watch + timer"""
+        can = True
+        for thread in threading.enumerate():
+            print(thread)
+            if thread.name == 'watcher_loop' or thread.name == 'watcher_alone':
+                if thread.is_alive():
+                    print('no!')
+                    can = False
+        if can:
+            print('yes!')
+            self.thread = threading.Thread(target=self.watch, name='watcher_loop', args=(loop,))
+            self.thread.start()
 
-    def cancel_watching(self):
-        self.grid.text.set_text('Scan annulé')
-        if self.thread is not None:
-            self.thread.cancel()
+    def stop_watching(self):
+        """Cancel timer"""
+        if self.timer is not None:
+            self.timer.cancel()
+
+    def abort_watch(self):
+        """Abort current watch"""
+        self.watcher.stop = True
 
     def show_saved(self, *args):
         if SYSTEM == 'Linux':
@@ -90,11 +103,6 @@ class Interface(Gtk.Window):
 
     def settings(self, *args):
         edit_settings_dialog(self)
-
-    def watch_now(self, *args):
-        self.grid.spinner.start()
-        self.watcher.watch()
-        self.grid.spinner.stop()
 
     def add_watched_dir(self, button):
         tree_iter = self.grid.watched_list.get_active_iter()

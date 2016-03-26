@@ -10,6 +10,7 @@ class Watcher(object):
     """A class that manage safing files."""
     def __init__(self, config):
         super(Watcher, self).__init__()
+        self.stop = False
         self.config = config
 
     def watch(self):
@@ -24,14 +25,20 @@ class Watcher(object):
         create_archive_dir(self.config['archive_dir'], self.config['watched_dirs'])
         tell('===WATCHING===')
         for watched_dir in self.config['watched_dirs']:
-            unsaved_files = self.list_files(watched_dir)
-            saved_files = self.list_files(path.join(self.config['archive_dir'], path.basename(watched_dir)))
-            files_to_save = self.compare_files(unsaved_files, saved_files, watched_dir)
-            if len(files_to_save) > 0:
-                self.create_safe_dirs(watched_dir)
-                for filename in files_to_save:
-                    archived_file = self.archive_file(filename, watched_dir)
-                    tell('Archived: ' + archived_file)
+            if not self.stop:
+                unsaved_files = self.list_files(watched_dir)
+                saved_files = self.list_files(path.join(self.config['archive_dir'], path.basename(watched_dir)))
+                files_to_save = self.compare_files(unsaved_files, saved_files, watched_dir)
+                if len(files_to_save) > 0:
+                    self.create_safe_dirs(watched_dir)
+                    for filename in files_to_save:
+                        if not self.stop:
+                            archived_file = self.archive_file(filename, watched_dir)
+                            tell('Archived: ' + archived_file)
+                        else:
+                            break
+            else:
+                break
             tell('Done')
 
     def list_files(self, path_dir):

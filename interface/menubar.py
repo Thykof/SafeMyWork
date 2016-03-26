@@ -43,15 +43,15 @@ def create_menus(self):
     action_group.add_action(action_ActionMenu)
 
     action_Start = Gtk.Action(name='Start', label='Démmarer le scan')
-    action_Start.connect('activate', self.start_watching)
+    action_Start.connect('activate', start_watching, self)
     action_group.add_action(action_Start)
 
     action_Stop = Gtk.Action(name='Stop', label='Arrêter le scan')
-    action_Stop.connect('activate', self.stop_watching)
+    action_Stop.connect('activate', stop_watching, self)
     action_group.add_action(action_Stop)
 
     action_CheckNow = Gtk.Action(name='CheckNow', label='Scanner maintenant')
-    action_CheckNow.connect('activate', self.watch_now)
+    action_CheckNow.connect('activate', lambda arg: self.start_watching(False))
     action_group.add_action(action_CheckNow)
 
     action_OpenSaved = Gtk.Action(name='OpenSaved', label='Afficher les fichiers sauvegardés')
@@ -71,3 +71,11 @@ def create_menus(self):
     menubar = uimanager.get_widget("/MenuBar")
 
     return menubar
+
+def start_watching(action, self):
+    if not self.grid.switch_start.get_active():
+        self.grid.switch_start.set_active(True)
+
+def stop_watching(action, self):
+    if self.grid.switch_start.get_active():
+        self.grid.switch_start.set_active(False)

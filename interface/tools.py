@@ -32,7 +32,7 @@ class MainGrid(Gtk.Grid):
         button_show_saved = Gtk.Button.new_with_label('Fichiers sauvés')
         button_show_saved.connect('clicked', self.root.show_saved)
         button_check_now = Gtk.Button.new_with_label('Scanner maintenant')
-        button_check_now.connect('clicked', self.root.watch_now)
+        button_check_now.connect('clicked', self.on_check_now_clicked)
         # Watching:
         self.switch_start = Gtk.Switch()
         self.switch_start.connect('notify::active', self.on_switch_activated)
@@ -61,7 +61,7 @@ class MainGrid(Gtk.Grid):
 
     def on_changed_ext(self, ext_list):
         tree_iter = ext_list.get_active_iter()
-        if tree_iter != None:
+        if tree_iter is not None:
             model = ext_list.get_model()
             print(model)
         else:
@@ -73,6 +73,9 @@ class MainGrid(Gtk.Grid):
 
     def on_switch_activated(self, switch, active):
         if switch.get_active():
-            self.root.watching()
+            self.root.start_watching(True)
         else:
-            self.root.cancel_watching()
+            self.root.stop_watching()
+
+    def on_check_now_clicked(self, button):
+        self.root.start_watching(False)
