@@ -54,10 +54,12 @@ class Interface(Gtk.Window):
         Gtk.main()
 
     def quit_app(self, *args):
-        Gtk.main_quit()
+        self.grid.text.set_text('Fermeture')
         self.save_config(self.config)
+        self.grid.switch_start.set_active(False)
         self.stop_watching()
-        self.abort_watch()
+        Gtk.main_quit()
+        #self.abort_watch()
 
     def save_config(self, config=watcher.data.DEFAULT_CONFIG):
         watcher.mod.tell('Save config')
@@ -75,6 +77,8 @@ class Interface(Gtk.Window):
     def start_watching(self, loop):
         """Start watching : watch + timer"""
         can = True
+        if loop:
+            can = self.grid.switch_start.get_active()
         for thread in threading.enumerate():
             print(thread)
             if thread.name == 'watcher_loop' or thread.name == 'watcher_alone':
