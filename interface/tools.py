@@ -39,7 +39,6 @@ class MainGrid(Gtk.Grid):
         self.switch_start.set_active(False)
         # Watched dirs:
         self.watched_list = Gtk.ComboBoxText.new_with_entry()
-        self.watched_list.connect('changed', self.on_changed_watched)
         button_add_watched = Gtk.Button.new_with_label('Ajouter')
         button_add_watched.connect('clicked', self.root.add_watched_dir)
         button_del_watched = Gtk.Button.new_with_label('Supprimer')
@@ -58,18 +57,6 @@ class MainGrid(Gtk.Grid):
         self.attach(self.watched_list, 0, 2, 2, 1)
         self.attach(button_add_watched, 0, 3, 1, 1)
         self.attach(button_del_watched, 1, 3, 1, 1)
-
-    def on_changed_ext(self, ext_list):
-        tree_iter = ext_list.get_active_iter()
-        if tree_iter is not None:
-            model = ext_list.get_model()
-            print(model)
-        else:
-            entry = ext_list.get_child()
-            print("Entered: " + entry.get_text())
-
-    def on_changed_watched(self, watched_list):
-        pass
 
     def on_switch_activated(self, switch, active):
         if switch.get_active():

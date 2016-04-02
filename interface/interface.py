@@ -10,7 +10,7 @@ from platform import system
 
 from .menubar import create_menus
 from .tools import about, MainGrid
-from .dialog import edit_settings_dialog, del_dir_dialog
+from .dialog import del_dir_dialog, Settings
 from watcher.watcher import Watcher
 import watcher
 
@@ -71,7 +71,7 @@ class Interface(Gtk.Window):
         self.watcher.watch()
         self.grid.spinner.stop()
         if loop:
-            self.timer = threading.Timer(self.config['time_delta'], self.start_watching, args=(loop,))
+            self.timer = threading.Timer(self.config['time_delta']*60, self.start_watching, args=(loop,))
             self.timer.start()
 
     def start_watching(self, loop):
@@ -80,20 +80,20 @@ class Interface(Gtk.Window):
         if loop:
             can = self.grid.switch_start.get_active()
         for thread in threading.enumerate():
-            print(thread)
             if thread.name == 'watcher_loop' or thread.name == 'watcher_alone':
                 if thread.is_alive():
-                    print('no!')
                     can = False
         if can:
-            print('yes!')
             self.thread = threading.Thread(target=self.watch, name='watcher_loop', args=(loop,))
             self.thread.start()
+            if loop:
+                self.grid.text.set_text('Surveillance active')
 
     def stop_watching(self):
         """Cancel timer"""
         if self.timer is not None:
             self.timer.cancel()
+            self.grid.text.set_text('En attente...')
 
     def abort_watch(self):
         """Abort current watch"""
@@ -106,7 +106,8 @@ class Interface(Gtk.Window):
             startfile(self.config['archive_dir'])
 
     def settings(self, *args):
-        edit_settings_dialog(self)
+        dialog_settings = Settings(self)
+        dialog_settings.run()
 
     def add_watched_dir(self, button):
         tree_iter = self.grid.watched_list.get_active_iter()
