@@ -131,4 +131,4 @@ class Interface(Gtk.Window):
                 self.grid.text.set_text('Dossier supprimé')
 
     def about(self, action):
-        about()
+        about(self)

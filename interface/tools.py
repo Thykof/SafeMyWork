@@ -5,8 +5,8 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
-def about():
-    dialog = Gtk.AboutDialog()
+def about(parent):
+    dialog = Gtk.AboutDialog(transient_for=parent)
     dialog.set_program_name('SafeMyWork')
     dialog.set_version('1.0')
     dialog.set_website('https://github.com/Thykof/SafeMyWork')
