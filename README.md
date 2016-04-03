@@ -10,7 +10,7 @@ Current version is 1.0
 #### Current state
  - feature/outline
  - watch different directories
- - specify files and extensions to exclude
+ - specify directories, files and extensions to exclude
  - interface (gtk)
 
 Work in progress...
