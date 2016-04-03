@@ -30,7 +30,7 @@ class Watcher(object):
                 saved_files = self.list_files(path.join(self.config['archive_dir'], path.basename(watched_dir)))
                 files_to_save = self.compare_files(unsaved_files, saved_files, watched_dir)
                 if len(files_to_save) > 0:
-                    self.create_safe_dirs(watched_dir)
+                    self.create_safe_dirs(watched_dir, files_to_save)
                     for filename in files_to_save:
                         if not self.stop:
                             archived_file = self.archive_file(filename, watched_dir)
@@ -86,8 +86,13 @@ class Watcher(object):
         # Filter files:
         file_ok = False if filename in self.config['exclude_files'] else True
         # Filter directories:
-        directory = path.split(filename)[0]
-        dir_ok = False if directory in self.config['exclude_dirs'] else True
+        dir_ok = True
+        directory = path.dirname(filename)
+        for exclude_dir in self.config['exclude_dirs']:
+            if exclude_dir in directory:
+                dir_ok = False
+        if directory is '':
+            dir_ok = True
 
         if ext_ok and file_ok and dir_ok:
             return True
@@ -132,7 +137,7 @@ class Watcher(object):
                 tell('Skipping: ' + filename)
         return files_to_save
 
-    def create_safe_dirs(self, watched_dir):
+    def create_safe_dirs(self, watched_dir, files_to_save):
         """Make all directories from *watched_dir* in archive directory.
 
         :param watched_dir: the directory watching
@@ -140,9 +145,15 @@ class Watcher(object):
         """
         dirs = self.list_dirs(watched_dir)
         for directory in dirs:
-            path_dir = path.join(self.config['archive_dir'], path.basename(watched_dir), directory)
-            if not path.exists(path_dir):
-                mkdir(path_dir)
+            # Don't create directory excluded:
+            exclude_dir = True
+            for exclude_dir in self.config['exclude_dirs']:
+                if exclude_dir in directory:
+                    exclude_dir = False
+            if exclude_dir:
+                path_dir = path.join(self.config['archive_dir'], path.basename(watched_dir), directory)
+                if not path.exists(path_dir):
+                    mkdir(path_dir)
 
     def archive_file(self, filename, watched_dir):
         """Copy the *filename* in the archive directory.
