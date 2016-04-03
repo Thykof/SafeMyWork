@@ -61,7 +61,7 @@ class Interface(Gtk.Window):
         Gtk.main_quit()
         #self.abort_watch()
 
-    def save_config(self, config=watcher.data.DEFAULT_CONFIG):
+    def save_config(self, config):
         watcher.mod.tell('Save config')
         watcher.conf.save_config(config)
 
@@ -105,7 +105,7 @@ class Interface(Gtk.Window):
         elif SYSTEM == 'Windows':
             startfile(self.config['archive_dir'])
 
-    def settings(self, *args):
+    def settings(self, action):
         dialog_settings = Settings(self)
         dialog_settings.run()
 
@@ -130,5 +130,5 @@ class Interface(Gtk.Window):
                 self.grid.watched_list.remove(int(self.grid.watched_list.get_active()))
                 self.grid.text.set_text('Dossier supprimé')
 
-    def about(self, *args):
+    def about(self, action):
         about()
