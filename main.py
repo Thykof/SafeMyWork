@@ -28,11 +28,7 @@ class MyApplication(Gtk.Application):
         self.add_action(quit_action)
 
         builder = Gtk.Builder()
-        try:
-            builder.add_from_file('interface/menubar.ui')
-        except:
-            from interface.menubar_ui import UI_INFO
-            builder.add_from_string(UI_INFO)
+        builder.add_from_file('interface/menubar.ui')
 
         self.set_menubar(builder.get_object('menubar'))
 
