@@ -6,16 +6,20 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
 def about(parent):
-    dialog = Gtk.AboutDialog(transient_for=parent)
-    dialog.set_program_name('SafeMyWork')
-    dialog.set_version('1.0')
-    dialog.set_website('https://github.com/Thykof/SafeMyWork')
-    dialog.set_authors(['Nathan Seva'])
-    dialog.set_comments('Utilitaire SafeMyWork')
-    dialog.set_license('SafeMyWork est sous la license GNU GPL(v3). \n\n https://github.com/Thykof/SafeMyWork/blob/master/LICENSE')
+    aboutdialog = Gtk.AboutDialog(transient_for=parent)
+    aboutdialog.set_program_name('SafeMyWork')
+    aboutdialog.set_version('1.0')
+    aboutdialog.set_website('https://github.com/Thykof/SafeMyWork')
+    aboutdialog.set_website_label("Github")
+    aboutdialog.set_authors(['Nathan Seva'])
+    aboutdialog.set_comments('Utilitaire SafeMyWork')
+    aboutdialog.set_license('SafeMyWork est sous la license GNU GPL(v3). \n\n https://github.com/Thykof/SafeMyWork/blob/master/LICENSE')
 
-    dialog.run()
-    dialog.destroy()
+    aboutdialog.connect("response", on_close_dialog)
+    aboutdialog.show()
+
+def on_close_dialog(action, parameter):
+    action.destroy()
 
 class MainGrid(Gtk.Grid):
     """docstring for Grid"""

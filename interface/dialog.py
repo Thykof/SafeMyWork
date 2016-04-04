@@ -23,6 +23,7 @@ class Settings(Gtk.Dialog):
         self.set_border_width(10)
         self.connect('delete-event', self.close)
         box = self.get_content_area()
+        box.set_spacing(6)
 
         box_time = self.create_box_time()
         box_ext = self.create_box_ext()
