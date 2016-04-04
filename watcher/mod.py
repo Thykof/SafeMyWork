@@ -16,7 +16,8 @@ def tell(message, target='output.log'):
     :type target: ``str``
     """
     try:
-        print(message)
+        #print(message)
+        pass  # -dev-
     except UnicodeEncodeError:
         message = message.encode('ascii', 'replace')
         message = message.decode('ascii', 'replace')

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/python3
 
+import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 import threading
 from os import path
@@ -8,7 +10,7 @@ from platform import system
 
 from .menubar import create_menus
 from .tools import about, MainGrid
-from .dialog import edit_settings_dialog, del_dir_dialog
+from .dialog import del_dir_dialog, Settings
 from watcher.watcher import Watcher
 import watcher
 
@@ -20,21 +22,22 @@ elif SYSTEM == 'Windows':
 else:
     watcher.mod.tell('Import Error')
 
-class Interface(Gtk.Window):
-    def __init__(self, config):
-        Gtk.Window.__init__(self, title='SafeMyWork 1.0')
+class MyWindow(Gtk.ApplicationWindow):
+    def __init__(self, app, config):
+        Gtk.Window.__init__(self, title='SafeMyWork 1.0', application=app)
         self.set_position(Gtk.WindowPosition.CENTER)
         self.set_border_width(5)
-        self.connect('delete-event', self.quit_app)
 
         self.grid = MainGrid(self)
-        self.grid.switch_start.do_grab_focus(self.grid.switch_start)
-        self.grid.add(create_menus(self))
         self.add(self.grid)
+        self.grid.switch_start.do_grab_focus(self.grid.switch_start)
 
-        self.thread = None
+        create_menus(self)
+
         self.config = config
-        self.watcher = Watcher(config)
+        self.watcher = Watcher(self.config)
+        self.timer = None
+        self.thread = None
 
         self.initialize_config()
 
@@ -42,39 +45,43 @@ class Interface(Gtk.Window):
         for watched_dir in self.config['watched_dirs']:
             self.grid.watched_list.append_text(watched_dir)
 
-    def run(self):
-        self.show_all()
-        Gtk.main()
-
-    def quit_app(self, *args):
-        Gtk.main_quit()
-        self.save_config(self.config)
-        self.stop_watching()
-
-    def save_config(self, config=watcher.data.DEFAULT_CONFIG):
+    def save_config(self, config):
         watcher.mod.tell('Save config')
         watcher.conf.save_config(config)
 
-    def start_watching(self, *args):
-        if not self.grid.switch_start.get_active():
-            self.grid.switch_start.set_active(True)
-
-    def watching(self, *args):
-        self.grid.text.set_text('Scan en cours')
+    def watch(self, loop):
+        """Launch watch"""
         self.grid.spinner.start()
         self.watcher.watch()
         self.grid.spinner.stop()
-        self.thread = threading.Timer(self.config['time_delta'], self.watching)
-        self.thread.start()
+        if loop:
+            self.timer = threading.Timer(self.config['time_delta']*60, self.start_watching, args=(loop,))
+            self.timer.start()
 
-    def stop_watching(self, action=None):
-        if self.grid.switch_start.get_active():
-            self.grid.switch_start.set_active(False)
+    def start_watching(self, loop):
+        """Start watching : watch + timer"""
+        can = True
+        if loop:
+            can = self.grid.switch_start.get_active()
+        for thread in threading.enumerate():
+            if thread.name == 'watcher_loop' or thread.name == 'watcher_alone':
+                if thread.is_alive():
+                    can = False
+        if can:
+            self.thread = threading.Thread(target=self.watch, name='watcher_loop', args=(loop,))
+            self.thread.start()
+            if loop:
+                self.grid.text.set_text('Surveillance active')
 
-    def cancel_watching(self):
-        self.grid.text.set_text('Scan annulé')
-        if self.thread is not None:
-            self.thread.cancel()
+    def stop_watching(self):
+        """Cancel timer"""
+        if self.timer is not None:
+            self.timer.cancel()
+            self.grid.text.set_text('En attente...')
+
+    def abort_watch(self):
+        """Abort current watch"""
+        self.watcher.stop = True
 
     def show_saved(self, *args):
         if SYSTEM == 'Linux':
@@ -82,13 +89,9 @@ class Interface(Gtk.Window):
         elif SYSTEM == 'Windows':
             startfile(self.config['archive_dir'])
 
-    def settings(self, *args):
-        edit_settings_dialog(self)
-
-    def watch_now(self, *args):
-        self.grid.spinner.start()
-        self.watcher.watch()
-        self.grid.spinner.stop()
+    def settings(self, action, parameter):
+        dialog_settings = Settings(self)
+        dialog_settings.run()
 
     def add_watched_dir(self, button):
         tree_iter = self.grid.watched_list.get_active_iter()
@@ -110,6 +113,3 @@ class Interface(Gtk.Window):
                 self.config['watched_dirs'].remove(directory)
                 self.grid.watched_list.remove(int(self.grid.watched_list.get_active()))
                 self.grid.text.set_text('Dossier supprimé')
-
-    def about(self, *args):
-        about()

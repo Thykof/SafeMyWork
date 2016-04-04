@@ -1,50 +1,47 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/python3
 
-from gi.repository import Gtk
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gio
 
-def create_menus(self):
-    action_group = Gtk.ActionGroup(name='menu')
+from .tools import about
 
-    action_FileMenu = Gtk.Action(name="FileMenu", label="Fichier")
-    action_group.add_action(action_FileMenu)
+def create_menus(parent):
+    show_saved_action = Gio.SimpleAction.new('show_saved')
+    show_saved_action.connect('activate', parent.show_saved)
+    parent.add_action(show_saved_action)
 
-    action_Settings = Gtk.Action(name='Settings', label='Préférences')
-    action_Settings.connect('activate', self.settings)
-    action_group.add_action(action_Settings)
+    settings_action = Gio.SimpleAction.new('settings')
+    settings_action.connect('activate', parent.settings)
+    parent.add_action(settings_action)
 
-    action_Quit = Gtk.Action(name='Quit', label='Quitter')
-    action_Quit.connect('activate', self.quit_app)
-    action_group.add_action(action_Quit)
+    start_watching_action = Gio.SimpleAction.new('start_watching')
+    start_watching_action.connect('activate', start_watching, parent)
+    parent.add_action(start_watching_action)
 
-    action_ActionMenu = Gtk.Action(name="ActionMenu", label="Action")
-    action_group.add_action(action_ActionMenu)
+    stop_watching_action = Gio.SimpleAction.new('stop_watching')
+    stop_watching_action.connect('activate', stop_watching, parent)
+    parent.add_action(stop_watching_action)
 
-    action_Start = Gtk.Action(name='Start', label='Démmarer le scan')
-    action_Start.connect('activate', self.start_watching)
-    action_group.add_action(action_Start)
+    watch_now_action = Gio.SimpleAction.new('watch_now')
+    watch_now_action.connect('activate', wtach_now, parent)
+    parent.add_action(watch_now_action)
 
-    action_Stop = Gtk.Action(name='Stop', label='Arrêter le scan')
-    action_Stop.connect('activate', self.stop_watching)
-    action_group.add_action(action_Stop)
+    about_action = Gio.SimpleAction.new('about')
+    about_action.connect('activate', show_about, parent)
+    parent.add_action(about_action)
 
-    action_CheckNow = Gtk.Action(name='CheckNow', label='Scanner maintenant')
-    action_CheckNow.connect('activate', self.watch_now)
-    action_group.add_action(action_CheckNow)
+def start_watching(action, parameter, parent):
+    if not parent.grid.switch_start.get_active():
+        parent.grid.switch_start.set_active(True)
 
-    action_OpenSaved = Gtk.Action(name='OpenSaved', label='Afficher les fichiers sauvegardés')
-    action_OpenSaved.connect('activate', self.show_saved)
-    action_group.add_action(action_OpenSaved)
+def stop_watching(action, parameter, parent):
+    if parent.grid.switch_start.get_active():
+        parent.grid.switch_start.set_active(False)
 
-    action_HelpMenu = Gtk.Action(name="HelpMenu", label="Aide")
-    action_group.add_action(action_HelpMenu)
+def show_about(action, parameter, parent):
+    about(parent)
 
-    action_About = Gtk.Action(name='About', label='À propos')
-    action_About.connect('activate', self.about)
-    action_group.add_action(action_About)
-
-    uimanager = Gtk.UIManager()
-    uimanager.add_ui_from_file('interface/menubar.ui')
-    uimanager.insert_action_group(action_group)
-
-    return uimanager.get_widget("/MenuBar")
+def wtach_now(action, parameter, parent):
+    parent.start_watching(False)

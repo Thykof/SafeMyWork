@@ -3,7 +3,7 @@
 
 CONF_FILE = 'SMW_conf_file.ini'
 DEFAULT_CONFIG = {
-    'time_delta': 600,
+    'time_delta': 10,
     'archive_dir': 'safe_docs',
     'watched_dirs': [],
     'exclude_dirs': [],

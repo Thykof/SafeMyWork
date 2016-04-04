@@ -1,4 +1,7 @@
-<?xml version="1.0"? encoding="UTF-8"?>
+# -*- coding: utf-8 -*-
+#!/usr/bin/python3
+
+UI_INFO = """<?xml version="1.0"? encoding="UTF-8"?>
 <interface>
   <menu id="menubar">
     <submenu>
@@ -46,3 +49,4 @@
     </submenu>
   </menu>
 </interface>
+"""

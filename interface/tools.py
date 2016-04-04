@@ -1,25 +1,31 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/python3
 
+import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
-def about():
-    dialog = Gtk.AboutDialog()
-    dialog.set_program_name('SafeMyWork')
-    dialog.set_version('1.0')
-    dialog.set_website('https://github.com/Thykof/SafeMyWork')
-    dialog.set_authors(['Nathan Seva'])
-    dialog.set_comments('Utilitaire SafeMyWork')
-    dialog.set_license('SafeMyWork est sous la license GNU GPL(v3). \n\n https://github.com/Thykof/SafeMyWork/blob/master/LICENSE')
+def about(parent):
+    aboutdialog = Gtk.AboutDialog(transient_for=parent)
+    aboutdialog.set_program_name('SafeMyWork')
+    aboutdialog.set_version('1.0')
+    aboutdialog.set_website('https://github.com/Thykof/SafeMyWork')
+    aboutdialog.set_website_label("Github")
+    aboutdialog.set_authors(['Nathan Seva'])
+    aboutdialog.set_comments('Utilitaire SafeMyWork')
+    aboutdialog.set_license('SafeMyWork est sous la license GNU GPL(v3). \n\n https://github.com/Thykof/SafeMyWork/blob/master/LICENSE')
 
-    dialog.run()
-    dialog.destroy()
+    aboutdialog.connect("response", on_close_dialog)
+    aboutdialog.show()
+
+def on_close_dialog(action, parameter):
+    action.destroy()
 
 class MainGrid(Gtk.Grid):
     """docstring for Grid"""
-    def __init__(self, root):
+    def __init__(self, parent):
         super(MainGrid, self).__init__()
-        self.root = root
+        self.parent = parent
         self.set_column_spacing(5)
         self.set_row_spacing(5)
         self.initialize_grid()
@@ -28,20 +34,19 @@ class MainGrid(Gtk.Grid):
         self.text = Gtk.Label('En attente...')
         # Toolbar:
         button_show_saved = Gtk.Button.new_with_label('Fichiers sauvés')
-        button_show_saved.connect('clicked', self.root.show_saved)
+        button_show_saved.connect('clicked', self.parent.show_saved)
         button_check_now = Gtk.Button.new_with_label('Scanner maintenant')
-        button_check_now.connect('clicked', self.root.watch_now)
+        button_check_now.connect('clicked', self.on_check_now_clicked)
         # Watching:
         self.switch_start = Gtk.Switch()
         self.switch_start.connect('notify::active', self.on_switch_activated)
         self.switch_start.set_active(False)
         # Watched dirs:
         self.watched_list = Gtk.ComboBoxText.new_with_entry()
-        self.watched_list.connect('changed', self.on_changed_watched)
         button_add_watched = Gtk.Button.new_with_label('Ajouter')
-        button_add_watched.connect('clicked', self.root.add_watched_dir)
+        button_add_watched.connect('clicked', self.parent.add_watched_dir)
         button_del_watched = Gtk.Button.new_with_label('Supprimer')
-        button_del_watched.connect('clicked', self.root.del_watched_dir)
+        button_del_watched.connect('clicked', self.parent.del_watched_dir)
         self.spinner = Gtk.Spinner()
 
         # pack:
@@ -57,20 +62,11 @@ class MainGrid(Gtk.Grid):
         self.attach(button_add_watched, 0, 3, 1, 1)
         self.attach(button_del_watched, 1, 3, 1, 1)
 
-    def on_changed_ext(self, ext_list):
-        tree_iter = ext_list.get_active_iter()
-        if tree_iter != None:
-            model = ext_list.get_model()
-            print(model)
-        else:
-            entry = ext_list.get_child()
-            print("Entered: " + entry.get_text())
-
-    def on_changed_watched(self, watched_list):
-        pass
-
     def on_switch_activated(self, switch, active):
         if switch.get_active():
-            self.root.watching()
+            self.parent.start_watching(True)
         else:
-            self.root.cancel_watching()
+            self.parent.stop_watching()
+
+    def on_check_now_clicked(self, button):
+        self.parent.start_watching(False)

@@ -74,7 +74,7 @@ def get_config(conf_file=CONF_FILE):
     """
     if not path.exists(conf_file):
         save_config(conf_file=conf_file)
-        return None
+        return DEFAULT_CONFIG
     else:
         config = read_config(conf_file)
         watched_dirs = get_dir_from_argv()
