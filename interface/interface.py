@@ -22,21 +22,17 @@ elif SYSTEM == 'Windows':
 else:
     watcher.mod.tell('Import Error')
 
-class Interface(Gtk.Window):
-    def __init__(self, config):
-        Gtk.Window.__init__(self, title='SafeMyWork 1.0')
+class MyWindow(Gtk.ApplicationWindow):
+    def __init__(self, app, config):
+        Gtk.Window.__init__(self, title='SafeMyWork 1.0', application=app)
         self.set_position(Gtk.WindowPosition.CENTER)
         self.set_border_width(5)
-        self.connect('delete-event', self.quit_app)
 
         self.grid = MainGrid(self)
         self.add(self.grid)
         self.grid.switch_start.do_grab_focus(self.grid.switch_start)
 
-        menubar = create_menus(self)
-        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        box.pack_start(menubar, False, False, 0)
-        self.grid.add(box)
+        create_menus(self)
 
         self.config = config
         self.watcher = Watcher(self.config)
@@ -48,18 +44,6 @@ class Interface(Gtk.Window):
     def initialize_config(self):
         for watched_dir in self.config['watched_dirs']:
             self.grid.watched_list.append_text(watched_dir)
-
-    def run(self):
-        self.show_all()
-        Gtk.main()
-
-    def quit_app(self, *args):
-        self.grid.text.set_text('Fermeture')
-        self.save_config(self.config)
-        self.grid.switch_start.set_active(False)
-        self.stop_watching()
-        Gtk.main_quit()
-        #self.abort_watch()
 
     def save_config(self, config):
         watcher.mod.tell('Save config')
@@ -105,7 +89,7 @@ class Interface(Gtk.Window):
         elif SYSTEM == 'Windows':
             startfile(self.config['archive_dir'])
 
-    def settings(self, action):
+    def settings(self, action, parameter):
         dialog_settings = Settings(self)
         dialog_settings.run()
 
@@ -129,6 +113,3 @@ class Interface(Gtk.Window):
                 self.config['watched_dirs'].remove(directory)
                 self.grid.watched_list.remove(int(self.grid.watched_list.get_active()))
                 self.grid.text.set_text('Dossier supprimé')
-
-    def about(self, action):
-        about(self)
