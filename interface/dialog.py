@@ -108,6 +108,7 @@ class Settings(Gtk.Dialog):
     def create_box_archive_dir(self):
         # Archive directory:
         box_archive_dir = Gtk.Box(spacing=6)
+        box_files.pack_start(Gtk.Label('Dossier archive : '), False, False, 0)
         self.archive_entry = Gtk.Entry()
         self.archive_entry.set_text(self.parent.config['archive_dir'])
         archive_button = Gtk.Button.new_with_label('Changer')
