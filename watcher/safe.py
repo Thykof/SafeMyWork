@@ -72,6 +72,12 @@ class Safer(object):
 		return version
 
 	def start(self):
+		"""Save all folder under supervision.
+
+		It create the directories requires.
+		It don't save the files that don't match with the exclusion rules.
+
+		"""
 		self.logger.info(str(self.safe_dirs))
 		self.logger.info('start saving')
 		self.stop_ = False
@@ -85,7 +91,11 @@ class Safer(object):
 		self.logger.info('end of saving')
 
 	def get_to_save(self, directory):
-		"""Return a list of file to save from a the given delicate directory, using walk."""
+		"""Return a list of file to save from a the given delicate directory, using walk.
+
+		It make this list depending on exclusion rules.
+
+		"""
 		list_files = list()  # list of relatif path to each file
 		dir_to_make = list()  # lis of directory to make in the safe root directory
 		for dirpath, dirnames, filenames in walk(directory):  # walk() return a generator
@@ -113,7 +123,7 @@ class Safer(object):
 
 
 	def save_dirs(self):
-		"""Save files from all delicate directories.
+		"""Save all files from all delicate directories.
 
 		Do the same that self.start without any filter.
 

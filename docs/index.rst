@@ -34,6 +34,12 @@ A module for simple functions
   :members:
   :undoc-members:
 
-Need some data
-++++++++++++++
+A new way to save folders
++++++++++++++++++++++++++
+.. automodule:: watcher.safe
+  :members:
+  :undoc-members:
+
+Data
+++++
 The software need data to work. For example the default configurations.
