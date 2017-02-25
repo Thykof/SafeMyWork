@@ -67,6 +67,7 @@ class Safer(object):
 			dir_splited = directory_version.split('V--')
 			if len(dir_splited) == 2:
 				list_version.append(int(dir_splited[1]))
+
 		if list_version == []:
 			version = '1'
 		else:
@@ -130,7 +131,11 @@ class Safer(object):
 		Do the same that self.start without any filter.
 
 		"""
+		self.logger.info('Save all the entire folder.')
+		print(self.safe_dirs)
 		for dirname, safe_path in self.safe_dirs.items():
+			self.logger.info('Saving ' + dirname)
 			root_safe_path = path.split(safe_path)[0]
 			new_safe_path = path.join(root_safe_path, dirname + 'COPY')
-			copytree(dirname, safe_path)
+			copytree(dirname, new_safe_path)
+		self.logger.info('Done')
