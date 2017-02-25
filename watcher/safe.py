@@ -24,7 +24,7 @@ class Safer(object):
 		# Make destination directories
 		if not path.exists(self.destination):
 			mkdir(self.destination)
-		self.safe_dirs = self.get_destination(delicate_dirs)  
+		self.safe_dirs = self.get_destination(delicate_dirs)
 
 		# Logging
 		self.logger = logging.getLogger()
@@ -130,9 +130,11 @@ class Safer(object):
 		"""Save all files from all delicate directories.
 
 		Do the same that self.start without any filter.
+		The extension of the duplicated folder is COPY for the first time.
+		For other times, the extension is like get_destination give.
 
 		"""
-		if directories is None or directories == []:
+		if directories is None:
 			directories = self.delicate_dirs
 		self.logger.info('Save all the entire folder.')
 		for dirname, safe_path in self.safe_dirs.items():
@@ -140,5 +142,9 @@ class Safer(object):
 				self.logger.info('Saving ' + dirname)
 				root_safe_path = path.split(safe_path)[0]
 				new_safe_path = path.join(root_safe_path, dirname + 'COPY')
-				copytree(dirname, new_safe_path)
+				try:
+					copytree(dirname, new_safe_path)
+				except FileExistsError:
+					self.safe_dirs = self.get_destination(self.delicate_dirs)
+					copytree(dirname, self.safe_dirs[dirname])
 		self.logger.info('Done')
