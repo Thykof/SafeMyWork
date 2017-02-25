@@ -112,6 +112,7 @@ class Watcher(object):
         :rtype: ``list``
         """
         files_to_save = list()
+        # new files in files_to_save:
         if unsaved_files != saved_files:
             for unsaved_file in unsaved_files:
                 if unsaved_file not in saved_files:
@@ -147,6 +148,7 @@ class Watcher(object):
         for directory in dirs:
             # Don't create directory excluded:
             exclude_dir = True
+            # Same var name !? exclude_dir
             for exclude_dir in self.config['exclude_dirs']:
                 if exclude_dir in directory:
                     exclude_dir = False
