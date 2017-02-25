@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#!/usr/bin/python3
 
 """Monitoring configuration variables."""
 
@@ -53,11 +54,11 @@ def get_dir_from_argv(argv=None):
     if len(argv) == 1:
         return []
     else:
-        delicate_dirs = list()
+        watched_dirs = list()
         for directory in argv[1:]:
             if path.exists(directory):
-                delicate_dirs.append(directory)
-        return delicate_dirs
+                watched_dirs.append(directory)
+        return watched_dirs
 
 def get_config(conf_file=CONF_FILE):
     """Manage getting settings.
@@ -73,12 +74,9 @@ def get_config(conf_file=CONF_FILE):
     """
     if not path.exists(conf_file):
         save_config(conf_file=conf_file)
-        return None
+        return DEFAULT_CONFIG
     else:
         config = read_config(conf_file)
-        delicate_dirs = get_dir_from_argv()
-        config['delicate_dirs'].extend(delicate_dirs)
-        if config['delicate_dirs'] == []:
-            return None
-
+        watched_dirs = get_dir_from_argv()
+        config['watched_dirs'].extend(watched_dirs)
     return config

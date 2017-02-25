@@ -10,8 +10,8 @@ with open('LICENSE') as f:
 
 setup(
     name='SafeMyWork',
-    version='0.2',
-    description='Little app to save your work.',
+    version='1.0',
+    description='Autosave your work',
     long_description=readme,
     author='Thykof',
     author_email='nathan.seva@outlook.fr',
@@ -24,6 +24,7 @@ setup(
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3'
+        'Programming Language :: Python :: 3',
+        'Environment :: X11 Applications :: GTK'
     ],
 )

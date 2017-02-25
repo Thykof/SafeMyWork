@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
+#!/usr/bin/python3
 
-from smw_core import conf
+from watcher import conf
 
 class BaseTestConf(object):
     def setup_method(self, test_method):
         self.default_config = {
             'time_delta': 20,
             'archive_dir': 'safe_docs',
-            'delicate_dirs': ["a_delicate_dir/folderA"],
+            'watched_dirs': ["a_delicate_dir/folderA"],
             'exclude_dirs': ['a_delicate_dir/notthatfolder'],
             'exclude_files': ['a_delicate_dir/notthatfile.txt'],
             'exclude_ext': ['pdf', 'JSON']

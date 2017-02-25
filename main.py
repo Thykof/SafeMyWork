@@ -1,25 +1,45 @@
 # -*- coding: utf-8 -*-
+#!/usr/bin/python3
 
-import atexit
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, Gio
 import sys
 
-from smw_core import conf
-from smw_core import mod
-from smw_core.watcher import Watcher
+from watcher import conf
+from interface.interface import MyWindow
 
-def quit_(config):
-    mod.tell('Save config')
-    conf.save_config(config)
+myfile = open('stderr.log', 'a')
+sys.stderr = myfile
+
+class MyApplication(Gtk.Application):
+    def __init__(self):
+        Gtk.Application.__init__(self)
+
+    def do_activate(self):
+        self.win = MyWindow(self, conf.get_config())
+        self.win.show_all()
+
+    def do_startup(self):
+        Gtk.Application.do_startup(self)
+
+        quit_action = Gio.SimpleAction.new('quit', None)
+        quit_action.connect('activate', self.quit_callback)
+        self.add_action(quit_action)
+
+        builder = Gtk.Builder()
+        builder.add_from_file('interface/menubar.ui')
+
+        self.set_menubar(builder.get_object('menubar'))
+
+    def quit_callback(self, action, parameter):
+        self.win.grid.text.set_text('Fermeture')
+        conf.save_config(self.win.config)
+        self.win.grid.switch_start.set_active(False)
+        self.win.stop_watching()
+        sys.exit()
 
 if __name__ == '__main__':
-    myfile = open('stderr.log', 'a')
-    sys.stderr = myfile
-
-    config = conf.get_config()
-    if config is None:
-        mod.tell('No delicate directory')
-        mod.tell('Save config')
-        sys.exit()
-    atexit.register(quit_, config)
-    watcher = Watcher(config)
-    watcher.start()
+    app = MyApplication()
+    exit_status = app.run(sys.argv)
+    sys.exit(exit_status)

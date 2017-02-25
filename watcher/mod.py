@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#!/usr/bin/python3
 
 """Define some fonctions."""
 
@@ -15,7 +16,8 @@ def tell(message, target='output.log'):
     :type target: ``str``
     """
     try:
-        print(message)
+        #print(message)
+        pass  # -dev-
     except UnicodeEncodeError:
         message = message.encode('ascii', 'replace')
         message = message.decode('ascii', 'replace')
@@ -40,17 +42,17 @@ def combine_list(list1, list2):
             list3.append(value)
     return list3
 
-def create_archive_dir(archive_dir, delicate_dir):
+def create_archive_dir(archive_dir, watched_dir):
     """Create all directories use for archiving.
 
     :param archive_dir: the archive directory
     :type archive_dir: ``str``
-    :param delicate_dir: directories to watch
-    :type delicate_dir: ``list``
+    :param watched_dir: directories to watch
+    :type watched_dir: ``list``
     """
     if not path.exists(archive_dir):
         mkdir(archive_dir)
-    for directory in delicate_dir:
+    for directory in watched_dir:
         dir_to_create = path.join(archive_dir, path.basename(directory))
         if not path.exists(dir_to_create):
             mkdir(dir_to_create)

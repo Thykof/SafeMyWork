@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
+#!/usr/bin/python3
 
-from smw_core import watcher
 from os import path, mkdir
+
+from watcher import watcher
 
 class BaseTestWatcher(object):
     def setup_method(self, test_method):
         self.default_config = {
             'time_delta': 20,
             'archive_dir': 'safe_docs',
-            'delicate_dirs': ["a_delicate_dir/folderA"],
+            'watched_dirs': ["a_delicate_dir/folderA"],
             'exclude_dirs': ['a_delicate_dir/notthatfolder'],
             'exclude_files': ['a_delicate_dir/notthatfile.txt'],
             'exclude_ext': ['pdf', 'json']
