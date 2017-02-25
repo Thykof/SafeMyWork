@@ -106,7 +106,7 @@ class Safer(object):
 			pos = dirpath.find('/')  # attention: conpatibility on win!
 			dirname = dirpath[pos+1:]
 			# Exclude a path
-			if not dirname in self.exclude_dirpath:
+			if dirname not in self.exclude_dirpath:
 				dir_to_make.append(dirpath)
 				for filename in filenames:
 					# Find the extension
