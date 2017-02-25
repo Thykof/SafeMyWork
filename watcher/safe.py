@@ -19,6 +19,7 @@ class Safer(object):
 		""""delicate_dirs: list of different directories placed under supervision."""
 		super(Safer, self).__init__()
 		# Set destination directories
+		self.delicate_dirs = delicate_dirs
 		self.destination = destination
 		# Make destination directories
 		if not path.exists(self.destination):
@@ -125,17 +126,19 @@ class Safer(object):
 			copy2(filename, dst)
 
 
-	def save_dirs(self):
+	def save_dirs(self, directories=None):
 		"""Save all files from all delicate directories.
 
 		Do the same that self.start without any filter.
 
 		"""
+		if directories is None or directories == []:
+			directories = self.delicate_dirs
 		self.logger.info('Save all the entire folder.')
-		print(self.safe_dirs)
 		for dirname, safe_path in self.safe_dirs.items():
-			self.logger.info('Saving ' + dirname)
-			root_safe_path = path.split(safe_path)[0]
-			new_safe_path = path.join(root_safe_path, dirname + 'COPY')
-			copytree(dirname, new_safe_path)
+			if dirname in directories:
+				self.logger.info('Saving ' + dirname)
+				root_safe_path = path.split(safe_path)[0]
+				new_safe_path = path.join(root_safe_path, dirname + 'COPY')
+				copytree(dirname, new_safe_path)
 		self.logger.info('Done')
