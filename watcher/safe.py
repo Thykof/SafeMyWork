@@ -5,6 +5,11 @@ import logging
 from logging.handlers import RotatingFileHandler
 from os import path, listdir, mkdir, walk
 
+def path_without_root(path):
+	pos = path.find('/')  # attention: conpatibility on win!
+	path = path[pos+1:]
+	return path
+
 class Safer(object):
 	"""Manage the creation of the duplicate directory of the folder placed under supervision.
 
@@ -23,7 +28,7 @@ class Safer(object):
 		self.destination = destination
 		# Make destination directories
 		if not path.exists(self.destination):
-			mkdir(self.destination)
+			mkdir(self.destination)  # safe_docs
 		self.safe_dirs = self.get_destination(delicate_dirs)
 
 		# Logging
@@ -41,10 +46,10 @@ class Safer(object):
 		self.logger.addHandler(steam_handler)
 
 		# Config
-		self.exclude_filename = []
-		self.exclude_dirname = []  # All folder-name in this list are exclude
-		self.exclude_dirpath = []  # specific path to a folder to exclude; full path to a folder to exclude
-		self.exclude_ext = []  # '' mean a file without extension
+		self.exclude_filename = ['__init__.py']
+		self.exclude_dirname = ['yolo']  # All folder-name in this list are exclude
+		self.exclude_dirpath = ['_build/doctrees']  # specific path to a folder to exclude; full path to a folder to exclude
+		self.exclude_ext = ['']  # '' mean a file without extension
 		# TODO: get config from a file (cammand line), or give them in arg (interface)
 
 	def get_destination(self, delicate_dirs):
@@ -54,7 +59,7 @@ class Safer(object):
 			# Make safe directory for each delicate folder
 			root_destination = path.join(self.destination, dirname)  # e.g. delicate_dir/my_work
 			if not path.exists(root_destination):
-				mkdir(root_destination)
+				mkdir(root_destination)  # safe_docs/folder
 			# Get version
 			version = self.get_version(root_destination)
 			# Add the safe directory
@@ -87,12 +92,14 @@ class Safer(object):
 		self.stop_ = False
 		self.logger.info('saving')
 		for dirname, safe_path in self.safe_dirs.items():
-			mkdir(safe_path)
+			mkdir(safe_path)  # safe_docs/folder/folderV--n
 			to_save, dir_to_make = self.get_to_save(dirname)
 			for dirname in dir_to_make:
-				mkdir(path.join(safe_path, dirname))
+				dirname = path_without_root(dirname)
+				mkdir(path.join(safe_path, dirname))  # safe_docs/folder/folderV--n/folder
 			self.save_files(to_save, safe_path)
 		self.logger.info('end of saving')
+		# get new version ?
 
 	def get_to_save(self, directory):
 		"""Return a list of file to save from a the given delicate directory, using walk.
@@ -107,8 +114,7 @@ class Safer(object):
 			# dirpath = subdirs of directory
 			if path.basename(dirpath) in self.exclude_dirname:
 				break
-			pos = dirpath.find('/')  # attention: conpatibility on win!
-			dirname = dirpath[pos+1:]
+			dirname = path_without_root(dirpath)
 			# Exclude a path
 			if dirname not in self.exclude_dirpath:
 				dir_to_make.append(dirpath)
@@ -121,7 +127,8 @@ class Safer(object):
 
 	def save_files(self, to_save, safe_path):
 		for filename in to_save:
-			dst = path.join(safe_path, filename)
+			print(filename)
+			dst = path.join(safe_path, path_without_root(filename))
 			self.logger.info('coping: '+ dst)
 			copy2(filename, dst)
 
@@ -134,6 +141,7 @@ class Safer(object):
 		For other times, the extension is like get_destination give.
 
 		"""
+		# When in make folderV--n, we believe that it is filtered, but it is not
 		if directories is None:
 			directories = self.delicate_dirs
 		self.logger.info('Save all the entire folder.')
