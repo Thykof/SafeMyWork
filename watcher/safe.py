@@ -64,7 +64,9 @@ class Safer(object):
 		"""Return the current version of the given safe directory."""
 		list_version = list()
 		for directory_version in listdir(root_destination):  # e.g. safe_dir/my_wirkV--n
-			list_version.append(int(directory_version.split('V--')[1]))
+			dir_splited = directory_version.split('V--')
+			if len(dir_splited) == 2:
+				list_version.append(int(dir_splited[1]))
 		if list_version == []:
 			version = '1'
 		else:
