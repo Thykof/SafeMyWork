@@ -18,19 +18,11 @@ class Safer(object):
 	"""
 	# Destination folder: make in __init__
 	# Delicate folders in destination: make in get_destination, call in __init__
-	# Folder of version and delicate folder in version folder: make in start
+	# Folder of version and delicate folder in version folder: make in save
 
 	def __init__(self, delicate_dirs=list(), destination=str(), config=dict()):
 		""""delicate_dirs: list of different directories placed under supervision."""
 		super(Safer, self).__init__()
-		# Set destination directories
-		self.delicate_dirs = delicate_dirs
-		self.destination = destination
-		# Make destination directories
-		if not path.exists(self.destination):
-			mkdir(self.destination)  # safe_docs
-		self.safe_dirs = self.get_destination(delicate_dirs)
-
 		# Logging
 		self.logger = logging.getLogger()
 		self.logger.setLevel(logging.DEBUG)
@@ -45,32 +37,54 @@ class Safer(object):
 		steam_handler.setLevel(logging.DEBUG)
 		self.logger.addHandler(steam_handler)
 
+		# Set destination directories
+		self.delicate_dirs = delicate_dirs
+		self.destination = destination
+		# Make destination directories
+		if not path.exists(self.destination):
+			self.logger.info('mkdir dst: ' + self.destination)
+			mkdir(self.destination)  # e.g. safe_docs
+		self.safe_dirs = self.get_destination(delicate_dirs)
+
 		# Config
-		self.exclude_filename = ['__init__.py']
-		self.exclude_dirname = ['yolo']  # All folder-name in this list are exclude
-		self.exclude_dirpath = ['_build/doctrees']  # specific path to a folder to exclude; full path to a folder to exclude
-		self.exclude_ext = ['']  # '' mean a file without extension
+		self.exclude_filename = []
+		self.exclude_dirname = []  # All folder-name in this list are exclude
+		self.exclude_dirpath = []  # Specific path to a folder to exclude
+		self.exclude_ext = []
 		# TODO: get config from a file (cammand line), or give them in arg (interface)
 
 	def get_destination(self, delicate_dirs):
-		"""Create a dict with folder under supervision as key and the path to their safe destination with their version."""
+		"""Create a dict with folder under supervision as key and the path to their safe destination with their version.
+
+		Two path for each folder: copy with filter and without.
+
+		"""
 		safe_dirs = dict()
 		for dirname in delicate_dirs:
 			# Make safe directory for each delicate folder
 			root_destination = path.join(self.destination, dirname)  # e.g. delicate_dir/my_work
 			if not path.exists(root_destination):
-				mkdir(root_destination)  # safe_docs/folder
-			# Get version
-			version = self.get_version(root_destination)
-			# Add the safe directory
-			safe_dirs[dirname] = path.join(self.destination, dirname, dirname + 'V--' + version)
+				self.logger.info('mkdir rt dst: ' + root_destination)
+				mkdir(root_destination)  # e.g. safe_docs/my_work
+			# Get versions
+			version_copy = self.get_version(root_destination, 'COPY')
+			version_filter = self.get_version(root_destination)
+			# Add the safe directories
+			dst_copy = path.join(self.destination, dirname, dirname + 'COPY-' + version_copy)
+			dst_filter = path.join(self.destination, dirname, dirname + 'FILTER-' + version_filter)
+			destination = {'COPY': dst_copy, 'FILTER': dst_filter}
+			safe_dirs[dirname] = destination
 		return safe_dirs
 
-	def get_version(self, root_destination):
-		"""Return the current version of the given safe directory."""
+	def get_version(self, root_destination, _type='FILTER'):
+		"""Return the current version of the given safe directory.
+
+		_type is 'FILTER' or 'COPY'
+
+		"""
 		list_version = list()
-		for directory_version in listdir(root_destination):  # e.g. safe_dir/my_wirkV--n
-			dir_splited = directory_version.split('V--')
+		for directory_version in listdir(root_destination):
+			dir_splited = directory_version.split(_type + '-')
 			if len(dir_splited) == 2:
 				list_version.append(int(dir_splited[1]))
 
@@ -80,26 +94,31 @@ class Safer(object):
 			version = str(max(list_version) + 1)  # Take the last version + 1
 		return version
 
-	def start(self):
+	def save(self, _filter=False):
 		"""Save all folder under supervision.
 
 		It create the directories requires.
-		It don't save the files that don't match with the exclusion rules.
+		If _filter is False (default), it don't save the files that don't match with the exclusion rules.
 
 		"""
-		self.logger.info(str(self.safe_dirs))
-		self.logger.info('start saving')
-		self.stop_ = False
-		self.logger.info('saving')
-		for dirname, safe_path in self.safe_dirs.items():
-			mkdir(safe_path)  # safe_docs/folder/folderV--n
-			to_save, dir_to_make = self.get_to_save(dirname)
-			for dirname in dir_to_make:
-				dirname = path_without_root(dirname)
-				mkdir(path.join(safe_path, dirname))  # safe_docs/folder/folderV--n/folder
-			self.save_files(to_save, safe_path)
-		self.logger.info('end of saving')
-		# get new version ?
+		self.logger.info('Start saving')
+		if _filter:
+			for dirname, safe_path in self.safe_dirs.items():
+				self.logger.info('mkdir sf pt: ' + safe_path['FILTER'])
+				mkdir(safe_path['FILTER'])  # e.g. safe_docs/my_work/my_workV--n
+				to_save, dir_to_make = self.get_to_save(dirname)
+
+				for dirname in dir_to_make:
+					dirname = path_without_root(dirname)
+					self.logger.info('mkdir sf pt drnm: ' + path.join(safe_path['FILTER'], dirname))
+					mkdir(path.join(safe_path['FILTER'], dirname))  # e.g. safe_docs/my_work/my_workV--n/folder
+				self.save_files(to_save, safe_path)
+		else:
+			self.logger.info('Save all the entire folder.')
+			for dirname, safe_path in self.safe_dirs.items():
+				self.logger.info('Saving ' + dirname)
+				copytree(dirname, safe_path['COPY'])
+		self.logger.info('Done')
 
 	def get_to_save(self, directory):
 		"""Return a list of file to save from a the given delicate directory, using walk.
@@ -107,17 +126,19 @@ class Safer(object):
 		It make this list depending on exclusion rules.
 
 		"""
-		list_files = list()  # list of relatif path to each file
-		dir_to_make = list()  # lis of directory to make in the safe root directory
+		list_files = list()  # List of relatif path to each file
+		dir_to_make = list()  # List of directory to make in the safe root directory
 		for dirpath, dirnames, filenames in walk(directory):  # walk() return a generator
 			# dirpath = directory, for the first time
 			# dirpath = subdirs of directory
+			# Exclude a directory name
 			if path.basename(dirpath) in self.exclude_dirname:
 				break
 			dirname = path_without_root(dirpath)
 			# Exclude a path
 			if dirname not in self.exclude_dirpath:
-				dir_to_make.append(dirpath)
+				if path.basename(dirpath) != directory:
+					dir_to_make.append(dirpath)
 				for filename in filenames:
 					# Find the extension
 					ext = path.splitext(filename)[1][1:]
@@ -127,32 +148,6 @@ class Safer(object):
 
 	def save_files(self, to_save, safe_path):
 		for filename in to_save:
-			print(filename)
-			dst = path.join(safe_path, path_without_root(filename))
+			dst = path.join(safe_path['FILTER'], path_without_root(filename))
 			self.logger.info('coping: '+ dst)
 			copy2(filename, dst)
-
-
-	def save_dirs(self, directories=None):
-		"""Save all files from all delicate directories.
-
-		Do the same that self.start without any filter.
-		The extension of the duplicated folder is COPY for the first time.
-		For other times, the extension is like get_destination give.
-
-		"""
-		# When in make folderV--n, we believe that it is filtered, but it is not
-		if directories is None:
-			directories = self.delicate_dirs
-		self.logger.info('Save all the entire folder.')
-		for dirname, safe_path in self.safe_dirs.items():
-			if dirname in directories:
-				self.logger.info('Saving ' + dirname)
-				root_safe_path = path.split(safe_path)[0]
-				new_safe_path = path.join(root_safe_path, dirname + 'COPY')
-				try:
-					copytree(dirname, new_safe_path)
-				except FileExistsError:
-					self.safe_dirs = self.get_destination(self.delicate_dirs)
-					copytree(dirname, self.safe_dirs[dirname])
-		self.logger.info('Done')
