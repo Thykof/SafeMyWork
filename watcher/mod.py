@@ -42,6 +42,11 @@ def combine_list(list1, list2):
             list3.append(value)
     return list3
 
+def path_without_root(path):
+    pos = path.find('/')  # attention: conpatibility on win!
+    path = path[pos+1:]
+    return path
+
 def create_archive_dir(archive_dir, watched_dir):
     """Create all directories use for archiving.
 
@@ -56,3 +61,11 @@ def create_archive_dir(archive_dir, watched_dir):
         dir_to_create = path.join(archive_dir, path.basename(directory))
         if not path.exists(dir_to_create):
             mkdir(dir_to_create)
+
+def missing_item(list1, list2):
+    """Return the list of directory in list1 but not in list2."""
+    result = list()
+    for item in list1:
+        if item not in list2:
+            result.append(item)
+    return result

@@ -42,5 +42,5 @@ if __name__ == '__main__':
 	#app = MyApplication()
 	#exit_status = app.run(sys.argv)
 	#sys.exit(exit_status)
-	safer = safe.Safer(['docs', 'interface'], 'safe_docs')
-	safer.save()
+	safer = safe.Safer(['interface'], 'safe_docs')
+	safer.update()
