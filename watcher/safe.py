@@ -3,7 +3,7 @@
 from shutil import copytree, copy2, rmtree
 import logging
 from logging.handlers import RotatingFileHandler
-from os import path, listdir, mkdir, walk, remove
+from os import path, listdir, mkdir, walk, remove, stat
 
 
 from .mod import combine_list, path_without_root, missing_item
@@ -41,15 +41,15 @@ class Safer(object):
 		self.destination = destination
 		# Make destination directories
 		if not path.exists(self.destination):
-			self.logger.info('mkdir dst: ' + self.destination)
+			self.logger.info('Make directory: ' + self.destination)
 			mkdir(self.destination)  # e.g. safe_docs
 		self.safe_dirs = self.get_destinations(delicate_dirs)
 
 		# Config
-		self.exclude_filename = []
-		self.exclude_dirname = []  # All folder-name in this list are exclude
-		self.exclude_dirpath = []  # Specific path to a folder to exclude
-		self.exclude_ext = []
+		self.exclude_filename = ['__init__.py']
+		self.exclude_dirname = ['_static']  # All folder-name in this list are exclude
+		self.exclude_dirpath = ['_build/doctrees', '__pycache__/other/tol']  # Specific path to a folder to exclude
+		self.exclude_ext = ['ui']
 		# TODO: get config from a file (cammand line), or give them in arg (interface)
 
 	def get_destinations(self, delicate_dirs):
@@ -63,7 +63,7 @@ class Safer(object):
 			# Make safe directory for each delicate folder
 			root_destination = path.join(self.destination, dirname)  # e.g. delicate_dir/my_work
 			if not path.exists(root_destination):
-				self.logger.info('mkdir rt dst: ' + root_destination)
+				self.logger.info('Make directory: ' + root_destination)
 				mkdir(root_destination)  # e.g. safe_docs/my_work
 			# Get versions
 			version_copy = self.get_version(root_destination, 'COPY')
@@ -94,7 +94,7 @@ class Safer(object):
 			version = str(max(list_version) + 1)  # Take the last version + 1
 		return version
 
-	def save(self, _filter=False):
+	def save(self, _filter=True):
 		"""Save all folder under supervision.
 
 		It create the directories requires.
@@ -104,13 +104,13 @@ class Safer(object):
 		if _filter:
 			self.logger.info('Start saving with filters')
 			for dirname, safe_path in self.safe_dirs.items():
-				self.logger.info('mkdir sf pt: ' + safe_path['FILTER'])
+				self.logger.info('Make directory: ' + safe_path['FILTER'])
 				mkdir(safe_path['FILTER'])  # e.g. safe_docs/my_work/my_workV--n
 				to_save, dirs_to_make = self.get_to_save(dirname)
 
 				for dirname in dirs_to_make:
 					dirname = path_without_root(dirname)
-					self.logger.info('mkdir sf pt drnm: ' + path.join(safe_path['FILTER'], dirname))
+					self.logger.info('Make directory: ' + path.join(safe_path['FILTER'], dirname))
 					mkdir(path.join(safe_path['FILTER'], dirname))  # e.g. safe_docs/my_work/my_workV--n/folder
 				self.save_files(to_save, safe_path['FILTER'])
 		else:
@@ -168,7 +168,7 @@ class Safer(object):
 		for dirname, safe_path in self.safe_dirs.items():
 			safe_path_last = safe_path['LAST']
 			if not path.exists(safe_path_last):
-				self.logger.info('mkdir sf pt: ' + safe_path_last)
+				self.logger.info('Make directory: ' + safe_path_last)
 				mkdir(safe_path_last)  # e.g. safe_docs/my_work/my_work
 
 			to_save, dirs_to_save = self.get_to_save(dirname)  # List delicate files
@@ -179,7 +179,7 @@ class Safer(object):
 			dirs_to_make = missing_item(dirs_to_save, dirs_maked)
 			for dirname in dirs_to_make:
 				dirname = path_without_root(dirname)
-				self.logger.info('mkdir sf pt drnm: ' + path.join(safe_path_last, dirname))
+				self.logger.info('Make directory: ' + path.join(safe_path_last, dirname))
 				mkdir(path.join(safe_path_last, dirname))  # e.g. safe_docs/my_work/my_workV--n/folder
 
 			# Delete old folders
@@ -188,7 +188,7 @@ class Safer(object):
 			dirs_to_del = missing_item(dirs_maked, dirs_to_save)
 			for dirname in dirs_to_del:
 				dirname = path_without_root(dirname)
-				self.logger.info('rm tree: ' + path.join(safe_path_last, dirname))
+				self.logger.info('Remove tree: ' + path.join(safe_path_last, dirname))
 				rmtree(path.join(safe_path_last, dirname))
 
 			# Copy new files
@@ -197,30 +197,34 @@ class Safer(object):
 
 			# Update existing files in safe path
 			to_update = combine_list(to_save, saved)
-			for filename in to_update:
-				self.update_file(filename, safe_path_last)
+			self.update_files(to_update, safe_path_last)
 
 			# Remove old files
 			to_del = missing_item(saved, to_save)
-			all_dirs_to_del = ' ; '.join(dirs_to_del)
-			for filename in to_del:
-				if path.basename(path.split(filename)[0]) not in all_dirs_to_del:
-					target = path.join(safe_path_last, path_without_root(filename))
-					self.logger.info('Removing: ' + target)
-					remove(target)
+			self.remove_files(to_del, dirs_to_del, safe_path_last)
 
+		self.logger.info('Done')
 
 	def save_files(self, to_save, safe_path):
 		"""Copy the files in to_save, in the safe_path."""
 		for filename in to_save:
 			dst = path.join(safe_path, path_without_root(filename))
-			self.logger.info('coping: '+ dst)
+			self.logger.info('Copy: '+ dst)
 			copy2(filename, dst)
 
-	def update_file(self, file_path, safe_path):
-		dst = path.join(safe_path, path_without_root(file_path))
-		self.logger.info('updating file: '+ dst)
-		with open(file_path, 'rb') as myfile:
-			content = myfile.read()
-		with open(dst, 'wb') as myfile:
-			myfile.write(content)
+	def update_files(self, to_update, safe_path):
+		for file_path in to_update:
+			dst = path.join(safe_path, path_without_root(file_path))
+			self.logger.info('Update: '+ dst)
+			with open(file_path, 'rb') as myfile:
+				content = myfile.read()
+			with open(dst, 'wb') as myfile:
+				myfile.write(content)
+
+	def remove_files(self, to_del, dirs_to_del, safe_path_last):
+		all_dirs_to_del = ' ; '.join(dirs_to_del)
+		for filename in to_del:
+			if path.basename(path.split(filename)[0]) not in all_dirs_to_del:
+				target = path.join(safe_path_last, path_without_root(filename))
+				self.logger.info('Remove: ' + target)
+				remove(target)
