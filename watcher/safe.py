@@ -14,13 +14,19 @@ class Safer(object):
 
 	Filename, folder, path to folder and extension can be exclude.
 
+	Usage:
+	safer.save()  # Copy with filters rules
+	safer.save(_filter=False)  # Copy the entire directories
+	safer.update()  # Make a copy and update it
+
 	"""
 	# Destination folder: make in __init__
 	# Delicate folders in destination: make in get_destinations, call in __init__
 	# Folder of version and delicate folder in version folder: make in save
 
 	def __init__(self, delicate_dirs=list(), destination=str(), config=dict()):
-		""""delicate_dirs: list of different directories placed under supervision."""
+		"""Manage logging, make destination directory, manage destinations, manage config"""
+		# delicate_dirs: list of different directories placed under supervision
 		super(Safer, self).__init__()
 		# Logging
 		self.logger = logging.getLogger()
@@ -55,7 +61,7 @@ class Safer(object):
 	def get_destinations(self, delicate_dirs):
 		"""Create a dict with folder under supervision as key and the path to their safe destination with their version.
 
-		Two path for each folder: copy with filter and without.
+		Three path for each folder: update, copy with filter and without.
 
 		"""
 		safe_dirs = dict()
@@ -79,7 +85,7 @@ class Safer(object):
 	def get_version(self, root_destination, _type='FILTER'):
 		"""Return the current version of the given safe directory.
 
-		_type is 'FILTER' or 'COPY'
+		_type is 'FILTER' (default) or 'COPY'
 
 		"""
 		list_version = list()
@@ -97,6 +103,7 @@ class Safer(object):
 	def save(self, _filter=True):
 		"""Save all folder under supervision.
 
+		It make a new version of safe directory
 		It create the directories requires.
 		If _filter is False (default), it don't save the files that don't match with the exclusion rules.
 
@@ -119,6 +126,7 @@ class Safer(object):
 				self.logger.info('Saving ' + dirname)
 				copytree(dirname, safe_path['COPY'])
 		self.logger.info('Done')
+		self.safe_dirs = self.get_destinations(self.delicate_dirs)
 
 	def get_to_save(self, directory):
 		"""Return a list of file to save from a the given delicate directory, using walk.
@@ -144,6 +152,7 @@ class Safer(object):
 					ext = path.splitext(filename)[1][1:]
 					if filename not in self.exclude_filename and ext not in self.exclude_ext:
 						list_files.append(path.join(dirpath, filename))
+		self.safe_dirs = self.get_destinations(self.delicate_dirs)
 		return list_files, dirs_to_make
 
 	def get_saved(self, directory):
@@ -164,6 +173,13 @@ class Safer(object):
 		return saved, dirs_maked
 
 	def update(self):
+		"""Update the safe directory.
+
+		It create the directories requires and consider filtration rules.
+		Copy the new files, remove the old ones.
+		Remove directories trees is necessary.
+
+		"""
 		self.logger.info('Start updating')
 		for dirname, safe_path in self.safe_dirs.items():
 			safe_path_last = safe_path['LAST']
@@ -206,13 +222,14 @@ class Safer(object):
 		self.logger.info('Done')
 
 	def save_files(self, to_save, safe_path):
-		"""Copy the files in to_save, in the safe_path."""
+		"""Copy the files in to_save in the safe_path."""
 		for filename in to_save:
 			dst = path.join(safe_path, path_without_root(filename))
 			self.logger.info('Copy: '+ dst)
 			copy2(filename, dst)
 
 	def update_files(self, to_update, safe_path):
+		"""Update the files in to_update."""
 		for file_path in to_update:
 			dst = path.join(safe_path, path_without_root(file_path))
 			if self.compare_file(file_path, dst):
@@ -223,6 +240,7 @@ class Safer(object):
 					myfile.write(content)
 
 	def remove_files(self, to_del, dirs_to_del, safe_path_last):
+		"""Remove the files in to_del."""
 		all_dirs_to_del = ' ; '.join(dirs_to_del)
 		for filename in to_del:
 			if path.basename(path.split(filename)[0]) not in all_dirs_to_del:
@@ -231,9 +249,7 @@ class Safer(object):
 				remove(target)
 
 	def compare_file(self, file1, file2):
+		"""Return True if file1 is most recent one."""
 		stat_file1 = stat(file1)
 		stat_file2 = stat(file2)
 		return stat_file1.st_mtime > stat_file2.st_mtime
-
-
-"""What append when user modify folders and files in safe directory ?"""
