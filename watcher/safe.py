@@ -215,11 +215,12 @@ class Safer(object):
 	def update_files(self, to_update, safe_path):
 		for file_path in to_update:
 			dst = path.join(safe_path, path_without_root(file_path))
-			self.logger.info('Update: '+ dst)
-			with open(file_path, 'rb') as myfile:
-				content = myfile.read()
-			with open(dst, 'wb') as myfile:
-				myfile.write(content)
+			if self.compare_file(file_path, dst):
+				self.logger.info('Update: '+ dst)
+				with open(file_path, 'rb') as myfile:
+					content = myfile.read()
+				with open(dst, 'wb') as myfile:
+					myfile.write(content)
 
 	def remove_files(self, to_del, dirs_to_del, safe_path_last):
 		all_dirs_to_del = ' ; '.join(dirs_to_del)
@@ -228,3 +229,11 @@ class Safer(object):
 				target = path.join(safe_path_last, path_without_root(filename))
 				self.logger.info('Remove: ' + target)
 				remove(target)
+
+	def compare_file(self, file1, file2):
+		stat_file1 = stat(file1)
+		stat_file2 = stat(file2)
+		return stat_file1.st_mtime > stat_file2.st_mtime
+
+
+"""What append when user modify folders and files in safe directory ?"""
