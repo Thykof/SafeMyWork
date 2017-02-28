@@ -17,6 +17,7 @@ class MyApplication(Gtk.Application):
 
 	def do_activate(self):
 		self.win = MyWindow(self)
+		self.win.connect('delete-event', self.quit_callback)
 		self.win.show_all()
 
 	def do_startup(self):
@@ -32,9 +33,9 @@ class MyApplication(Gtk.Application):
 		self.set_menubar(builder.get_object('menubar'))
 
 	def quit_callback(self, action, parameter):
-		self.win.grid.text.set_text('Fermeture')
+		self.win.text.set_text('Fermeture')
 		self.win.safer.save_config()
-		self.win.grid.switch_start.set_active(False)
+		self.win.switch_start.set_active(False)
 		self.win.stop_watching()
 		sys.exit()
 

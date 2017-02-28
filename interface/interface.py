@@ -28,7 +28,7 @@ class MyWindow(Gtk.ApplicationWindow):
 		self.set_border_width(5)
 
 		self.safer = Safer()
-		self.time_delta = .5
+		self.time_delta = 0.5
 		self.timer = None
 		self.thread = None
 
@@ -41,12 +41,12 @@ class MyWindow(Gtk.ApplicationWindow):
 		self.grid.attach(button_show_saved, 0, 0, 1, 1)
 
 		button_check_now = Gtk.Button.new_with_label('Scanner maintenant')
-		button_check_now.connect('clicked', lambda arg: self.start_watching(False))
+		button_check_now.connect('clicked', self.scan_now)
 		self.grid.attach(button_check_now, 1, 0 , 1, 1)
 
 		self.text = Gtk.Label('En attente...')
 		self.switch_start = Gtk.Switch()
-		self.switch_start.connect('notify::active', self.on_switch_activated)
+		self.switch_start.connect('notify::active', self.on_switch_activate)
 		self.switch_start.set_active(False)
 		self.switch_start.do_grab_focus(self.switch_start)
 		self.spinner = Gtk.Spinner()
@@ -77,15 +77,15 @@ class MyWindow(Gtk.ApplicationWindow):
 		self.add_action(settings_action)
 
 		start_watching_action = Gio.SimpleAction.new('start_watching')
-		start_watching_action.connect('activate', self.start_watching, False)
+		start_watching_action.connect('activate', lambda *arg: self.switch_start.set_active(True))
 		self.add_action(start_watching_action)
 
 		stop_watching_action = Gio.SimpleAction.new('stop_watching')
-		stop_watching_action.connect('activate', self.stop_watching)
+		stop_watching_action.connect('activate', lambda *arg: self.switch_start.set_active(False))
 		self.add_action(stop_watching_action)
 
 		watch_now_action = Gio.SimpleAction.new('watch_now')
-		watch_now_action.connect('activate', self.start_watching, False)
+		watch_now_action.connect('activate', self.scan_now)
 		self.add_action(watch_now_action)
 
 		about_action = Gio.SimpleAction.new('about')
@@ -96,55 +96,38 @@ class MyWindow(Gtk.ApplicationWindow):
 		for watched_dir in self.safer.config['delicate_dirs']:
 			self.watched_list.append_text(watched_dir)
 
-	def on_switch_activated(self, switch, active):
-		print(active)
+	def on_switch_activate(self, switch, active):
 		if switch.get_active():
-			self.start_watching(True)
+			self.start_scan()
 		else:
 			self.stop_watching()
 
-	def save_config(self):
-		self.safer.save_config()
+	def scan_now(self, *args):
+		can = True
+		for thread in threading.enumerate():
+			if thread.name == 'scan' and thread.is_alive():
+					can = False
+		if can:  # No thread are already saving files
+			self.thread = threading.Thread(target=self.scan, name='scan')
+			self.thread.start()
 
-	def watch(self, loop):
-		"""Launch watch"""
+	def scan(self):
 		self.spinner.start()
 		self.safer.update()
 		self.spinner.stop()
-		if loop:
-			self.timer = threading.Timer(self.time_delta*60, self.start_watching, args=(loop,))
-			self.timer.start()
 
-	def start_watching(self, loop, *args):
-		"""Start watching : watch + timer"""
-		can = True
-		if loop:
-			can = self.switch_start.get_active()
-
-		for thread in threading.enumerate():
-			if thread.name == 'watcher_loop' or thread.name == 'watcher_alone':
-				if thread.is_alive():
-					can = False
-		if can:
-			if not self.switch_start.get_active():
-				self.switch_start.set_active(True)
-			self.thread = threading.Thread(target=self.watch, name='watcher_loop', args=(loop,))
-			self.thread.start()
-			if loop:
-				self.text.set_text('Surveillance active')
+	def start_scan(self, *args):
+		self.text.set_text('Surveillance active')
+		self.scan_now()
+		self.timer = threading.Timer(self.time_delta*10, self.start_scan)
+		self.timer.start()
 
 	def stop_watching(self, *args):
 		"""Cancel timer"""
-		if self.switch_start.get_active():
-				self.switch_start.set_active(False)
-		if self.timer is not None:
+		if self.timer.is_alive():
 			self.timer.cancel()
-			self.text.set_text('En attente...')
-
-	def abort_watch(self):
-		"""Abort current watch"""
-		if self.timer is not None:
-			self.timer.cancel()
+			self.timer.join()
+		self.text.set_text('En attente...')
 
 	def show_saved(self, button):
 		if SYSTEM == 'Linux':
