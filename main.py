@@ -36,10 +36,8 @@ class MyApplication(Gtk.Application):
 		self.win.text.set_text('Fermeture')
 		self.win.safer.save_config()
 		self.win.switch_start.set_active(False)
-		self.win.stop_watching()
 		sys.exit()
 
 if __name__ == '__main__':
 	app = MyApplication()
-	exit_status = app.run(sys.argv)
-	sys.exit(exit_status)
+	app.run()
