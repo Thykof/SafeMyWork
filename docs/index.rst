@@ -12,34 +12,33 @@ Welcome to SafeMyWork's documentation!
 
 How it work
 ===========
+SafeMyWork look for your modified files and copy them to another directory.
 
 .. toctree::
    :maxdepth: 2
 
-Main body
-+++++++++
-.. automodule:: watcher.watcher
-  :members:
+Launch the app
+++++++++++++++
+.. automodule:: main
   :undoc-members:
 
-Managing configurations
-+++++++++++++++++++++++
-.. automodule:: watcher.conf
+Safer: save files
++++++++++++++++++
+.. autoclass:: watcher.safe.Safer
   :members:
   :undoc-members:
 
 A module for simple functions
 +++++++++++++++++++++++++++++
-.. automodule:: watcher.mod
+.. automodule:: watcher.helpers
   :members:
-  :undoc-members:
 
-A new way to save folders
-+++++++++++++++++++++++++
-.. automodule:: watcher.safe
+Interface
++++++++++
+.. autoclass:: interface.interface.MyWindow
   :members:
-  :undoc-members:
 
-Data
-++++
-The software need data to work. For example the default configurations.
+Dialog
+------
+.. automodule:: interface.dialog
+  :members:

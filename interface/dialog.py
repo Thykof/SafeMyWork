@@ -6,12 +6,23 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
 def del_dir_dialog(parent, directory):
+	"""A dialog to confim the removing of a directory from the list."""
 	dialog = Gtk.MessageDialog(parent, 0, Gtk.MessageType.QUESTION,
 			Gtk.ButtonsType.YES_NO, "Ne plus surveiller " + directory + " ?")
 	response = dialog.run()
 	return response == Gtk.ResponseType.YES, dialog
 
 class Settings_dial(Gtk.Dialog):
+	"""Setting dialog
+
+	Can change:
+		- the time between two scan
+		- the extentions to avoid
+		- the filenames to avoid
+		- the directories to avoid
+		- TODO: the paths to avoid 
+
+	"""
 	def __init__(self, parent):
 		Gtk.Dialog.__init__(self, 'Préférences', parent, 0)
 		self.parent = parent
@@ -94,6 +105,7 @@ class Settings_dial(Gtk.Dialog):
 		self.show_all()
 
 	def close(self, *args):
+		"""Save the changes and close."""
 		# Set new timedelta
 		timedelta = int(self.spinbutton.get_value())
 		self.parent.time_delta = timedelta
@@ -105,6 +117,7 @@ class Settings_dial(Gtk.Dialog):
 		self.destroy()
 
 	def add(self, elt, combo_list):
+		"""Add the `elt` in the `combo_list`."""
 		tree_iter = combo_list.get_active_iter()
 		if tree_iter is None:
 			new = combo_list.get_child().get_text()
@@ -113,6 +126,7 @@ class Settings_dial(Gtk.Dialog):
 				self.parent.safer.config[elt].append(new)
 
 	def delete(self, elt, combo_list):
+		"""Delete the `elt` in the `combo_list`."""
 		tree_iter = combo_list.get_active_iter()
 		if tree_iter is not None:
 			model = combo_list.get_model()

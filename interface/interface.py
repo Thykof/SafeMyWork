@@ -20,6 +20,7 @@ else:
 	watcher.mod.tell('Import Error')
 
 class MyWindow(Gtk.ApplicationWindow):
+	"""Application."""
 	def __init__(self, app):
 		Gtk.Window.__init__(self, title='SafeMyWork 1.0', application=app)
 		self.set_position(Gtk.WindowPosition.CENTER)
@@ -30,6 +31,7 @@ class MyWindow(Gtk.ApplicationWindow):
 		self.timer = None
 		self.thread = None
 
+		# Main grid
 		self.grid = Gtk.Grid()
 		self.grid.set_column_spacing(5)
 		self.grid.set_row_spacing(5)
@@ -95,12 +97,14 @@ class MyWindow(Gtk.ApplicationWindow):
 			self.watched_list.append_text(watched_dir)
 
 	def on_switch_activate(self, switch, active):
+		"""This start or stop perpetual scan."""
 		if switch.get_active():
 			self.start_scan()
 		else:
 			self.stop_watching()
 
 	def scan_now(self, *args):
+		"""Make thread, that scan and copy files, if no one is already started."""
 		can = True
 		for thread in threading.enumerate():
 			if thread.name == 'scan' and thread.is_alive():
@@ -110,34 +114,39 @@ class MyWindow(Gtk.ApplicationWindow):
 			self.thread.start()
 
 	def scan(self):
+		"""Call by `scan_now`, run `Safer.update`."""
 		self.spinner.start()
 		self.safer.update()
 		self.spinner.stop()
 
 	def start_scan(self, *args):
+		"""Run `scan_now`, start a timer thread to itself for perpetual scan."""
 		self.text.set_text('Surveillance active')
 		self.scan_now()
 		self.timer = threading.Timer(self.time_delta*10, self.start_scan)
 		self.timer.start()
 
 	def stop_watching(self, *args):
-		"""Cancel timer"""
+		"""Cancel timer thread."""
 		if self.timer.is_alive():
 			self.timer.cancel()
 			self.timer.join()
 		self.text.set_text('En attente...')
 
 	def show_saved(self, button):
+		"""Open in nautilus or file explorer, in the safe directory."""
 		if SYSTEM == 'Linux':
 			Popen(['xdg-open', self.safer.config['safe_dir']])
 		elif SYSTEM == 'Windows':
 			startfile(self.safer.config['safe_dir'])
 
 	def settings(self, action, parameter):
+		"""Open the setting dialog."""
 		dialog_settings = Settings_dial(self)
 		dialog_settings.run()
 
 	def add_watched_dir(self, button):
+		"""Add a dirctory to scan."""
 		tree_iter = self.watched_list.get_active_iter()
 		if tree_iter is None:
 			new_dir = self.watched_list.get_child().get_text()
@@ -147,6 +156,7 @@ class MyWindow(Gtk.ApplicationWindow):
 				self.text.set_text('Dossier ajouté')
 
 	def del_watched_dir(self, button):
+		"""Remove a directory to scan."""
 		tree_iter = self.watched_list.get_active_iter()
 		if tree_iter is not None:
 			model = self.watched_list.get_model()
@@ -159,6 +169,7 @@ class MyWindow(Gtk.ApplicationWindow):
 				self.text.set_text('Dossier supprimé')
 
 	def about(self, action):
+		"""Open the about dialog."""
 		about_dialog = Gtk.AboutDialog(transient_for=self)
 		about_dialog.set_program_name('SafeMyWork')
 		about_dialog.set_version('1.0')

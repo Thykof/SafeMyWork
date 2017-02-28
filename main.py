@@ -31,6 +31,7 @@ class MyApplication(Gtk.Application):
 		self.set_menubar(builder.get_object('menubar'))
 
 	def quit_callback(self, action, parameter):
+		"""Save config, stop scan and quit."""
 		self.win.text.set_text('Fermeture')
 		self.win.safer.save_config()
 		self.win.switch_start.set_active(False)

@@ -7,7 +7,7 @@ from os import path, listdir, mkdir, walk, remove, stat, chdir
 from yaml import load, dump
 
 
-from .mod import combine_list, path_without_root, missing_item
+from .helpers import combine_list, path_without_root, missing_item
 
 """TODO: file log in safe_doc/folder."""
 
@@ -248,7 +248,7 @@ class Safer(object):
 		self.logger.info('Done')
 
 	def get_to_save(self, directory):
-		"""Return a list of file to save from a the given delicate directory, using walk.
+		"""Return a list of file to save from a the given delicate directory, using `os.walk`.
 
 		It make this list depending on exclusion rules.
 
@@ -277,7 +277,7 @@ class Safer(object):
 		return list_files, dirs_to_make
 
 	def get_saved(self, directory):
-		"""Return the files and the folders in the safe path."""
+		"""Return the files and the folders in the safe path (files already saved), using `os.walk`."""
 		saved = list()  # List of relatif path to each file
 		dirs_maked = list()  # List of directory to make in the safe root directory
 
@@ -294,14 +294,14 @@ class Safer(object):
 		return saved, dirs_maked
 
 	def save_files(self, to_save, safe_path, path_delicate):
-		"""Copy the files in to_save in the safe_path."""
+		"""Copy the files in `to_save` in the `safe_path`."""
 		for filename in to_save:
 			dst = path.join(safe_path, filename)
 			self.logger.info('Copy: '+ dst)
 			copy2(path.join(path_delicate, filename), dst)
 
 	def update_files(self, to_update, safe_path, path_delicate):
-		"""Update the files in to_update."""
+		"""Update the files in `to_update`."""
 		for file_path in to_update:
 			src = path.join(path_delicate, file_path)
 			dst = path.join(safe_path, file_path)
@@ -313,14 +313,14 @@ class Safer(object):
 					myfile.write(content)
 
 	def remove_files(self, to_del, safe_path_last):
-		"""Remove the files in to_del."""
+		"""Remove the files in `to_del`."""
 		for filename in to_del:
 			target = path.join(safe_path_last, filename)
 			self.logger.info('Remove: ' + target)
 			remove(target)
 
 	def compare_file(self, file1, file2):
-		"""Return True if file1 is most recent one."""
+		"""Return True if `file1` is most recent than `file2`."""
 		stat_file1 = stat(file1)
 		stat_file2 = stat(file2)
 		return stat_file1.st_mtime > stat_file2.st_mtime

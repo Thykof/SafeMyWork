@@ -21,15 +21,20 @@ def combine_list(list1, list2):
 			list3.append(value)
 	return list3
 
-def path_without_root(old_path):
-	pos = old_path.find('/')  # attention: conpatibility on win!
+def path_without_root(_path):
+	"""Return the `_path` without the first directory.
+
+	e.g. "root/foo/bar" -> "foo/bar"
+
+	"""
+	pos = _path.find('/')  # attention: conpatibility on win!
 	if pos != -1:
-		return old_path[pos+1:]
+		return _path[pos+1:]
 	else:
 		return ''
 
 def missing_item(list1, list2):
-	"""Return the list of directory in list1 but not in list2."""
+	"""Return the list of directory in `list1` but not in `list2`."""
 	result = list()
 	for item in list1:
 		if item not in list2:
