@@ -5,11 +5,9 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio
 import sys
 
-from watcher import conf, safe
+
 from interface.interface import MyWindow
 
-myfile = open('stderr.log', 'a')
-#sys.stderr = myfile
 
 class MyApplication(Gtk.Application):
 	def __init__(self):

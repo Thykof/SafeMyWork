@@ -9,8 +9,6 @@ from os import path
 from platform import system
 
 from .dialog import del_dir_dialog, Settings_dial
-from watcher.watcher import Watcher
-import watcher
 from watcher.safe import Safer
 
 SYSTEM = system()

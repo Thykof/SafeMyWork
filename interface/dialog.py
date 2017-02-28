@@ -5,8 +5,6 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
-from os import path
-
 def del_dir_dialog(parent, directory):
 	dialog = Gtk.MessageDialog(parent, 0, Gtk.MessageType.QUESTION,
 			Gtk.ButtonsType.YES_NO, "Ne plus surveiller " + directory + " ?")
