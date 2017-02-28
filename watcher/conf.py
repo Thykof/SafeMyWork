@@ -23,9 +23,9 @@ def read_config(conf_file=CONF_FILE):
         config = json.load(configfile)
     # Lower extensions:
     list_ext = list()
-    for ext in config['exclude_ext']:
+    for ext in config['extention']:
         list_ext.append(ext.lower())
-    config['exclude_ext'] = list_ext
+    config['extention'] = list_ext
     return config
 
 def save_config(config=None, conf_file=CONF_FILE):
@@ -78,5 +78,5 @@ def get_config(conf_file=CONF_FILE):
     else:
         config = read_config(conf_file)
         watched_dirs = get_dir_from_argv()
-        config['watched_dirs'].extend(watched_dirs)
+        config['delicate_dirs'].extend(watched_dirs)
     return config

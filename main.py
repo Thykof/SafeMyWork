@@ -16,7 +16,7 @@ class MyApplication(Gtk.Application):
 		Gtk.Application.__init__(self)
 
 	def do_activate(self):
-		self.win = MyWindow(self, conf.get_config())
+		self.win = MyWindow(self)
 		self.win.show_all()
 
 	def do_startup(self):
@@ -33,14 +33,12 @@ class MyApplication(Gtk.Application):
 
 	def quit_callback(self, action, parameter):
 		self.win.grid.text.set_text('Fermeture')
-		conf.save_config(self.win.config)
+		self.win.safer.save_config()
 		self.win.grid.switch_start.set_active(False)
 		self.win.stop_watching()
 		sys.exit()
 
 if __name__ == '__main__':
-	#app = MyApplication()
-	#exit_status = app.run(sys.argv)
-	#sys.exit(exit_status)
-	safer = safe.Safer(['interface'], 'safe_docs')
-	safer.update()
+	app = MyApplication()
+	exit_status = app.run(sys.argv)
+	sys.exit(exit_status)

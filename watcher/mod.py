@@ -42,10 +42,12 @@ def combine_list(list1, list2):
             list3.append(value)
     return list3
 
-def path_without_root(path):
-    pos = path.find('/')  # attention: conpatibility on win!
-    path = path[pos+1:]
-    return path
+def path_without_root(old_path):
+    pos = old_path.find('/')  # attention: conpatibility on win!
+    if pos != -1:
+        return old_path[pos+1:]
+    else:
+        return ''
 
 def create_archive_dir(archive_dir, watched_dir):
     """Create all directories use for archiving.

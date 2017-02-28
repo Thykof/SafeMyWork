@@ -59,10 +59,6 @@ class Safer(object):
 			self.delicate_dirs = config['delicate_dirs']
 			self.save_config()
 
-		# Make destination directories
-		if not path.exists(self.destination):
-			self.logger.info('Make directory: ' + self.destination)
-			mkdir(self.destination)  # e.g. safe_docs
 		self.safe_dirs = self.get_dst_path()
 
 	def get_config(self, delicate_dirs, destination):
@@ -104,6 +100,8 @@ class Safer(object):
 
 	def set_destination(self, destination):
 		self.destination = destination
+		self.safe_dirs = self.get_dst_path()
+		print(self.safe_dirs)
 
 	def set_delicate_dirs(self, delicate_dirs):
 		self.delicate_dirs = delicate_dirs
@@ -126,6 +124,11 @@ class Safer(object):
 		Three path for each folder: update, copy with filter and without.
 
 		"""
+		# Make destination directories
+		if not path.exists(self.destination):
+			self.logger.info('Make directory: ' + self.destination)
+			mkdir(self.destination)  # e.g. safe_docs
+
 		safe_dirs = dict()
 		for path_delicate in self.delicate_dirs:
 			safe_dirname = path.basename(path_delicate)
