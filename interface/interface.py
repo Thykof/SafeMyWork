@@ -10,7 +10,6 @@ from platform import system
 
 from .dialog import del_dir_dialog, Settings_dial
 from watcher.safe import Safer
-from watcher.config import Config
 
 SYSTEM = system()
 if SYSTEM == 'Linux':
@@ -48,13 +47,13 @@ class MyWindow(Gtk.ApplicationWindow):
 		self.switch_start = Gtk.Switch()
 		self.switch_start.connect('notify::active', self.on_switch_activate)
 		self.switch_start.set_active(False)
-		self.switch_start.do_grab_focus(self.switch_start)
 		self.spinner = Gtk.Spinner()
 		hbox = Gtk.Box(spacing=6)
 		hbox.pack_start(self.text, True, True, 0)
 		hbox.pack_start(self.switch_start, True, True, 0)
 		hbox.pack_start(self.spinner, True, True, 0)
 		self.grid.attach(hbox, 0, 1, 2, 1)
+		self.switch_start.do_grab_focus(self.switch_start)
 
 		self.watched_list = Gtk.ComboBoxText.new_with_entry()
 		button_add_watched = Gtk.Button.new_with_label('Ajouter')
@@ -96,6 +95,7 @@ class MyWindow(Gtk.ApplicationWindow):
 		for watched_dir in self.safer.config['delicate_dirs']:
 			self.watched_list.append_text(watched_dir)
 
+
 	def on_switch_activate(self, switch, active):
 		"""This start or stop perpetual scan."""
 		if switch.get_active():
@@ -119,28 +119,28 @@ class MyWindow(Gtk.ApplicationWindow):
 		self.safer.update()
 		self.spinner.stop()
 
-	def start_scan(self, *args):
+	def start_scan(self):
 		"""Run `scan_now`, start a timer thread to itself for perpetual scan."""
 		self.text.set_text('Surveillance active')
 		self.scan_now()
 		self.timer = threading.Timer(self.safer.config['timedelta']*10, self.start_scan)
 		self.timer.start()
 
-	def stop_watching(self, *args):
+	def stop_watching(self):
 		"""Cancel timer thread."""
 		if self.timer.is_alive():
 			self.timer.cancel()
 			self.timer.join()
 		self.text.set_text('En attente...')
 
-	def show_saved(self, button):
+	def show_saved(self, *args):
 		"""Open in nautilus or file explorer, in the safe directory."""
 		if SYSTEM == 'Linux':
 			Popen(['xdg-open', self.safer.config['safe_dir']])
 		elif SYSTEM == 'Windows':
 			startfile(self.safer.config['safe_dir'])
 
-	def settings(self, action, parameter):
+	def settings(self, *args):
 		"""Open the setting dialog."""
 		dialog_settings = Settings_dial(self)
 		dialog_settings.run()
@@ -168,7 +168,7 @@ class MyWindow(Gtk.ApplicationWindow):
 				self.watched_list.remove(int(self.watched_list.get_active()))
 				self.text.set_text('Dossier supprimé')
 
-	def about(self, action):
+	def about(self, action, parameter):
 		"""Open the about dialog."""
 		about_dialog = Gtk.AboutDialog(transient_for=self)
 		about_dialog.set_program_name('SafeMyWork')

@@ -9,8 +9,6 @@ from yaml import load, dump
 
 from .helpers import combine_list, path_without_root, missing_item
 
-"""TODO: file log in safe_doc/folder."""
-
 
 class Safer(object):
 	"""Manage the creation of the duplicate directory of the folder placed under supervision.
@@ -48,9 +46,9 @@ class Safer(object):
 		# Config
 		self.cfg_dir = path.join(path.expanduser('~'), '.safemywork')
 		self.cfg_file = path.join(self.cfg_dir, 'config.yml')
+		self.items = items
 		if config is None:
 			self.get_config(delicate_dirs, destination)
-			self.items = items
 		else:
 			self.config = config
 			if config['safe_dir'] is None:
@@ -87,8 +85,8 @@ class Safer(object):
 				'filename': [],
 				'extention': []
 				}
-			if items:
-				for key, elt in items.items():
+			if self.items:
+				for key, elt in self.items.items():
 					self.config[key] = elt
 			self.save_config()
 

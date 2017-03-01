@@ -3,8 +3,6 @@
 
 """Define some fonctions."""
 
-from os import path, mkdir
-
 def combine_list(list1, list2):
 	"""Create a list with only elements in common of the two lists.
 
@@ -21,15 +19,15 @@ def combine_list(list1, list2):
 			list3.append(value)
 	return list3
 
-def path_without_root(_path):
+def path_without_root(path):
 	"""Return the `_path` without the first directory.
 
 	e.g. "root/foo/bar" -> "foo/bar"
 
 	"""
-	pos = _path.find('/')  # attention: conpatibility on win!
+	pos = path.find('/')  # attention: conpatibility on win!
 	if pos != -1:
-		return _path[pos+1:]
+		return path[pos+1:]
 	else:
 		return ''
 
