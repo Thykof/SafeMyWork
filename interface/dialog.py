@@ -41,7 +41,7 @@ class Settings_dial(Gtk.Dialog):
 		adjustment = Gtk.Adjustment(10, 1, 60, 10, 10, 0)
 		self.spinbutton = Gtk.SpinButton(adjustment=adjustment)
 		self.spinbutton.set_digits(0)
-		self.spinbutton.set_value(self.parent.time_delta)
+		self.spinbutton.set_value(self.parent.safer.config['timedelta'])
 		box_time.pack_start(Gtk.Label('Scan tous les :'), False, False, 0)
 		box_time.pack_start(self.spinbutton, False, False, 0)
 		box_time.pack_start(Gtk.Label('Minutes. '), False, False, 0)
@@ -108,7 +108,7 @@ class Settings_dial(Gtk.Dialog):
 		"""Save the changes and close."""
 		# Set new timedelta
 		timedelta = int(self.spinbutton.get_value())
-		self.parent.time_delta = timedelta
+		self.parent.safer.config['timedelta'] = timedelta
 
 		# Set new safe path
 		new = self.archive_entry.get_text()

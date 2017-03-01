@@ -10,6 +10,7 @@ from platform import system
 
 from .dialog import del_dir_dialog, Settings_dial
 from watcher.safe import Safer
+from watcher.config import Config
 
 SYSTEM = system()
 if SYSTEM == 'Linux':
@@ -17,7 +18,7 @@ if SYSTEM == 'Linux':
 elif SYSTEM == 'Windows':
 	from os import startfile
 else:
-	watcher.mod.tell('Import Error')
+	print('Import Error')
 
 class MyWindow(Gtk.ApplicationWindow):
 	"""Application."""
@@ -26,8 +27,7 @@ class MyWindow(Gtk.ApplicationWindow):
 		self.set_position(Gtk.WindowPosition.CENTER)
 		self.set_border_width(5)
 
-		self.safer = Safer()
-		self.time_delta = 0.5
+		self.safer = Safer(items={'timedelta': .5})
 		self.timer = None
 		self.thread = None
 
@@ -123,7 +123,7 @@ class MyWindow(Gtk.ApplicationWindow):
 		"""Run `scan_now`, start a timer thread to itself for perpetual scan."""
 		self.text.set_text('Surveillance active')
 		self.scan_now()
-		self.timer = threading.Timer(self.time_delta*10, self.start_scan)
+		self.timer = threading.Timer(self.safer.config['timedelta']*10, self.start_scan)
 		self.timer.start()
 
 	def stop_watching(self, *args):
