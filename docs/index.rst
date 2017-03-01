@@ -14,16 +14,14 @@ How it work
 ===========
 SafeMyWork look for your modified files and copy them to another directory.
 
-.. toctree::
-   :maxdepth: 2
-
 Launch the app
 ++++++++++++++
 .. automodule:: main
+  :members:
   :undoc-members:
 
 Safer: save files
-+++++++++++++++++
+=================
 .. autoclass:: watcher.safe.Safer
   :members:
   :undoc-members:
@@ -34,11 +32,11 @@ A module for simple functions
   :members:
 
 Interface
-+++++++++
+=========
 .. autoclass:: interface.interface.MyWindow
   :members:
 
 Dialog
-------
+++++++
 .. automodule:: interface.dialog
   :members:

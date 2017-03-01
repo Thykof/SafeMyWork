@@ -1,16 +1,12 @@
-# -*- coding: utf-8 -*-
 #!/usr/bin/python3
 
 import gi
-gi.require_version('Gtk', '3.0')
+try: gi.require_version('Gtk', '3.0')
+except ValueError: pass  # Readthedocs
 from gi.repository import Gtk, Gio
 import threading
 from os import path
 from platform import system
-
-from .dialog import del_dir_dialog, Settings_dial
-from watcher.safe import Safer
-
 SYSTEM = system()
 if SYSTEM == 'Linux':
 	from subprocess import Popen
@@ -18,6 +14,11 @@ elif SYSTEM == 'Windows':
 	from os import startfile
 else:
 	print('Import Error')
+
+
+from .dialog import del_dir_dialog, Settings_dial
+from watcher.safe import Safer
+
 
 class MyWindow(Gtk.ApplicationWindow):
 	"""Application."""
@@ -94,7 +95,6 @@ class MyWindow(Gtk.ApplicationWindow):
 		# Initialize config
 		for watched_dir in self.safer.config['delicate_dirs']:
 			self.watched_list.append_text(watched_dir)
-
 
 	def on_switch_activate(self, switch, active):
 		"""This start or stop perpetual scan."""

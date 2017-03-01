@@ -1,9 +1,10 @@
-# -*- coding: utf-8 -*-
 #!/usr/bin/python3
 
 import gi
-gi.require_version('Gtk', '3.0')
+try: gi.require_version('Gtk', '3.0')
+except ValueError: pass  # Readthedocs
 from gi.repository import Gtk
+
 
 def del_dir_dialog(parent, directory):
 	"""A dialog to confim the removing of a directory from the list."""
@@ -11,6 +12,7 @@ def del_dir_dialog(parent, directory):
 			Gtk.ButtonsType.YES_NO, "Ne plus surveiller " + directory + " ?")
 	response = dialog.run()
 	return response == Gtk.ResponseType.YES, dialog
+
 
 class Settings_dial(Gtk.Dialog):
 	"""Setting dialog
@@ -104,7 +106,7 @@ class Settings_dial(Gtk.Dialog):
 		box.pack_start(button_close, False, False, 0)
 		self.show_all()
 
-	def close(self, *args):
+	def close(self, button):
 		"""Save the changes and close."""
 		# Set new timedelta
 		timedelta = int(self.spinbutton.get_value())

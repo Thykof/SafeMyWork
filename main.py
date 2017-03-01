@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 
 import gi
-gi.require_version('Gtk', '3.0')
+try: gi.require_version('Gtk', '3.0')
+except ValueError: pass  # Readthedocs
 from gi.repository import Gtk, Gio
 import sys
 
