@@ -1,6 +1,6 @@
 language: python
 python:
-  - "3.4"
+  - "3.5"
 
 branches:
   only:
@@ -10,4 +10,3 @@ branches:
 
 script:
   - "python3 setup.py test"
-# or "python3 -m py.test"
