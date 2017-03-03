@@ -1,17 +1,22 @@
 # Safe My work
-SafeMyWork save all files in the given directory in another directory to keep your work safe and avoid loosing data.
+SafeMyWork save all files in the given directory into another directory to keep your work safe and avoid loosing data and time.
 
-[![Documentation Status](https://readthedocs.org/projects/safemywork/badge/?version=master)](http://safemywork.readthedocs.org/en/master)
+[![Documentation Status](https://readthedocs.org/projects/safemywork/badge/?version=develop)](http://safemywork.readthedocs.io/en/develop/?badge=develop)
 [![Build Status](https://travis-ci.org/Thykof/SafeMyWork.svg?branch=master)](https://travis-ci.org/Thykof/SafeMyWork)
 [![Code Health](https://landscape.io/github/Thykof/SafeMyWork/master/landscape.svg?style=flat)](https://landscape.io/github/Thykof/SafeMyWork/master)
 
+## What for ?
+SafeMyWork is intend for people who handle lot of files which can be texts, images, songs.
+
+Run SafeMyWork and give it a directory to watch. Then while you are working, every ten minutes all files in this directory will be copy in another directory. As the result of keeping them safe if you does not save your work or delete accidentally files.
+
 ## Version
-Current version is 1.0
+Current version is 0.4
 #### Current state
- - feature/outline
  - watch different directories
  - specify directories, files and extensions to exclude
  - interface (gtk)
+ - update the safe directory
 
 Work in progress...
 
@@ -19,10 +24,19 @@ Work in progress...
  - make an history of each files
  - compress files
 
-## What for ?
-SafeMyWork is intend for people who handle lot of files which can be texts, images, songs.
 
-Run SafeMyWork and give it a directory to watch. Then while you are working, every ten minutes all files in this directory will be copy in another directory. As the result of keeping them safe if you does not save your work or delete accidentally files.
+## Launch the app
+Run `python3 main.py`.
+
+## Documenation
+How to build the doc:
+	
+	git clone git@github.com:Thykof/SafeMyWork.git
+	cd SafeMyWork
+	cd docs
+	build html
+
+The documentation is in `docs/_build/html/index.html`.
 
 ## License
 SafeMyWork is under the GNU GPL v3 license.
