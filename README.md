@@ -8,7 +8,7 @@ SafeMyWork save all files in the given directory into another directory to keep 
 ## What for ?
 SafeMyWork is intend for people who handle lot of files which can be texts, images, songs.
 
-Run SafeMyWork and give it a directory to watch. Then while you are working, every ten minutes all files in this directory will be copy in another directory. As the result of keeping them safe if you does not save your work or delete accidentally files.
+Run SafeMyWork and give it a directory to working directory. Then while you are working, every ten minutes all files in this directory will be copy in another directory. As the result of keeping them safe if you does not save your work or delete accidentally files.
 
 ## Version
 Current version is 0.4
@@ -21,6 +21,11 @@ Current version is 0.4
 Work in progress...
 
 #### TODO
+ - Seetings: switch to enable infodialog
+ - infodialog: N files in n s
+ - asyncio: list saved files and files to save
+ - dialog manual copy: directory source to directory destination
+ - error repport to user (permissions in usb disks...)
  - make an history of each files
  - compress files
 
