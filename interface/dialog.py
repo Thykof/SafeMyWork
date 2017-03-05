@@ -89,10 +89,26 @@ class Settings_dial(Gtk.Dialog):
 		for dirs in self.parent.safer.config['dirname']:
 			dirs_list.append_text(dirs)
 
+		# Exclude paths:
+		box_paths = Gtk.Box(spacing=6)
+		box_paths.pack_start(Gtk.Label('chemin : '), False, False, 0)
+		paths_list = Gtk.ComboBoxText.new_with_entry()
+		paths_list.set_entry_text_column(50)
+		button_add_paths = Gtk.Button.new_with_label('Ajouter')
+		button_add_paths.connect('clicked', lambda arg: self.add('dirpath', paths_list))
+		button_del_paths = Gtk.Button.new_with_label('Supprimer')
+		button_del_paths.connect('clicked', lambda arg: self.delete('dirpath', paths_list))
+		box_paths.pack_start(paths_list, False, False, 0)
+		box_paths.pack_start(button_add_paths, False, False, 0)
+		box_paths.pack_start(button_del_paths, False, False, 0)
+		for dirs in self.parent.safer.config['dirpath']:
+			paths_list.append_text(dirs)
+
 		# Archive directory:
 		box_archive_dir = Gtk.Box(spacing=6)
 		box_archive_dir.pack_start(Gtk.Label('Dossier archive : '), False, False, 0)
 		self.archive_entry = Gtk.Entry()
+		self.archive_entry.set_width_chars(50)
 		self.archive_entry.set_text(self.parent.safer.destination)
 		box_archive_dir.pack_start(self.archive_entry, False, False, 0)
 
@@ -101,11 +117,12 @@ class Settings_dial(Gtk.Dialog):
 		box.pack_start(box_ext, False, False, 0)
 		box.pack_start(box_files, False, False, 0)
 		box.pack_start(box_dirs, False, False, 0)
+		box.pack_start(box_paths, False, False, 0)
 		box.pack_start(box_archive_dir, False, False, 0)
 		box.pack_start(button_close, False, False, 0)
 		self.show_all()
 
-	def close(self, button):
+	def close(self, *args):
 		"""Save the changes and close."""
 		# Set new timedelta
 		timedelta = int(self.spinbutton.get_value())
