@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+from os import path as ospath
+
 """Define some fonctions."""
 
 def combine_list(list1, list2):
@@ -19,7 +21,7 @@ def combine_list(list1, list2):
 	return list3
 
 def path_without_root(path):
-	"""Return the `_path` without the first directory.
+	"""Return the `path` without the first directory.
 
 	e.g. "root/foo/bar" -> "foo/bar"
 
@@ -37,3 +39,17 @@ def missing_item(list1, list2):
 		if item not in list2:
 			result.append(item)
 	return result
+
+def split_path(path):
+	"""Return a list with all direcotry name in the given path."""
+	dirs = list()  # Result
+	stop = False
+	while not stop:
+		dirname = ospath.basename(path)
+		if dirname != '':
+			dirs.append(dirname)
+		else:
+			stop = True
+		path = ospath.dirname(path)
+
+	return dirs

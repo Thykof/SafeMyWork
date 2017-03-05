@@ -7,7 +7,7 @@ from os import path, listdir, mkdir, walk, remove, stat, chdir
 from yaml import load, dump
 
 
-from .helpers import combine_list, path_without_root, missing_item
+from .helpers import combine_list, path_without_root, missing_item, split_path
 
 
 class Safer(object):
@@ -244,6 +244,7 @@ class Safer(object):
 			# dirs_to_del: directories copied, deleted in delicate drectory -> to delete from safe directory
 			# Remove the directory tree
 			dirs_to_del = missing_item(dirs_maked, dirs_to_save)
+			print(dirs_maked, dirs_to_save)
 			for dirname in dirs_to_del:
 				self.logger.info('Remove tree: ' + path.join(safe_path_last, dirname))
 				try:
@@ -259,26 +260,46 @@ class Safer(object):
 		It make this list depending on exclusion rules.
 
 		"""
+		print(self.config['dirname'])
 		list_files = list()  # List of relatif path to each file
 		dirs_to_make = list()  # List of directory to make in the safe root directory
 		chdir(path.dirname(directory))
-		directory = path.basename(directory)
-		for dirpath, dirnames, filenames in walk(directory):  # walk() return a generator
+		directory_walk = path.basename(directory)
+		for dirpath, dirnames, filenames in walk(directory_walk):  # walk() return a generator
 			# dirpath = directory, for the first time
 			# dirpath = subdirs of directory
+			self.logger.info(dirpath)
+
 			# Exclude a directory name
-			if path.basename(dirpath) in self.config['dirname']:
+			can = True
+			for dirname in split_path(dirpath):
+				if dirname in self.config['dirname']:
+					can = False
+			if not can:
+				self.logger.info('Skip dirname: ' + dirpath)
 				continue
-			dirname = path_without_root(dirpath)
+
 			# Exclude a path
-			if dirname not in self.config['dirpath']:
-				if path.basename(dirpath) != directory:
+			can = True
+			for dirname in self.config['dirpath']:
+				if dirpath.find(dirname) != -1:
+					can = False
+			if can:  
+				dirname = path_without_root(dirpath)
+				if dirpath != directory_walk:  # Exclude root path
+					print('add dir : ' + dirname)
 					dirs_to_make.append(dirname)
-				for filename in filenames:
-					# Find the extension
-					ext = path.splitext(filename)[1][1:]
-					if filename not in self.config['filename'] and ext not in self.config['extention']:
-						list_files.append(path.join(dirname, filename))
+					for filename in filenames:
+						# Find the extension
+						ext = path.splitext(filename)[1][1:]
+						if filename not in self.config['filename'] and ext not in self.config['extention']:
+							list_files.append(path.join(dirname, filename))
+						else:
+							self.logger.info('Skip filename or extention:' + path.join(dirname, filename))
+				else:
+					self.logger.info('Skip root dir: ' + dirpath)
+			else:
+				self.logger.info('Skip dirpath: ' + dirpath)
 
 		return list_files, dirs_to_make
 
