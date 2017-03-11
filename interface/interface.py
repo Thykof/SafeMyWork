@@ -30,6 +30,7 @@ class MyWindow(Gtk.ApplicationWindow):
 		self.safer = Safer(items={'timedelta': .5})
 		self.timer = None
 		self.scan_time = None
+		self.state = 'copy'
 		self.thread = None
 		self.callback = Gio.SimpleAction.new('callback_info')
 		self.callback.connect('activate', self.dialog_info)
@@ -53,21 +54,34 @@ class MyWindow(Gtk.ApplicationWindow):
 		self.switch_start.connect('notify::active', self.on_switch_activate)
 		self.switch_start.set_active(False)
 		self.spinner = Gtk.Spinner()
-		hbox = Gtk.Box(spacing=6)
-		hbox.pack_start(self.text, True, True, 0)
-		hbox.pack_start(self.switch_start, True, True, 0)
-		hbox.pack_start(self.spinner, True, True, 0)
-		self.grid.attach(hbox, 0, 1, 2, 1)
+		hbox1 = Gtk.Box(spacing=6)
+		hbox1.pack_start(self.text, True, True, 0)
+		hbox1.pack_start(self.switch_start, True, True, 0)
+		hbox1.pack_start(self.spinner, True, True, 0)
+		self.grid.attach(hbox1, 0, 1, 2, 1)
 		self.switch_start.do_grab_focus(self.switch_start)
+
+		hbox2 = Gtk.Box(spacing=6)
+		button1 = Gtk.RadioButton.new_with_label_from_widget(None, "Copier")
+		button1.connect("toggled", self.on_button_toggled, "copy")
+		hbox2.pack_start(button1, False, False, 0)
+		button2 = Gtk.RadioButton.new_from_widget(button1)
+		button2.set_label("MAJ")
+		button2.connect("toggled", self.on_button_toggled, "maj")
+		hbox2.pack_start(button2, False, False, 0)
+		button3 = Gtk.RadioButton.new_with_mnemonic_from_widget(button1,"Filtrer")
+		button3.connect("toggled", self.on_button_toggled, "filter")
+		hbox2.pack_start(button3, False, False, 0)
+		self.grid.attach(hbox2, 0, 2, 2, 1)
 
 		self.watched_list = Gtk.ComboBoxText.new_with_entry()
 		button_add_watched = Gtk.Button.new_with_label('Ajouter')
 		button_add_watched.connect('clicked', self.add_watched_dir)
 		button_del_watched = Gtk.Button.new_with_label('Supprimer')
-		button_del_watched.connect('clicked', self.del_watched_dir)		
-		self.grid.attach(self.watched_list, 0, 2, 2, 1)
-		self.grid.attach(button_add_watched, 0, 3, 1, 1)
-		self.grid.attach(button_del_watched, 1, 3, 1, 1)
+		button_del_watched.connect('clicked', self.del_watched_dir)     
+		self.grid.attach(self.watched_list, 0, 3, 2, 1)
+		self.grid.attach(button_add_watched, 0, 4, 1, 1)
+		self.grid.attach(button_del_watched, 1, 4, 1, 1)
 
 		self.add(self.grid)
 
@@ -107,6 +121,11 @@ class MyWindow(Gtk.ApplicationWindow):
 		else:
 			self.stop_watching()
 
+	def on_button_toggled(self, button, name):
+		print(name)
+		if button.get_active():
+			self.state = name
+
 	def scan_now(self, *args):  # start the thread
 		"""Make thread, that scan and copy files, if no one is already started."""
 		can = True
@@ -122,7 +141,12 @@ class MyWindow(Gtk.ApplicationWindow):
 		self.spinner.start()
 		self.text.set_text('Scan en cours')
 		begin = time()
-		self.safer.update()
+		if self.state == 'copy':
+			self.safer.save(False)
+		elif self.state == 'filter':
+			self.safer.save()
+		elif self.state == 'maj':
+			self.safer.update()
 		end = time()
 		self.scan_time = round(end - begin, 2)
 		self.spinner.stop()
@@ -142,6 +166,9 @@ class MyWindow(Gtk.ApplicationWindow):
 			self.timer.cancel()
 			self.timer.join()
 		self.text.set_text('En attente...')
+
+	def copy_dir(self, *args):
+		self.safer.copy()
 
 	def show_saved(self, *args):
 		"""Open in nautilus or file explorer, in the safe directory."""
