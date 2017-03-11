@@ -5,6 +5,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio
 import threading
 from os import path
+from time import time, sleep
 from platform import system
 SYSTEM = system()
 if SYSTEM == 'Linux':
@@ -28,7 +29,11 @@ class MyWindow(Gtk.ApplicationWindow):
 
 		self.safer = Safer(items={'timedelta': .5})
 		self.timer = None
+		self.scan_time = None
 		self.thread = None
+		self.callback = Gio.SimpleAction.new('callback_info')
+		self.callback.connect('activate', self.dialog_info)
+		self.add_action(self.callback)
 
 		# Main grid
 		self.grid = Gtk.Grid()
@@ -102,7 +107,7 @@ class MyWindow(Gtk.ApplicationWindow):
 		else:
 			self.stop_watching()
 
-	def scan_now(self, *args):
+	def scan_now(self, *args):  # start the thread
 		"""Make thread, that scan and copy files, if no one is already started."""
 		can = True
 		for thread in threading.enumerate():
@@ -112,13 +117,19 @@ class MyWindow(Gtk.ApplicationWindow):
 			self.thread = threading.Thread(target=self.scan, name='scan')
 			self.thread.start()
 
-	def scan(self):
+	def scan(self):  # target of thread
 		"""Call by `scan_now`, run `Safer.update`."""
 		self.spinner.start()
+		self.text.set_text('Scan en cours')
+		begin = time()
 		self.safer.update()
+		end = time()
+		self.scan_time = round(end - begin, 2)
 		self.spinner.stop()
+		self.text.set_text('Scanné en ' + str(self.scan_time) + ' s')
+		#self.callback.activate()
 
-	def start_scan(self):
+	def start_scan(self):  # perpetual scan
 		"""Run `scan_now`, start a timer thread to itself for perpetual scan."""
 		self.text.set_text('Surveillance active')
 		self.scan_now()
@@ -143,6 +154,12 @@ class MyWindow(Gtk.ApplicationWindow):
 		"""Open the setting dialog."""
 		dialog_settings = Settings_dial(self)
 		dialog_settings.run()
+
+	def dialog_info(self, *args):
+		msg = 'Scanné en: ' + str(self.scan_time) + ' s.'
+		msg_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, msg)
+		msg_dialog.run()
+		msg_dialog.destroy()
 
 	def add_watched_dir(self, button):
 		"""Add a dirctory to scan."""
