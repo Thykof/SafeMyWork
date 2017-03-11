@@ -184,22 +184,26 @@ class Safer(object):
 		if _filter:
 			self.logger.info('Start saving with filters')
 			for path_delicate, safe_path in self.safe_dirs.items():
+				safe_path_filter = safe_path['FILTER']
 				self.logger.info(path_delicate)
-				self.logger.info('Make directory: ' + safe_path['FILTER'])
-				mkdir(safe_path['FILTER'])  # e.g. safe_docs/my_work/my_workV--n
+				self.logger.info('Make directory: ' + safe_path_filter)
+				mkdir(safe_path_filter)  # e.g. safe_docs/my_work/my_workV--n
 				to_save, dirs_to_make = self.get_to_save(path_delicate)
 
-				for path_delicate in dirs_to_make:
-					path_delicate = path_without_root(path_delicate)
-					self.logger.info('Make directory: ' + path.join(safe_path['FILTER'], path_delicate))
-					mkdir(path.join(safe_path['FILTER'], path_delicate))  # e.g. safe_docs/my_work/my_workV--n/folder
-				self.save_files(to_save, safe_path['FILTER'], path_delicate)
+				for dirname in dirs_to_make:
+					#dirname = path_without_root(dirname)
+					dirpath = path.join(safe_path_filter, dirname)
+					self.logger.info('Make directory: ' + dirpath)
+					if not path.exists(dirpath):
+						mkdir(dirpath)  # e.g. safe_docs/my_work/my_workV--n/folder
+				self.save_files(to_save, safe_path_filter, path_delicate)
 		else:
 			self.logger.info('Start copying')
 			for path_delicate, safe_path in self.safe_dirs.items():
 				self.logger.info('Saving ' + path_delicate)
 				copytree(path_delicate, safe_path['COPY'])
 		self.logger.info('Done')
+		self.safe_dirs = self.get_dst_path()
 
 	def update(self):
 		"""Update the safe directory.
@@ -253,6 +257,7 @@ class Safer(object):
 					pass  # Directory already removed
 
 		self.logger.info('Done')
+		self.safe_dirs = self.get_dst_path()
 
 	def get_to_save(self, directory):
 		"""Return a list of file to save from a the given delicate directory, using `os.walk`.
@@ -325,6 +330,10 @@ class Safer(object):
 		for filename in to_save:
 			dst = path.join(safe_path, filename)
 			self.logger.info('Copy: '+ dst)
+			print(path_delicate)
+			print(filename)
+			print(dst)
+
 			copy2(path.join(path_delicate, filename), dst)
 
 	def update_files(self, to_update, safe_path, path_delicate):
