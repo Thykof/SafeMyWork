@@ -6,6 +6,7 @@ from gi.repository import Gtk, Gio
 import threading
 from os import path
 from time import time, sleep
+import asyncio
 from platform import system
 SYSTEM = system()
 if SYSTEM == 'Linux':
@@ -26,6 +27,8 @@ class MyWindow(Gtk.ApplicationWindow):
 		Gtk.Window.__init__(self, title='SafeMyWork 1.0', application=app)
 		self.set_position(Gtk.WindowPosition.CENTER)
 		self.set_border_width(5)
+
+		self.loop = asyncio.get_event_loop()
 
 		self.safer = Safer(items={'timedelta': .5})
 		self.timer = None
@@ -122,7 +125,6 @@ class MyWindow(Gtk.ApplicationWindow):
 			self.stop_watching()
 
 	def on_button_toggled(self, button, name):
-		print(name)
 		if button.get_active():
 			self.state = name
 
@@ -144,14 +146,14 @@ class MyWindow(Gtk.ApplicationWindow):
 		if self.state == 'copy':
 			self.safer.save(False)
 		elif self.state == 'filter':
-			self.safer.save()
+			self.safer.save(loop=self.loop)
 		elif self.state == 'maj':
-			self.safer.update()
+			self.safer.update(loop=self.loop)
+
 		end = time()
 		self.scan_time = round(end - begin, 2)
 		self.spinner.stop()
 		self.text.set_text('Scanné en ' + str(self.scan_time) + ' s')
-		#self.callback.activate()
 
 	def start_scan(self):  # perpetual scan
 		"""Run `scan_now`, start a timer thread to itself for perpetual scan."""

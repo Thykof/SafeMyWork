@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import asyncio
 from shutil import copytree, copy2, rmtree
 import logging
 from logging.handlers import RotatingFileHandler
@@ -29,19 +30,20 @@ class Safer(object):
 		"""Manage logging, make destination directory, manage destinations, manage config"""
 		# delicate_dirs: list of different directories placed under supervision
 		super(Safer, self).__init__()
+
 		# Logging
 		self.logger = logging.getLogger()
 		self.logger.setLevel(logging.DEBUG)
 		# Log in a file
-		file_handler = RotatingFileHandler('activity.log', 'a', 1000000, 1)
+		file_handler = RotatingFileHandler('activity.log', maxBytes=1000000, backupCount=10)
 		file_handler.setLevel(logging.DEBUG)
 		formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
 		file_handler.setFormatter(formatter)
 		self.logger.addHandler(file_handler)
 		# Log in the console
-		steam_handler = logging.StreamHandler()
-		steam_handler.setLevel(logging.DEBUG)
-		self.logger.addHandler(steam_handler)
+		stream_handler = logging.StreamHandler()
+		stream_handler.setLevel(logging.DEBUG)
+		#self.logger.addHandler(stream_handler)
 
 		# Config
 		self.cfg_dir = path.join(path.expanduser('~'), '.safemywork')
@@ -173,7 +175,7 @@ class Safer(object):
 			version = str(max(list_version) + 1)  # Take the last version + 1
 		return version
 
-	def save(self, _filter=True):
+	def save(self, _filter=True, loop=None):
 		"""Save all folder under supervision.
 
 		It make a new version of safe directory
@@ -188,7 +190,13 @@ class Safer(object):
 				self.logger.info(path_delicate)
 				self.logger.info('Make directory: ' + safe_path_filter)
 				mkdir(safe_path_filter)  # e.g. safe_docs/my_work/my_workV--n
-				to_save, dirs_to_make = self.get_to_save(path_delicate)
+
+				if loop is None:
+					loop = asyncio.get_event_loop()
+				loop.run_until_complete(self.get_to_save(path_delicate))
+
+				dirs_to_make = self.dirs_to_make
+				to_save = self.list_files
 
 				for dirname in dirs_to_make:
 					#dirname = path_without_root(dirname)
@@ -205,7 +213,7 @@ class Safer(object):
 		self.logger.info('Done')
 		self.safe_dirs = self.get_dst_path()
 
-	def update(self):
+	def update(self, loop=None):
 		"""Update the safe directory.
 
 		It create the directories requires and consider filtration rules.
@@ -221,16 +229,19 @@ class Safer(object):
 				self.logger.info('Make directory: ' + safe_path_last)
 				mkdir(safe_path_last)  # e.g. safe_docs/my_work/my_workUPTODATE
 
+			if loop is None:
+				loop = asyncio.get_event_loop()
+			loop.run_until_complete(asyncio.wait([self.get_to_save(path_delicate), self.get_saved(safe_path_last),], loop=loop))
 
-			to_save, dirs_to_save = self.get_to_save(path_delicate)  # List delicate files
-			saved, dirs_maked = self.get_saved(safe_path_last)  # List saved files
+			dirs_to_save, dirs_maked = self.dirs_to_make, self.dirs_maked
+			to_save, saved = self.list_files, self.saved
 
 			# Make new folders
 			# dirs_to_make: new directories, not yet copying
 			dirs_to_make = missing_item(dirs_to_save, dirs_maked)
 			for dirname in dirs_to_make:
 				self.logger.info('Make directory: ' + path.join(safe_path_last, dirname))
-				mkdir(path.join(safe_path_last, dirname))  # e.g. safe_docs/my_work/my_workV--n/folder
+				mkdir(path.join(safe_path_last, dirname))
 
 			# Copy new files
 			to_copy = missing_item(to_save, saved)
@@ -248,7 +259,6 @@ class Safer(object):
 			# dirs_to_del: directories copied, deleted in delicate drectory -> to delete from safe directory
 			# Remove the directory tree
 			dirs_to_del = missing_item(dirs_maked, dirs_to_save)
-			print(dirs_maked, dirs_to_save)
 			for dirname in dirs_to_del:
 				self.logger.info('Remove tree: ' + path.join(safe_path_last, dirname))
 				try:
@@ -259,13 +269,12 @@ class Safer(object):
 		self.logger.info('Done')
 		self.safe_dirs = self.get_dst_path()
 
-	def get_to_save(self, directory):
+	async def get_to_save(self, directory):
 		"""Return a list of file to save from a the given delicate directory, using `os.walk`.
 
 		It make this list depending on exclusion rules.
 
 		"""
-		print(self.config['dirname'])
 		list_files = list()  # List of relatif path to each file
 		dirs_to_make = list()  # List of directory to make in the safe root directory
 		chdir(path.dirname(directory))
@@ -289,26 +298,29 @@ class Safer(object):
 			for dirname in self.config['dirpath']:
 				if dirpath.find(dirname) != -1:
 					can = False
-			if can:  
+
+			if can:
 				dirname = path_without_root(dirpath)
 				if dirpath != directory_walk:  # Exclude root path
-					print('add dir : ' + dirname)
 					dirs_to_make.append(dirname)
-					for filename in filenames:
-						# Find the extension
-						ext = path.splitext(filename)[1][1:]
-						if filename not in self.config['filename'] and ext not in self.config['extention']:
-							list_files.append(path.join(dirname, filename))
-						else:
-							self.logger.info('Skip filename or extention:' + path.join(dirname, filename))
 				else:
 					self.logger.info('Skip root dir: ' + dirpath)
+
+				# Take all files (even in the root directory)
+				for filename in filenames:
+					# Find the extension
+					ext = path.splitext(filename)[1][1:]
+					if filename not in self.config['filename'] and ext not in self.config['extention']:
+						list_files.append(path.join(dirname, filename))
+					else:
+						self.logger.info('Skip filename or extention:' + path.join(dirname, filename))
 			else:
 				self.logger.info('Skip dirpath: ' + dirpath)
 
-		return list_files, dirs_to_make
+		self.list_files = list_files
+		self.dirs_to_make = dirs_to_make
 
-	def get_saved(self, directory):
+	async def get_saved(self, directory):
 		"""Return the files and the folders in the safe path (files already saved), using `os.walk`."""
 		saved = list()  # List of relatif path to each file
 		dirs_maked = list()  # List of directory to make in the safe root directory
@@ -323,16 +335,14 @@ class Safer(object):
 				dirs_maked.append(dirname)
 			for filename in filenames:
 				saved.append(path.join(dirname, filename))
-		return saved, dirs_maked
+		self.saved = saved
+		self.dirs_maked = dirs_maked
 
 	def save_files(self, to_save, safe_path, path_delicate):
 		"""Copy the files in `to_save` in the `safe_path`."""
 		for filename in to_save:
 			dst = path.join(safe_path, filename)
 			self.logger.info('Copy: '+ dst)
-			print(path_delicate)
-			print(filename)
-			print(dst)
 
 			copy2(path.join(path_delicate, filename), dst)
 
