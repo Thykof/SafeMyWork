@@ -17,9 +17,8 @@ else:
 	print('Import Error')
 
 
-from .dialog import del_dir_dialog, Settings_dial
-from watcher.safe import Safer
-
+from .dialog import del_dir_dialog, Settings_dial, folder_select_dialog, compare_dialog
+from safer.safe import Safer
 
 class MyWindow(Gtk.ApplicationWindow):
 	"""Application."""
@@ -97,6 +96,14 @@ class MyWindow(Gtk.ApplicationWindow):
 		settings_action.connect('activate', self.settings)
 		self.add_action(settings_action)
 
+		compare_action = Gio.SimpleAction.new('compare')
+		compare_action.connect('activate', self.compare)
+		self.add_action(compare_action)
+
+		select_folders_action = Gio.SimpleAction.new('select_folders')
+		select_folders_action.connect('activate', self.select_folders)
+		self.add_action(select_folders_action)
+
 		start_watching_action = Gio.SimpleAction.new('start_watching')
 		start_watching_action.connect('activate', lambda *arg: self.switch_start.set_active(True))
 		self.add_action(start_watching_action)
@@ -144,9 +151,9 @@ class MyWindow(Gtk.ApplicationWindow):
 		self.text.set_text('Scan en cours')
 		begin = time()
 		if self.state == 'copy':
-			self.safer.save(False)
+			self.safer.copy_files()
 		elif self.state == 'filter':
-			self.safer.save(loop=self.loop)
+			self.safer.save_with_filters(loop=self.loop)
 		elif self.state == 'maj':
 			self.safer.update(loop=self.loop)
 
@@ -154,6 +161,14 @@ class MyWindow(Gtk.ApplicationWindow):
 		self.scan_time = round(end - begin, 2)
 		self.spinner.stop()
 		self.text.set_text('Scanné en ' + str(self.scan_time) + ' s')
+
+	def compare(self, *args):
+		results = self.safer.compare()
+		
+
+	def select_folders(self, *args):
+		dialog = folder_select_dialog(self)
+		dialog.run()
 
 	def start_scan(self):  # perpetual scan
 		"""Run `scan_now`, start a timer thread to itself for perpetual scan."""

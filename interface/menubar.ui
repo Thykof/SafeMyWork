@@ -9,6 +9,10 @@
 					<attribute name="action">win.show_saved</attribute>
 				</item>
 				<item>
+					<attribute name ="label">Selectioner les dossiers</attribute>
+					<attribute name ="action">win.select_folders</attribute>
+				</item>
+				<item>
 					<attribute name ="label">Préférences</attribute>
 					<attribute name ="action">win.settings</attribute>
 				</item>
@@ -16,6 +20,7 @@
 					<attribute name ="label">Quitter</attribute>
 					<attribute name ="action">app.quit</attribute>
 				</item>
+
 			</section>
 		</submenu>
 		<submenu>
@@ -32,6 +37,10 @@
 				<item>
 					<attribute name ="label">Scanner maintenant</attribute>
 					<attribute name="action">win.watch_now</attribute>
+				</item>
+				<item>
+					<attribute name ="label">Comparer</attribute>
+					<attribute name="action">win.compare</attribute>
 				</item>
 			</section>
 		</submenu>
