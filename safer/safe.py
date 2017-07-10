@@ -175,41 +175,44 @@ class Safer(object):
 			version = str(max(list_version) + 1)  # Take the last version + 1
 		return version
 
-	def save(self, _filter=True, loop=None):
+	def save_with_filters(self, loop=None):
 		"""Save all folder under supervision.
 
 		It make a new version of safe directory
 		It create the directories requires.
-		If _filter is False (default), it don't save the files that don't match with the exclusion rules.
 
 		"""
-		if _filter:
-			self.logger.info('Start saving with filters')
-			for path_delicate, safe_path in self.safe_dirs.items():
-				safe_path_filter = safe_path['FILTER']
-				self.logger.info(path_delicate)
-				self.logger.info('Make directory: ' + safe_path_filter)
-				mkdir(safe_path_filter)  # e.g. safe_docs/my_work/my_workV--n
+		self.logger.info('Start saving with filters')
+		for path_delicate, safe_path in self.safe_dirs.items():
+			safe_path_filter = safe_path['FILTER']
+			self.logger.info(path_delicate)
+			self.logger.info('Make directory: ' + safe_path_filter)
+			mkdir(safe_path_filter)  # e.g. safe_docs/my_work/my_workV--n
 
-				if loop is None:
-					loop = asyncio.get_event_loop()
-				loop.run_until_complete(self.get_to_save(path_delicate))
+			if loop is None:
+				loop = asyncio.get_event_loop()
+			loop.run_until_complete(self.get_to_save(path_delicate))
 
-				dirs_to_make = self.dirs_to_make
-				to_save = self.list_files
+			dirs_to_make = self.dirs_to_make
+			to_save = self.list_files
 
-				for dirname in dirs_to_make:
-					#dirname = path_without_root(dirname)
-					dirpath = path.join(safe_path_filter, dirname)
-					self.logger.info('Make directory: ' + dirpath)
-					if not path.exists(dirpath):
-						mkdir(dirpath)  # e.g. safe_docs/my_work/my_workV--n/folder
-				self.save_files(to_save, safe_path_filter, path_delicate)
-		else:
-			self.logger.info('Start copying')
-			for path_delicate, safe_path in self.safe_dirs.items():
-				self.logger.info('Saving ' + path_delicate)
-				copytree(path_delicate, safe_path['COPY'])
+			for dirname in dirs_to_make:
+				#dirname = path_without_root(dirname)
+				dirpath = path.join(safe_path_filter, dirname)
+				self.logger.info('Make directory: ' + dirpath)
+				if not path.exists(dirpath):
+					mkdir(dirpath)  # e.g. safe_docs/my_work/my_workV--n/folder
+			self.save_files(to_save, safe_path_filter, path_delicate)
+
+		self.logger.info('Done')
+		self.safe_dirs = self.get_dst_path()
+
+	def copy_files(self):
+		self.logger.info('Start copying')
+		for path_delicate, safe_path in self.safe_dirs.items():
+			self.logger.info('Saving ' + path_delicate)
+			copytree(path_delicate, safe_path['COPY'])
+
 		self.logger.info('Done')
 		self.safe_dirs = self.get_dst_path()
 
@@ -268,6 +271,60 @@ class Safer(object):
 
 		self.logger.info('Done')
 		self.safe_dirs = self.get_dst_path()
+
+	def compare(self, loop=None):
+		"""
+		Il faudrait une fenetre avec 3 onglets : 
+			- fichiers a copier : qui manquent dans la destination
+			- fichiers a supprimer : qui ne sont plus dans la source
+			- fichier a mettre a jour : qui sont déjà dans la destination et qui sont nouveau
+				(ici attention il faut garder les fichiers les plus recents)
+		... et on pourrait choisir quel fichier copier/supprimer/mettre a jour.
+		Une option Garder les fichiers de la destination qui ne sont plus dans la sources.
+		Une option Garder le dernier fichier (pour les fichiers presents dans la source et la destination).
+
+		"""
+		self.logger.info('Start compraring')
+		for path_delicate, safe_path in self.safe_dirs.items():
+			self.logger.info(path_delicate)
+			safe_path_last = safe_path['LAST']
+
+			if loop is None:
+				loop = asyncio.get_event_loop()
+			loop.run_until_complete(asyncio.wait([self.get_to_save(path_delicate), self.get_saved(safe_path_last),], loop=loop))
+
+			dirs_to_save, dirs_maked = self.dirs_to_make, self.dirs_maked
+			to_save, saved = self.list_files, self.saved
+
+			# Get new folders
+			# dirs_to_make: new directories, not yet copying
+			dirs_to_make = missing_item(dirs_to_save, dirs_maked)
+
+			# Get new files
+			to_copy = missing_item(to_save, saved)
+
+			# Get existing files in safe path
+			to_update = combine_list(to_save, saved)
+
+			# Get old files
+			to_del = missing_item(saved, to_save)
+
+			# Get old folders, to be deleted
+			# dirs_to_del: directories copied, deleted in delicate drectory -> to delete from safe directory
+			# Get the directory tree
+			dirs_to_del = missing_item(dirs_maked, dirs_to_save)
+
+		self.logger.info('Done')
+		self.safe_dirs = self.get_dst_path()
+
+		results = dict()
+		results['dirs_to_make'] = dirs_to_make
+		results['to_copy'] = to_copy  # files
+		results['to_update'] = to_update  # files
+		results['to_del'] = to_del  #files
+		results['dirs_to_del'] = dirs_to_del
+
+		return results
 
 	async def get_to_save(self, directory):
 		"""Return a list of file to save from a the given delicate directory, using `os.walk`.
