@@ -4,14 +4,6 @@ class Sync(object):
     def __init__(self):
         super(Sync, self).__init__()
 
-    def compare(self, local_path, external_path):
-        results = dict()  # results to show to the user
-        return results
-
-    def execute_(self, user_selection):
-        pass
-
-
 	def compare(self, local_path, external_path):
 		"""
 		Il faudrait une fenetre avec 3 onglets :

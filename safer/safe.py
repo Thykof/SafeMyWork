@@ -276,6 +276,76 @@ class Safer(object):
 		self.logger.info('Done')
 		self.safe_dirs = self.get_dst_path()  # !!! probleme avec activate
 
+	def compare(self, local_path, external_path):
+		"""
+		Il faudrait une fenetre avec 3 onglets :
+			- fichiers a copier : qui manquent dans la destination
+			- fichiers a supprimer : qui ne sont plus dans la source
+			- fichier a mettre a jour : qui sont déjà dans la destination et qui sont nouveau
+				(ici attention il faut garder les fichiers les plus recents)
+		... et on pourrait choisir quel fichier copier/supprimer/mettre a jour.
+		Une option Garder les fichiers de la destination qui ne sont plus dans la sources.
+		Une option Garder le dernier fichier (pour les fichiers presents dans la source et la destination).
+
+		"""
+		self.logger.info('Start comparing')
+
+		loop = asyncio.get_event_loop()
+		loop.run_until_complete(self.get_to_save(local_path))
+		local_dirs = self.dirs_to_make
+		locals_files = self.list_files
+
+		loop.run_until_complete(self.get_to_save(external_path))
+		external_dirs = self.dirs_to_make
+		external_files = self.list_files
+
+		# Get new folders, those not in external
+		dirs_to_make = missing_item(local_dirs, external_dirs)
+
+		# Get new files, those not in external
+		to_copy = missing_item(locals_files, external_files)
+
+		# Get existing files in safe path
+		to_update = combine_list(locals_files, external_files)
+
+		# Get old files, thos not in local
+		to_del = missing_item(external_files, locals_files)
+
+		# Get old folders, to be deleted
+		# dirs_to_del: directories copied, deleted in delicate drectory -> to delete from safe directory
+		dirs_to_del = missing_item(external_dirs, local_dirs)
+
+		self.logger.info('Done')
+		self.safe_dirs = self.get_dst_path()
+
+		results = dict()
+		results['dirs_to_make'] = dirs_to_make
+		results['dirs_to_del'] = dirs_to_del
+		results['to_copy'] = to_copy  # files
+		results['to_update'] = to_update  # files
+		results['to_del'] = to_del  #files
+		return results
+
+	def execute(self, orders, local_path, external_path):
+		print('safer execute')
+		print(external_path)
+		for dirname in orders['dirs_to_make']:
+			dirpath = path.join(external_path, dirname)
+			self.logger.info('Make directory: ' + dirpath)
+			mkdir(dirpath)
+		self.save_files(orders['to_copy'], external_path, local_path)
+		self.update_files(orders['to_update'], external_path, local_path)
+		self.remove_files(orders['to_del'], external_path)
+		for dirname in orders['dirs_to_del']:
+			dirpath = path.join(external_path, dirname)
+			self.logger.info('Remove tree: ' + dirpath)
+			try:
+				rmtree(dirpath)
+			except FileNotFoundError:
+				pass  # Directory already removed
+
+		self.logger.info('Done')
+
 	async def get_to_save(self, directory):
 		"""Return a list of file to save from a the given delicate directory, using `os.walk`.
 

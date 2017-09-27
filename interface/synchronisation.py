@@ -4,17 +4,17 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio
 
-import asyncio
 
 from .helpers import open_folder
 
+
 class SynchronisationGrid(Gtk.Grid):
-	def __init__(self, safer):
+	def __init__(self, parent, safer):
 		Gtk.Grid.__init__(self)
 
 		# Varaibles
+		self.parent = parent
 		self.safer = safer
-		self.loop = asyncio.get_event_loop()
 
 		# Properties
 		self.set_column_spacing(5)
@@ -31,26 +31,19 @@ class SynchronisationGrid(Gtk.Grid):
 		self.attach(button_show_external, 1, 0, 1, 1)
 		# TODO: add little icon to symbolize file explorer
 
-		label_select_folder = Gtk.Label("Selection du dossier local :")
-		self.attach(label_select_folder, 0, 1, 2, 1)
+		button_choose_local = Gtk.Button.new_with_label("Selection du dossier local")
+		button_choose_local.connect('clicked', self.on_folder_clicked, True)
+		self.attach(button_choose_local, 0, 1, 2, 1)
 
-		local_store = Gtk.ListStore(str)
-		for path_delicate, safe_path in self.safer.safe_dirs.items():
-			local_store.append([path_delicate])
-		self.local_combo = Gtk.ComboBox.new_with_model(local_store)
-		self.local_combo.connect("changed", self.on_local_combo_changed)
-		renderer_text = Gtk.CellRendererText()
-		self.local_combo.pack_start(renderer_text, True)
-		self.local_combo.add_attribute(renderer_text, "text", 0)
-		self.attach(self.local_combo, 0, 2, 2, 1)
+		self.label_local = Gtk.Label("< selectionner un dossier local >")
+		self.attach(self.label_local, 0, 2, 2, 1)
 
-		label_select_folder = Gtk.Label("Selection du dossier externe :")
-		self.attach(label_select_folder, 0, 3, 2, 1)
+		button_choose_external = Gtk.Button.new_with_label("Selection du dossier externe")
+		button_choose_external.connect('clicked', self.on_folder_clicked, False)
+		self.attach(button_choose_external, 0, 3, 2, 1)
 
-		self.external_combo = Gtk.ComboBoxText.new_with_entry()
-		self.external_combo.connect('changed', self.on_external_combo_changed)
-		self.external_combo.append_text(self.safer.config['safe_dir'])
-		self.attach(self.external_combo, 0, 4, 2, 1)
+		self.label_external = Gtk.Label("< selectionner un dossier externe >")
+		self.attach(self.label_external, 0, 4, 2, 1)
 
 		self.button_compare = Gtk.Button.new_with_label('Comparer')
 		self.button_compare.connect('clicked', self.compare)
@@ -85,6 +78,31 @@ class SynchronisationGrid(Gtk.Grid):
 
 		self.scrolled_win_select_file.add(self.treeview_file)
 
+	def on_folder_clicked(self, widget, local=True):
+		dialog = Gtk.FileChooserDialog("Selection d'un dossier", self.parent,
+			Gtk.FileChooserAction.SELECT_FOLDER,
+			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+			 "Valider", Gtk.ResponseType.OK))
+		dialog.set_default_size(800, 400)
+
+		response = dialog.run()
+		if response == Gtk.ResponseType.OK:
+			filename = dialog.get_filename()
+			print("Select clicked")
+			print("Folder selected: " + filename)
+			if local:
+				self.local_path = filename
+				self.label_local.set_text(filename)
+			else:
+				self.external_path = filename
+
+				self.label_external.set_text(filename)
+		elif response == Gtk.ResponseType.CANCEL:
+			print("Cancel clicked")
+
+
+		dialog.destroy()
+
 	def on_cell_toggled_file(self, widget, path):
 		print('on cell toggled file')
 		print(path)
@@ -109,10 +127,15 @@ class SynchronisationGrid(Gtk.Grid):
 			print("Selected external_path: " + self.external_path)
 	#
 	def compare(self, button):
-		# Call by the button
-		# TODO : reset self.listfile
+		"""
+		Idées:
+			Class action avec path, order (suprimer, copie, couper)
+			passe action à execute_compare
+
+		"""
+		self.listfile.clear()
 		print("compare")
-		comparison = self.safer.compare(self.local_path, self.external_path, self.loop)
+		comparison = self.safer.compare(self.local_path, self.external_path)
 		print(comparison)
 		for filename in comparison['to_copy']:
 			self.listfile.append([filename, True, 'edit-copy'])
@@ -128,11 +151,13 @@ class SynchronisationGrid(Gtk.Grid):
 
 	def execute_compare(self, button):
 		print('execute compare')
-		results = dict()
-		results['to_copy'] = list()
-		results['to_update'] = list()
-		results['to_del'] = list()
-		print(self.comparison['to_copy'])
+		orders = dict()
+		orders['dirs_to_make'] = self.comparison['dirs_to_make']  # ~~
+		orders['dirs_to_del'] = self.comparison['dirs_to_del']  # ~~
+		orders['to_copy'] = list()
+		orders['to_update'] = list()
+		orders['to_del'] = list()
+		print(self.comparison)
 		for path in range(len(self.listfile)):
 			print(self.listfile[path])
 			print(self.listfile[path][0])
@@ -140,17 +165,14 @@ class SynchronisationGrid(Gtk.Grid):
 			print(self.listfile[path][2])
 			if self.listfile[path][1]:  # is ok ?
 				if self.listfile[path][2] == 'edit-copy':
-					results['to_copy'].append(self.listfile[path][0])
+					orders['to_copy'].append(self.listfile[path][0])
 				if self.listfile[path][2] == 'system-software-update':
-					results['to_update'].append(self.listfile[path][0])
+					orders['to_update'].append(self.listfile[path][0])
 				if self.listfile[path][2] == 'edit-delete':
-					results['to_del'].append(self.listfile[path][0])
+					orders['to_del'].append(self.listfile[path][0])
 
-		results['dirs_to_make'] = self.comparison['dirs_to_make']
-		results['dirs_to_del'] = self.comparison['dirs_to_del']
-		print(results['to_copy'])
+		print(orders)
 
-		self.safer.execute(results, path_delicate)
+		self.safer.execute(orders, self.local_path, self.external_path)
 		# spinner and timer
-		self.button_compare.set_sensitive(True)
 		self.button_execute.set_sensitive(False)

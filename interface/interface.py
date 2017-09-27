@@ -60,7 +60,7 @@ class MyWindow(Gtk.ApplicationWindow):
 		self.notebook.append_page(self.page_auto_save, Gtk.Label('Sauvegarde automatique'))
 
 		# Synchronisation page
-		page_synchronisation = SynchronisationGrid(self.safer)
+		page_synchronisation = SynchronisationGrid(self, self.safer)
 		self.notebook.append_page(page_synchronisation, Gtk.Label('Synchronisation'))
 
 	def settings(self, _):
