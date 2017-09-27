@@ -9,10 +9,6 @@
 					<attribute name="action">win.show_saved</attribute>
 				</item>
 				<item>
-					<attribute name ="label">Selectioner les dossiers</attribute>
-					<attribute name ="action">win.select_folders</attribute>
-				</item>
-				<item>
 					<attribute name ="label">Préférences</attribute>
 					<attribute name ="action">win.settings</attribute>
 				</item>
