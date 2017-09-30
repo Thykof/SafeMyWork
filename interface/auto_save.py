@@ -10,12 +10,14 @@ from os import path
 import threading
 
 from .helpers import open_folder
+from .dialog import DelDirDialog
 
 class AutoSavingGrid(Gtk.Grid):
 	"""The first page of the notebook."""
-	def __init__(self, safer):
+	def __init__(self, parent, safer):
 		Gtk.Grid.__init__(self)
 		# Variables
+		self.parent = parent
 		self.safer = safer
 		self.thread = None
 		self.timer = None
@@ -39,58 +41,70 @@ class AutoSavingGrid(Gtk.Grid):
 		self.switch_auto_save.connect('notify::active', self.on_switch_activate)
 		self.switch_auto_save.set_active(False)
 		self.spinner = Gtk.Spinner()
+
+		button_timedelta = Gtk.Button.new_with_label('Valider')
+		button_timedelta.connect('clicked', self.on_changed_timedelta)
+
+		adjustment = Gtk.Adjustment(10, 1, 60, 10, 10, 0)
+		self.spinbutton = Gtk.SpinButton(adjustment=adjustment)
+		self.spinbutton.connect('change-value', self.on_changed_timedelta)
+		self.spinbutton.set_digits(0)
+		self.spinbutton.set_value(self.safer.config['timedelta'])
+
 		hbox1 = Gtk.Box(spacing=6)
 		hbox1.pack_start(self.text, True, True, 0)
 		hbox1.pack_start(self.switch_auto_save, True, True, 0)
 		hbox1.pack_start(self.spinner, True, True, 0)
+		hbox1.pack_start(Gtk.Label('Délai (min) :'), True, True, 0)
+		hbox1.pack_start(self.spinbutton, True, True, 0)
+		hbox1.pack_start(button_timedelta, True, True, 0)
 		self.attach(hbox1, 0, 1, 2, 1)
 		self.switch_auto_save.do_grab_focus(self.switch_auto_save)
 
 		hbox2 = Gtk.Box(spacing=6)
 		button1 = Gtk.RadioButton.new_with_label_from_widget(None, "Copier")
+		button1.set_hexpand(True)
 		button1.connect("toggled", self.on_button_toggled, "copy")
 		hbox2.pack_start(button1, False, False, 0)
 		button2 = Gtk.RadioButton.new_from_widget(button1)
+		button2.set_hexpand(True)
 		button2.set_label("MAJ")
 		button2.connect("toggled", self.on_button_toggled, "maj")
 		hbox2.pack_start(button2, False, False, 0)
 		button3 = Gtk.RadioButton.new_with_mnemonic_from_widget(button1, "Filtrer")
+		button3.set_hexpand(True)
 		button3.connect("toggled", self.on_button_toggled, "filter")
 		hbox2.pack_start(button3, False, False, 0)
 		self.attach(hbox2, 0, 2, 2, 1)
 
 		# TreeView
-		label_select_folder = Gtk.Label("Selection des dossiers :")
+		label_select_folder = Gtk.Label("Dossiers sous surveillance :")
+		label_select_folder.set_hexpand(True)
 		self.attach(label_select_folder, 0, 3, 2, 1)
-		self.scrolled_win_select_folder = Gtk.ScrolledWindow()
-		self.attach(self.scrolled_win_select_folder, 0, 4, 2, 1)
 
-		self.listselect = Gtk.ListStore(str, bool)
-		for path_delicate, safe_path in self.safer.safe_dirs.items():
-			# safe_path is useless here, path_delicate is the source
-			self.listselect.append([path_delicate, safe_path['activate']])
+		self.scrolledwin_delicate = Gtk.ScrolledWindow()
+		self.scrolledwin_delicate.set_min_content_height(100)
+		self.attach(self.scrolledwin_delicate, 0, 4, 2, 1)
 
-		self.treeview_select = Gtk.TreeView.new_with_model(self.listselect)
-		cell_renderer_text = Gtk.CellRendererText()
-		tree_view_column_text = Gtk.TreeViewColumn("Dossier", cell_renderer_text, text=0)
-		self.treeview_select.append_column(tree_view_column_text)
-		cell_renderer_toggle = Gtk.CellRendererToggle()
-		cell_renderer_toggle.set_radio(True)
-		cell_renderer_toggle.connect("toggled", self.on_cell_toggled_select)
-		tree_view_column_toggle = Gtk.TreeViewColumn("Scanner", cell_renderer_toggle, active=1)
-		self.treeview_select.append_column(tree_view_column_toggle)
-		self.scrolled_win_select_folder.add(self.treeview_select)
+		self.list_delicate = Gtk.ListStore(str)
+		for path_delicate in self.safer.delicate_dirs:
+			self.list_delicate.append([path_delicate])
 
-		self.entry = Gtk.Entry()
-		self.attach(self.entry, 0, 5, 2, 1)
+		treeview = Gtk.TreeView(model=self.list_delicate)
+
+		renderer_text = Gtk.CellRendererText()
+		column_text = Gtk.TreeViewColumn("Chemin", renderer_text, text=0)
+		treeview.append_column(column_text)
+
+		self.scrolledwin_delicate.add(treeview)
 
 		button_add_watched = Gtk.Button.new_with_label('Ajouter')
 		button_add_watched.connect('clicked', self.add_delicate_dir)
-		self.attach(button_add_watched, 0, 6, 1, 1)
+		self.attach(button_add_watched, 0, 5, 1, 1)
 
 		button_del_watched = Gtk.Button.new_with_label('Supprimer')
 		button_del_watched.connect('clicked', self.del_delicate_dir)
-		self.attach(button_del_watched, 1, 6, 1, 1)
+		self.attach(button_del_watched, 1, 5, 1, 1)
 
 	def on_switch_activate(self, switch, active):
 		"""This start or stop perpetual scan."""
@@ -103,6 +117,11 @@ class AutoSavingGrid(Gtk.Grid):
 		# Radio buttons for copy, update or filter
 		if button.get_active():
 			self.state = name
+	def on_changed_timedelta(self, *args):
+		print(args)
+		timedelta = int(self.spinbutton.get_value())
+		self.safer.config['timedelta'] = timedelta
+		print(self.safer.config)
 
 	def on_cell_toggled_select(self, widget, path):
 		print(widget)
@@ -161,12 +180,33 @@ class AutoSavingGrid(Gtk.Grid):
 
 	def add_delicate_dir(self, button):
 		"""Add a dirctory to scan."""
-		new_dir = self.entry.get_text()
-		if new_dir != '' and new_dir not in self.safer.config['delicate_dirs'] and path.exists(new_dir):
-			self.safer.add_delicate_dir(new_dir)
-			self.text.set_text('Dossier ajouté')
+		dialog = Gtk.FileChooserDialog("Selection d'un dossier à surveiller", self.parent,
+			Gtk.FileChooserAction.SELECT_FOLDER,
+			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+			 "Valider", Gtk.ResponseType.OK))
+		dialog.set_default_size(800, 400)
+
+		response = dialog.run()
+		if response == Gtk.ResponseType.OK:
+			dirname = dialog.get_filename()
+			if dirname != '' and dirname not in self.safer.delicate_dirs:
+				self.list_delicate.append([dirname])
+				self.safer.add_delicate_dir(dirname)
+				self.text.set_text("Dossier ajouté")
+			else:
+				self.text.set_text("Dossier invalide")
+
+		dialog.destroy()
 
 	def del_delicate_dir(self, button):
 		"""Remove a directory to scan."""
-		pass
-		# open a dial to select the delicate forlder to delete
+		dialog = DelDirDialog(self.parent, self.list_delicate)
+		response = dialog.run()
+		if response == Gtk.ResponseType.OK:
+			print('dirname:')
+			print(dialog.dirname)
+			if dialog.dirname is not None and dialog.diriter is not None:
+				self.safer.del_delicate_dir(dialog.dirname)
+				self.list_delicate.remove(dialog.diriter)
+				self.text.set_text("Dossier supprimé")
+		dialog.destroy()

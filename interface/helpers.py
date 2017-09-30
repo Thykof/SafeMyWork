@@ -7,7 +7,7 @@ if SYSTEM == 'Linux':
 elif SYSTEM == 'Windows':
 	from os import startfile
 else:
-	print('Import Error')
+	print('Import Error: system')
 
 def open_folder(_, folder_name):
     """Open in nautilus or file explorer, in the safe directory."""

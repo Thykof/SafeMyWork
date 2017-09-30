@@ -53,9 +53,3 @@ def split_path(path):
 		path = ospath.dirname(path)
 
 	return dirs
-
-def set_order_file(comparison, liststore):
-	print(path)
-	is_ok = bool(liststore[path][1])
-	print(is_ok)
-	results['to_copy'].append(tuple(comparison['to_copy'][path], is_ok))

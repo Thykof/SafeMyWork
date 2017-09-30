@@ -109,7 +109,6 @@ class Safer(object):
 	def set_destination(self, destination):
 		self.destination = destination
 		self.safe_dirs = self.get_dst_path()
-		print(self.safe_dirs)
 
 	def set_delicate_dirs(self, delicate_dirs):
 		self.delicate_dirs = delicate_dirs
@@ -123,7 +122,7 @@ class Safer(object):
 		try:
 			self.delicate_dirs.remove(delicate_dir)
 		except ValueError:
-			pass
+			print('ERROR: del delicate dir, ValueError, safer')
 		self.safe_dirs = self.get_dst_path()
 
 	def get_dst_path(self):
@@ -327,8 +326,6 @@ class Safer(object):
 		return results
 
 	def execute(self, orders, local_path, external_path):
-		print('safer execute')
-		print(external_path)
 		for dirname in orders['dirs_to_make']:
 			dirpath = path.join(external_path, dirname)
 			self.logger.info('Make directory: ' + dirpath)

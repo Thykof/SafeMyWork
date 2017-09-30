@@ -7,9 +7,8 @@ from gi.repository import Gtk, Gio
 
 from .auto_save import AutoSavingGrid
 from .synchronisation import SynchronisationGrid
-from .dialog import del_dir_dialog, Settings_dial
+from .dialog import Settings_dial
 from safer.safe import Safer
-from safer.helpers import set_order_file
 
 class MyWindow(Gtk.ApplicationWindow):
 	'''Application.'''
@@ -20,7 +19,6 @@ class MyWindow(Gtk.ApplicationWindow):
 		# Properties
 		self.set_position(Gtk.WindowPosition.CENTER)
 		self.set_border_width(5)
-		self.set_default_size(800, 600)
 
 		# Header Bar
 		hb = Gtk.HeaderBar()
@@ -56,7 +54,7 @@ class MyWindow(Gtk.ApplicationWindow):
 		main_box.pack_start(self.notebook, True, True, 0)
 
 		# Auto-saving page
-		self.page_auto_save = AutoSavingGrid(self.safer)
+		self.page_auto_save = AutoSavingGrid(self, self.safer)
 		self.notebook.append_page(self.page_auto_save, Gtk.Label('Sauvegarde automatique'))
 
 		# Synchronisation page
@@ -67,6 +65,7 @@ class MyWindow(Gtk.ApplicationWindow):
 		'''Open the setting dialog.'''
 		dialog_settings = Settings_dial(self)
 		dialog_settings.run()
+		self.page_auto_save.spinbutton.set_value(self.safer.config['timedelta'])
 
 	def about(self, _):
 		'''Open the about dialog.'''

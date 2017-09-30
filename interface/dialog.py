@@ -4,13 +4,36 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
+class DelDirDialog(Gtk.Dialog):
 
-def del_dir_dialog(parent, directory):
-	"""A dialog to confim the removing of a directory from the list."""
-	dialog = Gtk.MessageDialog(parent, 0, Gtk.MessageType.QUESTION,
-			Gtk.ButtonsType.YES_NO, "Ne plus surveiller " + directory + " ?")
-	response = dialog.run()
-	return response == Gtk.ResponseType.YES, dialog
+	def __init__(self, parent, list_delicate):
+		Gtk.Dialog.__init__(self, "My Dialog", parent, 0,
+			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+			 Gtk.STOCK_OK, Gtk.ResponseType.OK))
+		self.set_modal(True)
+		self.set_resizable(False)
+		self.set_border_width(10)
+		# Result values:
+		self.dirname = None
+		self.diriter = None
+
+		box = self.get_content_area()
+		box.set_spacing(6)
+		combo = Gtk.ComboBox.new_with_model(list_delicate)
+		combo.set_hexpand(True)
+		combo.connect("changed", self.on_combo_changed)
+		renderer_text = Gtk.CellRendererText()
+		combo.pack_start(renderer_text, True)
+		combo.add_attribute(renderer_text, "text", 0)
+		box.pack_start(combo, False, False, True)
+
+		#box.add()
+		self.show_all()
+
+	def on_combo_changed(self, combo):
+		self.diriter = combo.get_active_iter()
+		if self.diriter is not None:  # otherwise raise error when destroy dialog
+			self.dirname = combo.get_model().get_value(self.diriter, 0)
 
 
 class Settings_dial(Gtk.Dialog):
@@ -21,7 +44,7 @@ class Settings_dial(Gtk.Dialog):
 		- the extentions to avoid
 		- the filenames to avoid
 		- the directories to avoid
-		- TODO: the paths to avoid 
+		- TODO: the paths to avoid
 
 	"""
 	def __init__(self, parent):
@@ -114,6 +137,7 @@ class Settings_dial(Gtk.Dialog):
 
 		# Pack boxes
 		box.pack_start(box_time, False, False, 0)
+		box.pack_start(Gtk.Label('Règles d\'exclusion : '), False, False, 0)
 		box.pack_start(box_ext, False, False, 0)
 		box.pack_start(box_files, False, False, 0)
 		box.pack_start(box_dirs, False, False, 0)
