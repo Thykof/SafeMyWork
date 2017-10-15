@@ -274,7 +274,7 @@ class Safer(object):
 		self.logger.info('Done')
 		self.safe_dirs = self.get_dst_path()  # !!! probleme avec activate
 
-	def compare(self, local_path, external_path):
+	def compare(self, local_path, external_path, loop):
 		"""
 		Il faudrait une fenetre avec 3 onglets :
 			- fichiers a copier : qui manquent dans la destination
@@ -288,7 +288,6 @@ class Safer(object):
 		"""
 		self.logger.info('Start comparing')
 
-		loop = asyncio.get_event_loop()
 		loop.run_until_complete(self.get_to_save(local_path))
 		local_dirs = self.dirs_to_make
 		locals_files = self.list_files
@@ -416,27 +415,38 @@ class Safer(object):
 		for filename in to_save:
 			dst = path.join(safe_path, filename)
 			self.logger.info('Copy: '+ dst)
-
-			copy2(path.join(path_delicate, filename), dst)
+			try:
+				copy2(path.join(path_delicate, filename), dst)
+			except FileNotFoundError:
+				pass
+				#TODO: put these file in a list and show it after, to notify what failed
 
 	def update_files(self, to_update, safe_path, path_delicate):
 		"""Update the files in `to_update`."""
 		for file_path in to_update:
 			src = path.join(path_delicate, file_path)
 			dst = path.join(safe_path, file_path)
-			if self.compare_file(src, dst):
-				self.logger.info('Update: '+ file_path)
-				with open(src, 'rb') as myfile:
-					content = myfile.read()
-				with open(dst, 'wb') as myfile:
-					myfile.write(content)
+			try:
+				if self.compare_file(src, dst):
+					self.logger.info('Update: '+ file_path)
+					with open(src, 'rb') as myfile:
+						content = myfile.read()
+					with open(dst, 'wb') as myfile:
+						myfile.write(content)
+			except FileNotFoundError:
+				pass
+				#TODO: put these file in a list and show it after, to notify what failed
 
 	def remove_files(self, to_del, safe_path_last):
 		"""Remove the files in `to_del`."""
 		for filename in to_del:
 			target = path.join(safe_path_last, filename)
 			self.logger.info('Remove: ' + target)
-			remove(target)
+			try:
+				remove(target)
+			except FileNotFoundError:
+				pass
+				#TODO: put these file in a list and show it after, to notify what failed
 
 	def compare_file(self, file1, file2):
 		"""Return True if `file1` is most recent than `file2`."""

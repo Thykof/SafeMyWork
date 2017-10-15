@@ -168,7 +168,7 @@ class AutoSavingGrid(Gtk.Grid):
 			self.timer.cancel()
 			self.timer.join()
 		self.text.set_text('En attente...')
-		# TODO:Cherche un thread de copy en cours de traitement et indoquer que ça va se finir mais que ça continue
+		# TODO:Cherche un thread de copy en cours de traitement et indiquer que ça va se finir mais que ça continue
 
 	def add_delicate_dir(self, button):
 		"""Add a dirctory to scan."""

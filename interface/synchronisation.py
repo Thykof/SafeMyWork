@@ -4,9 +4,10 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio
 
+import threading
+import asyncio
 
 from .helpers import open_folder as show_dir
-
 
 class SynchronisationGrid(Gtk.Grid):
 	def __init__(self, parent, safer):
@@ -17,6 +18,7 @@ class SynchronisationGrid(Gtk.Grid):
 		self.safer = safer
 		self.local_path = ''
 		self.external_path = ''
+		self.loop = asyncio.get_event_loop()
 
 		# Properties
 		self.set_column_spacing(5)
@@ -42,7 +44,7 @@ class SynchronisationGrid(Gtk.Grid):
 		self.attach(button_show_external, 0, 2, 1, 1)
 		button_choose_external = Gtk.Button.new_with_label("Selection du dossier externe")
 		button_choose_external.connect('clicked', self.on_folder_clicked, False)
-		self.attach(button_choose_external, 1, 2, 2, 1)
+		self.attach(button_choose_external, 1, 2, 1, 1)
 
 		if self.safer.config['external_path'] == '':
 			self.label_external = Gtk.Label("< selectionner un dossier externe >")
@@ -50,16 +52,20 @@ class SynchronisationGrid(Gtk.Grid):
 			self.label_external = Gtk.Label(self.safer.config['external_path'])
 		self.attach(self.label_external, 0, 3, 2, 1)
 
+		box = Gtk.Box()
+		self.spinner = Gtk.Spinner()
 		self.button_compare = Gtk.Button.new_with_label('Comparer')
 		self.button_compare.connect('clicked', self.compare)
 		self.button_execute = Gtk.Button.new_with_label('Executer')
 		self.button_execute.connect('clicked', self.execute_compare)
 		self.button_execute.set_sensitive(False)
-		self.attach(self.button_compare, 0, 5, 1, 1)
-		self.attach(self.button_execute, 1, 5, 1, 1)
+		box.pack_start(self.button_compare, True, True, 5)
+		box.pack_start(self.spinner, True, True, 5)
+		box.pack_start(self.button_execute, True, True, 5)
+		self.attach(box, 0, 5, 2, 1)
 
 		# List files:
-		self.attach(Gtk.Label("Selections des fichiers :"), 0, 6, 2, 1)
+		self.attach(Gtk.Label("Selections des fichiers :"), 0, 6, 3, 1)
 		self.scrolled_win_select_file = Gtk.ScrolledWindow()
 		self.scrolled_win_select_file.set_min_content_width(600)
 		self.scrolled_win_select_file.set_min_content_height(100)
@@ -115,8 +121,7 @@ class SynchronisationGrid(Gtk.Grid):
 		dialog.destroy()
 
 	def on_cell_toggled_file(self, widget, path):
-		new_val = not self.listfile[path][0]
-		self.listfile[path][0] = new_val
+		self.listfile[path][0] = not self.listfile[path][0]
 
 	def on_select_all(self, treeviewcolumn):
 		self.select_all.set_active(not self.select_all.get_active())
@@ -128,15 +133,27 @@ class SynchronisationGrid(Gtk.Grid):
 				self.listfile[path][0] = False
 
 	def compare(self, button):
+		can = True
+		for thread in threading.enumerate():
+			if thread.name == 'compare' and thread.is_alive():
+					can = False
+		if can:  # No thread are already comparing files
+			self.thread = threading.Thread(target=self.do_compare, name='compare')
+			self.thread.start()
+
+	def do_compare(self):
 		"""
 		Idées:
-			Class action avec path, order (suprimer, copie, couper)
-			passe action à execute_compare
+			Class action avec path, ordre(suprimer, copie, couper)
+			passe chacune des actions à execute_compare
 
 		"""
 		if self.local_path != "" and self.external_path != '':
+			self.parent.info_label.set_text("Comparaison lancé")
+			#self.button_compare.set_sensitive(False)
+			self.spinner.start()
 			self.listfile.clear()
-			comparison = self.safer.compare(self.local_path, self.external_path)
+			comparison = self.safer.compare(self.local_path, self.external_path, self.loop)
 			for filename in comparison['to_copy']:
 				self.listfile.append([True, filename, 'edit-copy'])
 
@@ -150,8 +167,12 @@ class SynchronisationGrid(Gtk.Grid):
 			self.comparison = comparison
 
 			self.parent.info_label.set_text("Faites vos choix de synchronisation")
+			self.select_all.set_active(True)
+			self.spinner.stop()
+			#self.button_compare.set_sensitive(True)
 		else:
 			self.parent.info_label.set_text("Veuillez selectionner des dossiers")
+			self.select_all.set_active(False)
 
 		"""
 		(main.py:8328): Gtk-WARNING **: Allocating size to interface+interface+MyWindow 0x56503615c2c0
@@ -160,6 +181,19 @@ class SynchronisationGrid(Gtk.Grid):
 		"""
 
 	def execute_compare(self, button):
+		can = True
+		for thread in threading.enumerate():
+			if thread.name == 'execute_compare' and thread.is_alive():
+					can = False
+		if can:  # No thread are already saving files
+			self.button_execute.set_sensitive(False)
+			self.thread = threading.Thread(target=self.do_execute_compare, name='execute_compare')
+			self.thread.start()
+
+	def do_execute_compare(self):
+		self.parent.info_label.set_text("Synchronisation lancé")
+		self.spinner.start()
+		self.button_compare.set_sensitive(False)
 		orders = dict()
 		orders['dirs_to_make'] = self.comparison['dirs_to_make']  # ~~ it make directories even if no file is copied
 		orders['dirs_to_del'] = self.comparison['dirs_to_del']  # ~~
@@ -177,9 +211,11 @@ class SynchronisationGrid(Gtk.Grid):
 
 		self.safer.execute(orders, self.local_path, self.external_path)
 		# spinner and timer
-		self.button_execute.set_sensitive(False)
-
-		self.parent.info_label.set_text("Synchronisation lancé")
+		self.button_compare.set_sensitive(True)
+		self.listfile.clear()
+		self.select_all.set_active(False)
+		self.spinner.stop()
+		self.parent.info_label.set_text("Synchronisation terminé")
 
 	def open_folder(self, button, local):
 		if local:
