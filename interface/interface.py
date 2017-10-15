@@ -15,7 +15,7 @@ class MyWindow(Gtk.ApplicationWindow):
 	def __init__(self, app):
 		Gtk.Window.__init__(self, title='SafeMyWork 1.0', application=app)
 		# Varaibles
-		self.safer = Safer(items={'timedelta': .5})
+		self.safer = Safer()
 		# Properties
 		self.set_position(Gtk.WindowPosition.CENTER)
 		self.set_border_width(5)
@@ -23,7 +23,8 @@ class MyWindow(Gtk.ApplicationWindow):
 		# Header Bar
 		hb = Gtk.HeaderBar()
 		hb.set_show_close_button(True)
-		hb.props.title = 'SafeMyWork v1.0'
+		hb.props.title = 'SafeMyWork!'
+		hb.props.subtitle = 'Sauvegarde et synchronisation de vos fichiers'
 		self.set_titlebar(hb)
 
 		button = Gtk.Button()
@@ -46,7 +47,8 @@ class MyWindow(Gtk.ApplicationWindow):
 
 		# Header box
 		header_box = Gtk.Box(spacing=6)
-		header_box.pack_start(Gtk.Label('Logiciel de gestion de sauvegarde de documents.'), True, True, 0)
+		self.info_label = Gtk.Label('Bienvenue !')
+		header_box.pack_start(self.info_label, True, True, 0)
 		main_box.pack_start(header_box, False, False, 0)
 
 		# Notebook

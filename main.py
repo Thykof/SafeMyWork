@@ -27,7 +27,7 @@ class MyApplication(Gtk.Application):
 
 	def quit_callback(self, action, parameter):
 		"""Save config, stop scan and quit."""
-		self.win.page_auto_save.text.set_text('Fermeture')
+		self.win.info_label.set_text('Fermeture')
 		self.win.safer.save_config()
 		self.win.page_auto_save.switch_auto_save.set_active(False)
 		sys.exit()

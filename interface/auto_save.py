@@ -64,7 +64,7 @@ class AutoSavingGrid(Gtk.Grid):
 		hbox2 = Gtk.Box(spacing=6)
 		button1 = Gtk.RadioButton.new_with_label_from_widget(None, "Copier")
 		button1.set_hexpand(True)
-		button1.connect("toggled", self.on_button_toggled, "copy")
+		button1.connect("toggled", self.on_button_toggled, "Copier")
 		hbox2.pack_start(button1, False, False, 0)
 		button2 = Gtk.RadioButton.new_from_widget(button1)
 		button2.set_hexpand(True)
@@ -73,7 +73,7 @@ class AutoSavingGrid(Gtk.Grid):
 		hbox2.pack_start(button2, False, False, 0)
 		button3 = Gtk.RadioButton.new_with_mnemonic_from_widget(button1, "Filtrer")
 		button3.set_hexpand(True)
-		button3.connect("toggled", self.on_button_toggled, "filter")
+		button3.connect("toggled", self.on_button_toggled, "Filtrer")
 		hbox2.pack_start(button3, False, False, 0)
 		self.attach(hbox2, 0, 2, 2, 1)
 
@@ -114,26 +114,18 @@ class AutoSavingGrid(Gtk.Grid):
 			self.stop_watching()
 
 	def on_button_toggled(self, button, name):
-		# Radio buttons for copy, update or filter
+		"""Radio buttons for copy, update or filter"""
 		if button.get_active():
 			self.state = name
-	def on_changed_timedelta(self, *args):
-		print(args)
+			self.parent.info_label.set_text("Changement du mode : " + name)
+
+	def on_changed_timedelta(self, button):
 		timedelta = int(self.spinbutton.get_value())
 		self.safer.config['timedelta'] = timedelta
-		print(self.safer.config)
+		message = "Delai changé : " + str(timedelta)
+		message += " minutes" if timedelta > 1 else " minute"
+		self.parent.info_label.set_text(message)
 
-	def on_cell_toggled_select(self, widget, path):
-		print(widget)
-		print(self.listselect)
-		print(path)
-		print(self.listselect[path])  # model row
-		new_val = not self.listselect[path][1]
-		self.listselect[path][1] = new_val
-		self.safer.safe_dirs[self.listselect[path][0]]['activate'] = new_val
-		print(new_val)
-		print(self.safer.safe_dirs)
-	#
 	def scan_now(self, *args):  # start the thread
 		"""Make thread, that scan and copy files, if no one is already started.
 		Call by the button or by start_scan."""
@@ -148,7 +140,7 @@ class AutoSavingGrid(Gtk.Grid):
 	def execute(self):  # target of thread
 		"""Call by a thread in `scan_now`, run `Safer`."""
 		self.spinner.start()
-		self.text.set_text('Scan en cours')
+		self.parent.info_label.set_text('Scan en cours')
 		begin = time()
 		if self.state == 'copy':
 			self.safer.copy_files()
@@ -160,7 +152,7 @@ class AutoSavingGrid(Gtk.Grid):
 		end = time()
 		self.scan_time = round(end - begin, 2)
 		self.spinner.stop()
-		self.text.set_text('Scanné en ' + str(self.scan_time) + ' s')
+		self.parent.info_label.set_text('Scanné en ' + str(self.scan_time) + ' s')
 
 	def start_scan(self):  # perpetual scan
 		"""Run `scan_now`, start a timer thread to itself for perpetual scan.
@@ -192,21 +184,22 @@ class AutoSavingGrid(Gtk.Grid):
 			if dirname != '' and dirname not in self.safer.delicate_dirs:
 				self.list_delicate.append([dirname])
 				self.safer.add_delicate_dir(dirname)
-				self.text.set_text("Dossier ajouté")
+				self.parent.info_label.set_text("Dossier ajouté")
 			else:
-				self.text.set_text("Dossier invalide")
+				self.parent.info_label.set_text("Dossier invalide")
 
 		dialog.destroy()
 
 	def del_delicate_dir(self, button):
 		"""Remove a directory to scan."""
-		dialog = DelDirDialog(self.parent, self.list_delicate)
-		response = dialog.run()
-		if response == Gtk.ResponseType.OK:
-			print('dirname:')
-			print(dialog.dirname)
-			if dialog.dirname is not None and dialog.diriter is not None:
-				self.safer.del_delicate_dir(dialog.dirname)
-				self.list_delicate.remove(dialog.diriter)
-				self.text.set_text("Dossier supprimé")
-		dialog.destroy()
+		if len(self.list_delicate) != 0:
+			dialog = DelDirDialog(self.parent, self.list_delicate)
+			response = dialog.run()
+			if response == Gtk.ResponseType.OK:
+				if dialog.dirname is not None and dialog.diriter is not None:
+					self.safer.del_delicate_dir(dialog.dirname)
+					self.list_delicate.remove(dialog.diriter)
+					self.parent.info_label.set_text("Dossier supprimé")
+			dialog.destroy()
+		else:
+			self.parent.info_label.set_text("Rien à supprimer")

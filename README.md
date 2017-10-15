@@ -18,6 +18,7 @@ Work in progress...
 #### TODO
  - make an history of each files
  - compress files
+ - add little icon to symbolize file explorer in buttons
 
 ## What for ?
 SafeMyWork is intend for people who handle lot of files which can be texts, images, songs.

@@ -26,7 +26,7 @@ class Safer(object):
 	# Delicate folders in destination: make in get_dst_path, call in __init__
 	# Folder of version and delicate folder in version folder: make in save
 
-	def __init__(self, delicate_dirs=None, destination=None, config=None, items=None):
+	def __init__(self, delicate_dirs=None, destination=None, config=None):
 		"""Manage logging, make destination directory, manage destinations, manage config"""
 		# delicate_dirs: list of different directories placed under supervision
 		super(Safer, self).__init__()
@@ -48,7 +48,6 @@ class Safer(object):
 		# Config
 		self.cfg_dir = path.join(path.expanduser('~'), '.safemywork')
 		self.cfg_file = path.join(self.cfg_dir, 'config.yml')
-		self.items = items
 		if config is None:
 			self.get_config(delicate_dirs, destination)
 		else:
@@ -85,11 +84,11 @@ class Safer(object):
 				'dirname': [],
 				'dirpath': [],
 				'filename': [],
-				'extention': []
+				'extention': [],
+				'local_path': '',
+				'external_path': '',
+				'timedelta': 1,
 				}
-			if self.items:
-				for key, elt in self.items.items():
-					self.config[key] = elt
 			self.save_config()
 
 	def save_config(self):
