@@ -22,7 +22,7 @@ class AutoSavingGrid(Gtk.Grid):
 		self.thread = None
 		self.timer = None
 		self.scan_time = None
-		self.state = 'copy'
+		self.state = 'Copier'
 		self.loop = asyncio.get_event_loop()
 		# Properties
 		self.set_column_spacing(5)
@@ -142,12 +142,17 @@ class AutoSavingGrid(Gtk.Grid):
 		self.spinner.start()
 		self.parent.info_label.set_text('Scan en cours')
 		begin = time()
-		if self.state == 'copy':
+		if self.state == 'Copier':
 			self.safer.copy_files()
-		elif self.state == 'filter':
+		elif self.state == 'Filtrer':
 			self.safer.save_with_filters(loop=self.loop)
 		elif self.state == 'maj':
 			self.safer.update(loop=self.loop)
+
+		"""
+		(main.py:6313): Pango-CRITICAL **: pango_layout_get_line_count: assertion 'layout != NULL' failed
+		(main.py:6313): Pango-CRITICAL **: pango_layout_get_pixel_extents: assertion 'PANGO_IS_LAYOUT (layout)' failed
+		"""
 
 		end = time()
 		self.scan_time = round(end - begin, 2)

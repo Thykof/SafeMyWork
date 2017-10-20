@@ -6,6 +6,7 @@ from gi.repository import Gtk, Gio
 
 import threading
 import asyncio
+from time import sleep
 
 from .helpers import open_folder as show_dir
 
@@ -19,6 +20,12 @@ class SynchronisationGrid(Gtk.Grid):
 		self.local_path = ''
 		self.external_path = ''
 		self.loop = asyncio.get_event_loop()
+		self.action_compare = Gio.SimpleAction.new('compare_callback', None)
+		self.action_compare.connect('activate', self.show_compare)
+		self.action_execute = Gio.SimpleAction.new('execute_callback', None)
+		self.action_execute.connect('activate', self.do_execute_compare)
+		self.action_end_execute = Gio.SimpleAction.new('end_execute', None)
+		self.action_end_execute.connect('activate', self.end_execute)
 
 		# Properties
 		self.set_column_spacing(5)
@@ -58,7 +65,6 @@ class SynchronisationGrid(Gtk.Grid):
 		self.button_compare.connect('clicked', self.compare)
 		self.button_execute = Gtk.Button.new_with_label('Executer')
 		self.button_execute.connect('clicked', self.execute_compare)
-		self.button_execute.set_sensitive(False)
 		box.pack_start(self.button_compare, True, True, 5)
 		box.pack_start(self.spinner, True, True, 5)
 		box.pack_start(self.button_execute, True, True, 5)
@@ -133,67 +139,56 @@ class SynchronisationGrid(Gtk.Grid):
 				self.listfile[path][0] = False
 
 	def compare(self, button):
-		can = True
-		for thread in threading.enumerate():
-			if thread.name == 'compare' and thread.is_alive():
-					can = False
-		if can:  # No thread are already comparing files
-			self.thread = threading.Thread(target=self.do_compare, name='compare')
-			self.thread.start()
-
-	def do_compare(self):
-		"""
-		Idées:
-			Class action avec path, ordre(suprimer, copie, couper)
-			passe chacune des actions à execute_compare
-
-		"""
+		self.listfile.clear()
 		if self.local_path != "" and self.external_path != '':
-			self.parent.info_label.set_text("Comparaison lancé")
-			#self.button_compare.set_sensitive(False)
-			self.spinner.start()
-			self.listfile.clear()
-			comparison = self.safer.compare(self.local_path, self.external_path, self.loop)
-			for filename in comparison['to_copy']:
-				self.listfile.append([True, filename, 'edit-copy'])
-
-			for filename in comparison['to_update']:
-				self.listfile.append([True, filename, 'system-software-update'])
-
-			for filename in comparison['to_del']:
-				self.listfile.append([False, filename, 'edit-delete'])
-
-			self.button_execute.set_sensitive(True)
-			self.comparison = comparison
-
-			self.parent.info_label.set_text("Faites vos choix de synchronisation")
-			self.select_all.set_active(True)
-			self.spinner.stop()
-			#self.button_compare.set_sensitive(True)
+			can = True
+			for thread in threading.enumerate():
+				if thread.name == 'compare' and thread.is_alive():
+						can = False
+				if thread.name == 'execute_compare' and thread.is_alive():
+						can = False
+			if can:  # No thread are already saving files
+				self.parent.info_label.set_text("Comparaison lancé")
+				self.spinner.start()
+				self.thread = threading.Thread(target=self.do_compare, name="compare")
+				self.thread.start()
 		else:
 			self.parent.info_label.set_text("Veuillez selectionner des dossiers")
 			self.select_all.set_active(False)
 
-		"""
-		(main.py:8328): Gtk-WARNING **: Allocating size to interface+interface+MyWindow 0x56503615c2c0
-		without calling gtk_widget_get_preferred_width/height().
-		How does the code know the size to allocate?
-		"""
+	def do_compare(self):
+		self.comparison = self.safer.compare(self.local_path, self.external_path, self.loop)
+		self.action_compare.activate()
+
+	def show_compare(self, *args):
+		self.spinner.stop()
+		self.select_all.set_active(True)
+		self.parent.info_label.set_text("Faites vos choix de synchronisation")
+		comparison = self.comparison
+
+		for filename in comparison['to_copy']:
+			self.listfile.append([True, filename, 'edit-copy'])
+
+		for filename in comparison['to_update']:
+			self.listfile.append([True, filename, 'system-software-update'])
+
+		for filename in comparison['to_del']:
+			self.listfile.append([False, filename, 'edit-delete'])
 
 	def execute_compare(self, button):
 		can = True
 		for thread in threading.enumerate():
 			if thread.name == 'execute_compare' and thread.is_alive():
 					can = False
+			if thread.name == 'compare' and thread.is_alive():
+					can = False
 		if can:  # No thread are already saving files
-			self.button_execute.set_sensitive(False)
-			self.thread = threading.Thread(target=self.do_execute_compare, name='execute_compare')
+			self.parent.info_label.set_text("Synchronisation lancé")
+			self.spinner.start()
+			self.thread = threading.Thread(target=self.prepare_execute, name='execute_compare')
 			self.thread.start()
 
-	def do_execute_compare(self):
-		self.parent.info_label.set_text("Synchronisation lancé")
-		self.spinner.start()
-		self.button_compare.set_sensitive(False)
+	def prepare_execute(self):
 		orders = dict()
 		orders['dirs_to_make'] = self.comparison['dirs_to_make']  # ~~ it make directories even if no file is copied
 		orders['dirs_to_del'] = self.comparison['dirs_to_del']  # ~~
@@ -208,14 +203,22 @@ class SynchronisationGrid(Gtk.Grid):
 					orders['to_update'].append(self.listfile[path][1])
 				if self.listfile[path][2] == 'edit-delete':
 					orders['to_del'].append(self.listfile[path][1])
+		self.orders = orders
+		self.action_execute.activate()
 
+	def do_execute_compare(self, *args):
+		#(main.py:7268): Gtk-WARNING **: Allocating size to interface+interface+MyWindow 0x5599be2b22c0 without calling gtk_widget_get_preferred_width/height(). How does the code know the size to allocate?
+		#Erreur de segmentation (core dumped)
+		orders = self.orders
 		self.safer.execute(orders, self.local_path, self.external_path)
+		self.action_end_execute.activate()
+
+	def end_execute(self, *args):
 		# spinner and timer
-		self.button_compare.set_sensitive(True)
-		self.listfile.clear()
 		self.select_all.set_active(False)
 		self.spinner.stop()
 		self.parent.info_label.set_text("Synchronisation terminé")
+		self.listfile.clear()
 
 	def open_folder(self, button, local):
 		if local:

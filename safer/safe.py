@@ -289,10 +289,12 @@ class Safer(object):
 		self.logger.info('Start comparing')
 
 		loop.run_until_complete(self.get_to_save(local_path))
+
 		local_dirs = self.dirs_to_make
 		locals_files = self.list_files
 
 		loop.run_until_complete(self.get_to_save(external_path))
+
 		external_dirs = self.dirs_to_make
 		external_files = self.list_files
 
@@ -336,7 +338,8 @@ class Safer(object):
 			self.logger.info('Remove tree: ' + dirpath)
 			try:
 				rmtree(dirpath)
-			except FileNotFoundError:
+			except:
+				print('Error execute remove directories: ' + dirpath)
 				pass  # Directory already removed
 
 		self.logger.info('Done')
@@ -418,7 +421,7 @@ class Safer(object):
 			try:
 				copy2(path.join(path_delicate, filename), dst)
 			except FileNotFoundError:
-				pass
+				print('FileNotFoundError copy save files: ' + filename)
 				#TODO: put these file in a list and show it after, to notify what failed
 
 	def update_files(self, to_update, safe_path, path_delicate):
@@ -434,7 +437,7 @@ class Safer(object):
 					with open(dst, 'wb') as myfile:
 						myfile.write(content)
 			except FileNotFoundError:
-				pass
+				print('FileNotFoundError open update_files: ' + src, ' ' + dst)
 				#TODO: put these file in a list and show it after, to notify what failed
 
 	def remove_files(self, to_del, safe_path_last):
@@ -445,7 +448,7 @@ class Safer(object):
 			try:
 				remove(target)
 			except FileNotFoundError:
-				pass
+				print('FileNotFoundError remove remove_files :' + target)
 				#TODO: put these file in a list and show it after, to notify what failed
 
 	def compare_file(self, file1, file2):
