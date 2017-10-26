@@ -6,7 +6,6 @@ from gi.repository import Gtk, Gio
 
 import threading
 import asyncio
-from time import sleep
 
 from .helpers import open_folder as show_dir
 
@@ -22,6 +21,8 @@ class SynchronisationGrid(Gtk.Grid):
 		self.loop = asyncio.get_event_loop()
 		self.can_execute = False
 		self.comparison = None
+		self.last_comparison = None
+		self.last_comparison
 
 		# Properties
 		self.set_column_spacing(5)
@@ -140,13 +141,14 @@ class SynchronisationGrid(Gtk.Grid):
 			#if not self.thread_compare_active and not self.thread_execute_active:  # No thread are already saving files
 			can = True
 			for thread in threading.enumerate():
-				if thread.name == 'compare' or thread.name == 'execute_compare':
+				if thread.name == 'compare' and thread.is_alive():
+					can = False
+				if thread.name == 'execute_compare' and thread.is_alive():
 					can = False
 
 			if can:
 				self.parent.info_label.set_text("Comparaison lancé")
 				self.treeview_file.hide()
-				self.listfile.clear()
 				self.thread = threading.Thread(target=self.do_compare, name="compare")
 				self.thread.start()
 				self.can_execute = False
@@ -163,24 +165,24 @@ class SynchronisationGrid(Gtk.Grid):
 	def do_compare(self):
 		print('do_compare')
 		self.spinner.start()
+		self.last_comparison = self.comparison
 		self.comparison = self.safer.compare(self.local_path, self.external_path, self.loop)
 		self.select_all.set_active(True)
 		self.parent.info_label.set_text("Faites vos choix de synchronisation")
+		if self.last_comparison != self.comparison:
+			self.listfile.clear()
+			for filename in self.comparison['to_copy']:
+				self.listfile.append([True, filename, 'edit-copy'])
 
-		for filename in self.comparison['to_copy']:
-			self.listfile.append([True, filename, 'edit-copy'])
+			for filename in self.comparison['to_update']:
+				self.listfile.append([True, filename, 'system-software-update'])
 
-		for filename in self.comparison['to_update']:
-			self.listfile.append([True, filename, 'system-software-update'])
-
-		for filename in self.comparison['to_del']:
-			self.listfile.append([False, filename, 'edit-delete'])
-
+			for filename in self.comparison['to_del']:
+				self.listfile.append([False, filename, 'edit-delete'])
 
 		self.treeview_file.show()
 
 		self.can_execute = True
-		sleep(0.15)
 		self.spinner.stop()
 		print(' / do_compare')
 
@@ -189,7 +191,9 @@ class SynchronisationGrid(Gtk.Grid):
 		if self.can_execute:
 			can = True
 			for thread in threading.enumerate():
-				if thread.name == 'compare' or thread.name == 'execute_compare':
+				if thread.name == 'compare' and thread.is_alive():
+					can = False
+				if thread.name == 'execute_compare' and thread.is_alive():
 					can = False
 
 			if can:
@@ -228,7 +232,6 @@ class SynchronisationGrid(Gtk.Grid):
 		# here: Erreur de segmentation (core dumped) :
 		self.select_all.set_active(False)
 		self.parent.info_label.set_text("Synchronisation terminé")
-		sleep(0.15)
 		self.spinner.stop()
 		print(' / prepare_execute')
 
