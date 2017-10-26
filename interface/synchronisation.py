@@ -20,12 +20,8 @@ class SynchronisationGrid(Gtk.Grid):
 		self.local_path = ''
 		self.external_path = ''
 		self.loop = asyncio.get_event_loop()
-		self.action_compare = Gio.SimpleAction.new('compare_callback', None)
-		self.action_compare.connect('activate', self.show_compare)
-		self.action_execute = Gio.SimpleAction.new('execute_callback', None)
-		self.action_execute.connect('activate', self.do_execute_compare)
-		self.action_end_execute = Gio.SimpleAction.new('end_execute', None)
-		self.action_end_execute.connect('activate', self.end_execute)
+		self.can_execute = False
+		self.comparison = None
 
 		# Properties
 		self.set_column_spacing(5)
@@ -139,56 +135,80 @@ class SynchronisationGrid(Gtk.Grid):
 				self.listfile[path][0] = False
 
 	def compare(self, button):
-		self.listfile.clear()
+		print('compare')
 		if self.local_path != "" and self.external_path != '':
+			#if not self.thread_compare_active and not self.thread_execute_active:  # No thread are already saving files
 			can = True
 			for thread in threading.enumerate():
-				if thread.name == 'compare' and thread.is_alive():
-						can = False
-				if thread.name == 'execute_compare' and thread.is_alive():
-						can = False
-			if can:  # No thread are already saving files
+				if thread.name == 'compare' or thread.name == 'execute_compare':
+					can = False
+
+			if can:
 				self.parent.info_label.set_text("Comparaison lancé")
-				self.spinner.start()
+				self.treeview_file.hide()
+				self.listfile.clear()
 				self.thread = threading.Thread(target=self.do_compare, name="compare")
 				self.thread.start()
+				self.can_execute = False
+				print('yes')
+			else:
+				print('no')
 		else:
 			self.parent.info_label.set_text("Veuillez selectionner des dossiers")
 			self.select_all.set_active(False)
+			print('NOT')
+
+		print('/ compare')
 
 	def do_compare(self):
+		print('do_compare')
+		self.spinner.start()
 		self.comparison = self.safer.compare(self.local_path, self.external_path, self.loop)
-		self.action_compare.activate()
-
-	def show_compare(self, *args):
-		self.spinner.stop()
 		self.select_all.set_active(True)
 		self.parent.info_label.set_text("Faites vos choix de synchronisation")
-		comparison = self.comparison
 
-		for filename in comparison['to_copy']:
+		for filename in self.comparison['to_copy']:
 			self.listfile.append([True, filename, 'edit-copy'])
 
-		for filename in comparison['to_update']:
+		for filename in self.comparison['to_update']:
 			self.listfile.append([True, filename, 'system-software-update'])
 
-		for filename in comparison['to_del']:
+		for filename in self.comparison['to_del']:
 			self.listfile.append([False, filename, 'edit-delete'])
 
+
+		self.treeview_file.show()
+
+		self.can_execute = True
+		sleep(0.15)
+		self.spinner.stop()
+		print(' / do_compare')
+
 	def execute_compare(self, button):
-		can = True
-		for thread in threading.enumerate():
-			if thread.name == 'execute_compare' and thread.is_alive():
+		print('execute_compare')
+		if self.can_execute:
+			can = True
+			for thread in threading.enumerate():
+				if thread.name == 'compare' or thread.name == 'execute_compare':
 					can = False
-			if thread.name == 'compare' and thread.is_alive():
-					can = False
-		if can:  # No thread are already saving files
-			self.parent.info_label.set_text("Synchronisation lancé")
-			self.spinner.start()
-			self.thread = threading.Thread(target=self.prepare_execute, name='execute_compare')
-			self.thread.start()
+
+			if can:
+				self.parent.info_label.set_text("Synchronisation lancé")
+				self.thread = threading.Thread(target=self.prepare_execute, name='execute_compare')
+				self.thread.start()
+				self.thread_execute_active = True
+				self.can_execute = False
+				print('yes')
+			else:
+				print('no')
+		else:
+			self.parent.info_label.set_text("Veuillez d'abord comparer")
+			print('NOT')
+
+		print('/ execute_compare')
 
 	def prepare_execute(self):
+		print('prepare_execute')
 		orders = dict()
 		orders['dirs_to_make'] = self.comparison['dirs_to_make']  # ~~ it make directories even if no file is copied
 		orders['dirs_to_del'] = self.comparison['dirs_to_del']  # ~~
@@ -203,22 +223,14 @@ class SynchronisationGrid(Gtk.Grid):
 					orders['to_update'].append(self.listfile[path][1])
 				if self.listfile[path][2] == 'edit-delete':
 					orders['to_del'].append(self.listfile[path][1])
-		self.orders = orders
-		self.action_execute.activate()
-
-	def do_execute_compare(self, *args):
-		#(main.py:7268): Gtk-WARNING **: Allocating size to interface+interface+MyWindow 0x5599be2b22c0 without calling gtk_widget_get_preferred_width/height(). How does the code know the size to allocate?
-		#Erreur de segmentation (core dumped)
-		orders = self.orders
+		self.spinner.start()
 		self.safer.execute(orders, self.local_path, self.external_path)
-		self.action_end_execute.activate()
-
-	def end_execute(self, *args):
-		# spinner and timer
+		# here: Erreur de segmentation (core dumped) :
 		self.select_all.set_active(False)
-		self.spinner.stop()
 		self.parent.info_label.set_text("Synchronisation terminé")
-		self.listfile.clear()
+		sleep(0.15)
+		self.spinner.stop()
+		print(' / prepare_execute')
 
 	def open_folder(self, button, local):
 		if local:
