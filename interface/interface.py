@@ -2,7 +2,7 @@
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gio
+from gi.repository import Gtk, Gio, GdkPixbuf
 
 
 from .auto_save import AutoSavingGrid
@@ -19,6 +19,7 @@ class MyWindow(Gtk.ApplicationWindow):
 		# Properties
 		self.set_position(Gtk.WindowPosition.CENTER)
 		self.set_border_width(5)
+		self.set_icon_from_file('icon.png')
 
 		# Header Bar
 		hb = Gtk.HeaderBar()
@@ -79,6 +80,8 @@ class MyWindow(Gtk.ApplicationWindow):
 		about_dialog.set_authors(['Nathan Seva'])
 		about_dialog.set_comments('Utilitaire SafeMyWork')
 		about_dialog.set_license('SafeMyWork est sous la license GNU GPL(v3). \n\n https://github.com/Thykof/SafeMyWork/blob/master/LICENSE')
+		pixbuf = GdkPixbuf.Pixbuf.new_from_file('logo.png')
+		about_dialog.set_logo(pixbuf)
 
 		about_dialog.run()
 		about_dialog.destroy()
