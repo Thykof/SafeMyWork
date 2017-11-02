@@ -136,7 +136,6 @@ class SynchronisationGrid(Gtk.Grid):
 				self.listfile[path][0] = False
 
 	def compare(self, button):
-		print('compare')
 		if self.local_path != "" and self.external_path != '':
 			#if not self.thread_compare_active and not self.thread_execute_active:  # No thread are already saving files
 			can = True
@@ -152,18 +151,11 @@ class SynchronisationGrid(Gtk.Grid):
 				self.thread = threading.Thread(target=self.do_compare, name="compare")
 				self.thread.start()
 				self.can_execute = False
-				print('yes')
-			else:
-				print('no')
 		else:
 			self.parent.info_label.set_text("Veuillez selectionner des dossiers")
 			self.select_all.set_active(False)
-			print('NOT')
-
-		print('/ compare')
 
 	def do_compare(self):
-		print('do_compare')
 		self.spinner.start()
 		self.last_comparison = self.comparison
 		self.comparison = self.safer.compare(self.local_path, self.external_path, self.loop)
@@ -184,10 +176,8 @@ class SynchronisationGrid(Gtk.Grid):
 
 		self.can_execute = True
 		self.spinner.stop()
-		print(' / do_compare')
 
 	def execute_compare(self, button):
-		print('execute_compare')
 		if self.can_execute:
 			can = True
 			for thread in threading.enumerate():
@@ -202,17 +192,10 @@ class SynchronisationGrid(Gtk.Grid):
 				self.thread.start()
 				self.thread_execute_active = True
 				self.can_execute = False
-				print('yes')
-			else:
-				print('no')
 		else:
 			self.parent.info_label.set_text("Veuillez d'abord comparer")
-			print('NOT')
-
-		print('/ execute_compare')
 
 	def prepare_execute(self):
-		print('prepare_execute')
 		orders = dict()
 		orders['dirs_to_make'] = self.comparison['dirs_to_make']  # ~~ it make directories even if no file is copied
 		orders['dirs_to_del'] = self.comparison['dirs_to_del']  # ~~
@@ -233,7 +216,6 @@ class SynchronisationGrid(Gtk.Grid):
 		self.select_all.set_active(False)
 		self.parent.info_label.set_text("Synchronisation terminé")
 		self.spinner.stop()
-		print(' / prepare_execute')
 
 	def open_folder(self, button, local):
 		if local:
