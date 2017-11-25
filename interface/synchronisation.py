@@ -2,13 +2,15 @@
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gio
+from gi.repository import Gtk, Gio, GObject
 
 import threading
 import asyncio
 
 from .helpers import open_folder as show_dir
 from .dialog import AbortDialog
+
+GObject.threads_init()
 
 class SynchronisationGrid(Gtk.Grid):
 	def __init__(self, parent, safer):
@@ -138,19 +140,23 @@ class SynchronisationGrid(Gtk.Grid):
 
 	def compare(self, button):
 		if self.local_path != "" and self.external_path != '':
+			can = True
+			for thread in threading.enumerate():
+				if thread.name == 'compare' and thread.is_alive():
+					can = False
+				if thread.name == 'execute_compare' and thread.is_alive():
+					can = False
+			if can:
+				self.parent.info_label.set_text("Comparaison lancé")
+				self.treeview_file.hide()
+				thread = threading.Thread(target=self.do_compare, name="compare")
+				thread.daemon = True
+				thread.start()
+				self.can_execute = False
+				print('yes')
+			else:
+				print('no')
 
-			dialog = AbortDialog(self.parent)
-
-			self.parent.info_label.set_text("Comparaison lancé")
-			self.can_execute = False
-			self.do_compare()
-
-			response = dialog.run()
-
-			if response == Gtk.ResponseType.CANCEL:
-				print('abort')
-				self.safer.stop = True
-			dialog.destroy()
 		else:
 			self.parent.info_label.set_text("Veuillez selectionner des dossiers")
 			self.select_all.set_active(False)
@@ -189,8 +195,9 @@ class SynchronisationGrid(Gtk.Grid):
 
 			if can:
 				self.parent.info_label.set_text("Synchronisation lancé")
-				self.thread = threading.Thread(target=self.prepare_execute, name='execute_compare')
-				self.thread.start()
+				thread = threading.Thread(target=self.prepare_execute, name='execute_compare')
+				thread.daemon = True
+				thread.start()
 				self.thread_execute_active = True
 				self.can_execute = False
 		else:
