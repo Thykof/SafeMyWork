@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/python3
 
-from watcher import helpers
+from safer import helpers
 
 class BaseTest(object):
 	def setup_method(self, test_method):
