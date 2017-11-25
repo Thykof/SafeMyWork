@@ -80,7 +80,7 @@ class MyWindow(Gtk.ApplicationWindow):
 		about_dialog.set_authors(['Nathan Seva'])
 		about_dialog.set_comments('Utilitaire SafeMyWork')
 		about_dialog.set_license('SafeMyWork est sous la license GNU GPL(v3). \n\n https://github.com/Thykof/SafeMyWork/blob/master/LICENSE')
-		pixbuf = GdkPixbuf.Pixbuf.new_from_file('logo.png')
+		pixbuf = GdkPixbuf.Pixbuf.new_from_file('logo_big.png')
 		about_dialog.set_logo(pixbuf)
 
 		about_dialog.run()
