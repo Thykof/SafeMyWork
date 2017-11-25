@@ -59,6 +59,8 @@ class Safer(object):
 			self.delicate_dirs = config['delicate_dirs']
 			self.save_config()
 
+		self.stop = False
+
 		self.safe_dirs = self.get_dst_path()
 
 	def get_config(self, delicate_dirs, destination):
@@ -355,6 +357,8 @@ class Safer(object):
 		chdir(path.dirname(directory))
 		directory_walk = path.basename(directory)
 		for dirpath, dirnames, filenames in walk(directory_walk):  # walk() return a generator
+			if self.stop:
+				break
 			# dirpath = directory, for the first time
 			# dirpath = subdirs of directory
 			self.logger.info(dirpath)
@@ -389,6 +393,8 @@ class Safer(object):
 						list_files.append(path.join(dirname, filename))
 					else:
 						self.logger.info('Skip filename or extention:' + path.join(dirname, filename))
+					if self.stop:
+						break
 			else:
 				self.logger.info('Skip dirpath: ' + dirpath)
 

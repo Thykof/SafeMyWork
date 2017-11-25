@@ -8,6 +8,7 @@ import threading
 import asyncio
 
 from .helpers import open_folder as show_dir
+from .dialog import AbortDialog
 
 class SynchronisationGrid(Gtk.Grid):
 	def __init__(self, parent, safer):
@@ -137,25 +138,25 @@ class SynchronisationGrid(Gtk.Grid):
 
 	def compare(self, button):
 		if self.local_path != "" and self.external_path != '':
-			#if not self.thread_compare_active and not self.thread_execute_active:  # No thread are already saving files
-			can = True
-			for thread in threading.enumerate():
-				if thread.name == 'compare' and thread.is_alive():
-					can = False
-				if thread.name == 'execute_compare' and thread.is_alive():
-					can = False
 
-			if can:
-				self.parent.info_label.set_text("Comparaison lancé")
-				self.treeview_file.hide()
-				self.thread = threading.Thread(target=self.do_compare, name="compare")
-				self.thread.start()
-				self.can_execute = False
+			dialog = AbortDialog(self.parent)
+
+			self.parent.info_label.set_text("Comparaison lancé")
+			self.can_execute = False
+			self.do_compare()
+
+			response = dialog.run()
+
+			if response == Gtk.ResponseType.CANCEL:
+				print('abort')
+				self.safer.stop = True
+			dialog.destroy()
 		else:
 			self.parent.info_label.set_text("Veuillez selectionner des dossiers")
 			self.select_all.set_active(False)
 
 	def do_compare(self):
+		print('do_compare')
 		self.spinner.start()
 		self.last_comparison = self.comparison
 		self.comparison = self.safer.compare(self.local_path, self.external_path, self.loop)

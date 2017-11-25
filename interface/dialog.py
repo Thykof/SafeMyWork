@@ -175,3 +175,20 @@ class Settings_dial(Gtk.Dialog):
 			new = model[tree_iter][0]
 			combo_list.remove(int(combo_list.get_active()))
 			self.parent.safer.config[elt].remove(new)
+
+class AbortDialog(Gtk.Dialog):
+	def __init__(self, parent):
+		Gtk.Dialog.__init__(self, "Traitement en cours...", parent, 0,
+			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL))
+		self.parent = parent
+
+		self.set_modal(True)
+
+		label = Gtk.Label("Traitement en cours...")
+
+		box = self.get_content_area()
+		#box.add(label)
+		self.show_all()
+
+	def close(self):
+		self.destroy()
