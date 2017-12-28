@@ -19,6 +19,8 @@ Work in progress...
  - make an history of each files
  - compress files
  - add little icon to symbolize file explorer in buttons
+ - show the size to estimate how long will it take
+ - limit copytree to a limit size
 
 ## What for ?
 SafeMyWork is intend for people who handle lot of files which can be texts, images, songs.
