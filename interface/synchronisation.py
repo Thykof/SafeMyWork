@@ -8,7 +8,7 @@ import threading
 import asyncio
 
 from .helpers import open_folder as show_dir
-from .dialog import AbortDialog
+from .dialog import AbortDialog, foler_chooser
 
 GObject.threads_init()
 
@@ -37,7 +37,7 @@ class SynchronisationGrid(Gtk.Grid):
 		self.attach(button_show_local, 0, 0, 1, 1)
 
 		button_choose_local = Gtk.Button.new_with_label("Selection du dossier local")
-		button_choose_local.connect('clicked', self.on_folder_clicked, True)
+		button_choose_local.connect('clicked', self.select_local)
 		self.attach(button_choose_local, 1, 0, 1, 1)
 
 		if self.safer.config['local_path'] == '':
@@ -50,7 +50,7 @@ class SynchronisationGrid(Gtk.Grid):
 		button_show_external.connect('clicked', self.open_folder, False)
 		self.attach(button_show_external, 0, 2, 1, 1)
 		button_choose_external = Gtk.Button.new_with_label("Selection du dossier externe")
-		button_choose_external.connect('clicked', self.on_folder_clicked, False)
+		button_choose_external.connect('clicked', self.select_ext)
 		self.attach(button_choose_external, 1, 2, 1, 1)
 
 		if self.safer.config['external_path'] == '':
@@ -112,25 +112,16 @@ class SynchronisationGrid(Gtk.Grid):
 
 		self.scrolled_win_select_file.add(self.treeview_file)
 
-	def on_folder_clicked(self, widget, local=True):
-		dialog = Gtk.FileChooserDialog("Selection d'un dossier", self.parent,
-			Gtk.FileChooserAction.SELECT_FOLDER,
-			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-			 "Valider", Gtk.ResponseType.OK))
-		dialog.set_default_size(800, 400)
 
-		response = dialog.run()
-		if response == Gtk.ResponseType.OK:
-			filename = dialog.get_filename()
-			if local:
-				self.local_path = filename
-				self.label_local.set_text(filename)
-			else:
-				self.external_path = filename
+	def select_local(self, button):
+		folder = foler_chooser(self.parent)
+		self.local_path = folder
+		self.label_local.set_text(folder)
 
-				self.label_external.set_text(filename)
-
-		dialog.destroy()
+	def select_ext(self, button):
+		folder = foler_chooser(self.parent)
+		self.external_path = folder
+		self.label_external.set_text(folder)
 
 	def on_cell_toggled_file(self, widget, path):
 		self.listfile[path][0] = not self.listfile[path][0]
@@ -174,6 +165,14 @@ class SynchronisationGrid(Gtk.Grid):
 		self.comparison = self.safer.compare(self.local_path, self.external_path, self.loop)
 		self.select_all.set_active(True)
 		self.parent.info_label.set_text("Faites vos choix de synchronisation")
+		self.show_compare_results()
+		self.treeview_file.show()
+		self.can_execute = True
+		self.spinner.stop()
+
+	def show_compare_results(self, comparison=None):
+		if comparison is not None:
+			self.comparison = comparison
 		if self.last_comparison != self.comparison:
 			self.listfile.clear()
 			for filename in self.comparison['to_copy']:
@@ -186,11 +185,6 @@ class SynchronisationGrid(Gtk.Grid):
 				self.listfile.append([False, filename, 'edit-delete'])
 		else:
 			print('same comparison results')
-
-		self.treeview_file.show()
-
-		self.can_execute = True
-		self.spinner.stop()
 
 	def execute_compare(self, button):
 		if self.can_execute:
@@ -206,7 +200,6 @@ class SynchronisationGrid(Gtk.Grid):
 				thread = threading.Thread(target=self.prepare_execute, name='execute_compare')
 				thread.daemon = True
 				thread.start()
-				self.thread_execute_active = True
 				self.can_execute = False
 		else:
 			self.parent.info_label.set_text("Veuillez d'abord comparer")
@@ -235,21 +228,10 @@ class SynchronisationGrid(Gtk.Grid):
 
 	def analyse_folder(self, button, loop=None):
 		print('analyse')
-		dialog = Gtk.FileChooserDialog("Selection d'un dossier", self.parent,
-			Gtk.FileChooserAction.SELECT_FOLDER,
-			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-			 "Valider", Gtk.ResponseType.OK))
-		dialog.set_default_size(800, 400)
-
-		response = dialog.run()
-		if response == Gtk.ResponseType.OK:
-			folder = dialog.get_filename()
-		dialog.destroy()
-
+		folder = foler_chooser(self.parent)
 		if loop is None:
 			loop = asyncio.get_event_loop()
 		loop.run_until_complete(self.safer.get_to_save(folder))
-		print('done')
 
 	def compare_from_analysis(self, button):
 		"""Based on self.do_compare"""
@@ -259,21 +241,8 @@ class SynchronisationGrid(Gtk.Grid):
 		self.comparison = self.safer.compare_form_files(self.local_path, self.external_path, self.loop)
 		self.select_all.set_active(True)
 		self.parent.info_label.set_text("Faites vos choix de synchronisation")
-		if self.last_comparison != self.comparison:
-			self.listfile.clear()
-			for filename in self.comparison['to_copy']:
-				self.listfile.append([True, filename, 'edit-copy'])
-
-			for filename in self.comparison['to_update']:
-				self.listfile.append([True, filename, 'system-software-update'])
-
-			for filename in self.comparison['to_del']:
-				self.listfile.append([False, filename, 'edit-delete'])
-		else:
-			print('same comparison results')
-
+		self.show_compare_results()
 		self.treeview_file.show()
-
 		self.can_execute = True
 		self.spinner.stop()
 
