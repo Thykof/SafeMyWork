@@ -68,7 +68,13 @@ class SynchronisationGrid(Gtk.Grid):
 		box.pack_start(self.button_compare, True, True, 5)
 		box.pack_start(self.spinner, True, True, 5)
 		box.pack_start(self.button_execute, True, True, 5)
-		self.attach(box, 0, 5, 2, 1)
+		self.attach(box, 0, 4, 2, 1)
+		button_analysis = Gtk.Button.new_with_label('Analyse')
+		button_analysis.connect('clicked', self.analyse_folder)
+		self.attach(button_analysis, 0, 5, 1, 1)
+		button_compare_analysis = Gtk.Button.new_with_label('Compare from analysis')
+		button_compare_analysis.connect('clicked', self.compare_from_analysis)
+		self.attach(button_compare_analysis, 1, 5, 1, 1)
 
 		# List files:
 		self.attach(Gtk.Label("Selections des fichiers :"), 0, 6, 3, 1)
@@ -178,6 +184,8 @@ class SynchronisationGrid(Gtk.Grid):
 
 			for filename in self.comparison['to_del']:
 				self.listfile.append([False, filename, 'edit-delete'])
+		else:
+			print('same comparison results')
 
 		self.treeview_file.show()
 
@@ -223,6 +231,50 @@ class SynchronisationGrid(Gtk.Grid):
 		# here: Erreur de segmentation (core dumped) :
 		self.select_all.set_active(False)
 		self.parent.info_label.set_text("Synchronisation terminé")
+		self.spinner.stop()
+
+	def analyse_folder(self, button, loop=None):
+		print('analyse')
+		dialog = Gtk.FileChooserDialog("Selection d'un dossier", self.parent,
+			Gtk.FileChooserAction.SELECT_FOLDER,
+			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+			 "Valider", Gtk.ResponseType.OK))
+		dialog.set_default_size(800, 400)
+
+		response = dialog.run()
+		if response == Gtk.ResponseType.OK:
+			folder = dialog.get_filename()
+		dialog.destroy()
+
+		if loop is None:
+			loop = asyncio.get_event_loop()
+		loop.run_until_complete(self.safer.get_to_save(folder))
+		print('done')
+
+	def compare_from_analysis(self, button):
+		"""Based on self.do_compare"""
+		print('compare_from_analysis')
+		self.spinner.start()
+		self.last_comparison = self.comparison
+		self.comparison = self.safer.compare_form_files(self.local_path, self.external_path, self.loop)
+		self.select_all.set_active(True)
+		self.parent.info_label.set_text("Faites vos choix de synchronisation")
+		if self.last_comparison != self.comparison:
+			self.listfile.clear()
+			for filename in self.comparison['to_copy']:
+				self.listfile.append([True, filename, 'edit-copy'])
+
+			for filename in self.comparison['to_update']:
+				self.listfile.append([True, filename, 'system-software-update'])
+
+			for filename in self.comparison['to_del']:
+				self.listfile.append([False, filename, 'edit-delete'])
+		else:
+			print('same comparison results')
+
+		self.treeview_file.show()
+
+		self.can_execute = True
 		self.spinner.stop()
 
 	def open_folder(self, button, local):

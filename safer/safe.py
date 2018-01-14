@@ -6,9 +6,10 @@ import logging
 from logging.handlers import RotatingFileHandler
 from os import path, listdir, mkdir, walk, remove, stat, chdir
 from yaml import load, dump
+import json
 
 
-from .helpers import combine_list, path_without_root, missing_item, split_path
+from .helpers import *
 
 
 class Safer(object):
@@ -300,7 +301,17 @@ class Safer(object):
 		external_dirs = self.dirs_to_make
 		external_files = self.list_files
 
-		# Get new folders, those not in external
+		self.logger.info('Done')
+
+		results = self.compare_from_analysis(local_dirs, locals_files, external_dirs, external_files)
+		json_filename = 'compare_' + path.basename(local_path) + '.json'
+		json_file = path.join(self.destination, json_filename)
+		print('Store analysis compare: ' + json_file)
+		with open(json_file, 'w') as myfile:
+			myfile.write(json.dumps(results, indent=2))
+		return results
+
+	def compare_from_analysis(self, local_dirs, locals_files, external_dirs, external_files):
 		dirs_to_make = missing_item(local_dirs, external_dirs)
 
 		# Get new files, those not in external
@@ -316,15 +327,38 @@ class Safer(object):
 		# dirs_to_del: directories copied, deleted in delicate drectory -> to delete from safe directory
 		dirs_to_del = missing_item(external_dirs, local_dirs)
 
-		self.logger.info('Done')
-		self.safe_dirs = self.get_dst_path()
-
 		results = dict()
 		results['dirs_to_make'] = dirs_to_make
 		results['dirs_to_del'] = dirs_to_del
 		results['to_copy'] = to_copy  # files
 		results['to_update'] = to_update  # files
 		results['to_del'] = to_del  #files
+		return results
+
+	def compare_form_files(self, file_safe, file_weak, loop=None):
+		print('compare_form_files')
+		print(file_safe)
+		print(file_weak)
+		safe_filename = 'analysisW_' + path.basename(file_safe) + '.json'
+		safe_file = path.join(self.destination, safe_filename)
+		with open(safe_file, 'r') as myfile:
+			results_safe = json.loads(myfile.read())
+
+		weak_filename = 'analysisW_' + path.basename(file_weak) + '.json'
+		weak_file = path.join(self.destination, weak_filename)
+		with open(weak_file, 'r') as myfile:
+			results_weak = json.loads(myfile.read())
+
+		local_dirs = results_safe['dirs_to_make']
+		locals_files = results_safe['list_files']
+		external_dirs = results_weak['dirs_to_make']
+		external_files = results_weak['list_files']
+		results = self.compare_from_analysis(local_dirs, locals_files, external_dirs, external_files)
+		json_filename = 'compareF_' + path.basename(file_safe) + '.json'
+		json_file = path.join(self.destination, json_filename)
+		print('Store analysis compare from file: ' + json_file)
+		with open(json_file, 'w') as myfile:
+			myfile.write(json.dumps(results, indent=2))
 		return results
 
 	def execute(self, orders, local_path, external_path):
@@ -357,10 +391,10 @@ class Safer(object):
 		chdir(path.dirname(directory))
 		directory_walk = path.basename(directory)
 		for dirpath, dirnames, filenames in walk(directory_walk):  # walk() return a generator
-			if self.stop:
-				break
 			# dirpath = directory, for the first time
 			# dirpath = subdirs of directory
+			if self.stop:
+				break
 			self.logger.info(dirpath)
 
 			# Exclude a directory name
@@ -400,6 +434,16 @@ class Safer(object):
 
 		self.list_files = list_files
 		self.dirs_to_make = dirs_to_make
+		results = dict()
+		results['list_files'] = list_files
+		results['dirs_to_make'] = dirs_to_make
+		json_filename = 'analysisW_' + directory_walk + '.json'
+		json_file = path.join(self.destination, json_filename)
+		self.logger.info('Store analysis: ' + json_file)
+		print('Store analysis: ' + json_file)
+		with open(json_file, 'w') as myfile:
+			myfile.write(json.dumps(results, indent=2))
+
 
 	async def get_saved(self, directory):
 		"""Return the files and the folders in the safe path (files already saved), using `os.walk`."""
@@ -416,8 +460,19 @@ class Safer(object):
 				dirs_maked.append(dirname)
 			for filename in filenames:
 				saved.append(path.join(dirname, filename))
+
 		self.saved = saved
 		self.dirs_maked = dirs_maked
+		results = dict()
+		results['saved'] = saved
+		results['dirs_maked'] = dirs_maked
+		json_filename = 'analysisS_' + directory + '.json'
+		json_file = path.join(self.destination, json_filename)
+		self.logger.info('Store analysis: ' + json_file)
+		print('Store analysis: ' + json_file)
+		with open(json_file, 'w') as myfile:
+			myfile.write(json.dumps(results, indent=2))
+
 
 	def save_files(self, to_save, safe_path, path_delicate):
 		"""Copy the files in `to_save` in the `safe_path`."""
