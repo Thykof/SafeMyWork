@@ -59,25 +59,35 @@ class SynchronisationGrid(Gtk.Grid):
 			self.label_external = Gtk.Label(self.safer.config['external_path'])
 		self.attach(self.label_external, 0, 3, 2, 1)
 
-		box = Gtk.Box()
+		box_sync = Gtk.Box()
 		self.spinner = Gtk.Spinner()
 		self.button_compare = Gtk.Button.new_with_label('Comparer')
 		self.button_compare.connect('clicked', self.compare)
 		self.button_execute = Gtk.Button.new_with_label('Executer')
 		self.button_execute.connect('clicked', self.execute_compare)
-		box.pack_start(self.button_compare, True, True, 5)
-		box.pack_start(self.spinner, True, True, 5)
-		box.pack_start(self.button_execute, True, True, 5)
-		self.attach(box, 0, 4, 2, 1)
+		box_sync.pack_start(self.button_compare, True, True, 5)
+		box_sync.pack_start(self.spinner, True, True, 5)
+		box_sync.pack_start(self.button_execute, True, True, 5)
+		self.attach(box_sync, 0, 4, 2, 1)
+
+		box_display_results = Gtk.VBox()
+		box_display_results.pack_start(Gtk.Label('Display results:'), True, True, 1)
+		self.switch_display_results = Gtk.Switch()
+		self.switch_display_results.connect('notify::active', self.on_display_res_activate)
+		self.switch_display_results.set_active(True)
+		box_display_results.pack_start(self.switch_display_results, False, False, 5)
+		self.attach(box_display_results, 0, 5, 1, 1)
+
 		button_analysis = Gtk.Button.new_with_label('Analyse')
 		button_analysis.connect('clicked', self.analyse_folder)
-		self.attach(button_analysis, 0, 5, 1, 1)
+		self.attach(button_analysis, 0, 6, 1, 1)
 		button_compare_analysis = Gtk.Button.new_with_label('Compare from analysis')
 		button_compare_analysis.connect('clicked', self.compare_from_analysis)
-		self.attach(button_compare_analysis, 1, 5, 1, 1)
+		self.attach(button_compare_analysis, 1, 6, 1, 1)
+
 
 		# List files:
-		self.attach(Gtk.Label("Selections des fichiers :"), 0, 6, 3, 1)
+		self.attach(Gtk.Label("Selections des fichiers :"), 0, 7, 3, 1)
 		self.scrolled_win_select_file = Gtk.ScrolledWindow()
 		self.scrolled_win_select_file.set_min_content_width(600)
 		self.scrolled_win_select_file.set_min_content_height(100)
@@ -85,7 +95,7 @@ class SynchronisationGrid(Gtk.Grid):
 		self.scrolled_win_select_file.set_max_content_height(1500)
 		self.scrolled_win_select_file.set_hexpand(True)
 		self.scrolled_win_select_file.set_vexpand(True)
-		self.attach(self.scrolled_win_select_file, 0, 7, 2, 1)
+		self.attach(self.scrolled_win_select_file, 0, 8, 2, 1)
 
 		self.listfile = Gtk.ListStore(bool, str, str)
 		self.treeview_file = Gtk.TreeView.new_with_model(self.listfile)
@@ -135,6 +145,10 @@ class SynchronisationGrid(Gtk.Grid):
 			for path in range(len(self.listfile)):
 				self.listfile[path][0] = False
 
+	def on_display_res_activate(self, switch, active):
+		self.dislay_compare_results = switch.get_active()
+		print(self.dislay_compare_results)
+
 	def compare(self, button):
 		if self.local_path != "" and self.external_path != '':
 			can = True
@@ -171,9 +185,12 @@ class SynchronisationGrid(Gtk.Grid):
 		self.spinner.stop()
 
 	def show_compare_results(self, comparison=None):
-		if comparison is not None:
-			self.comparison = comparison
-		if self.last_comparison != self.comparison:
+		if not self.dislay_compare_results:
+			self.listfile.clear()
+		else:
+			if comparison is not None:
+				self.comparison = comparison
+			#if self.last_comparison != self.comparison:  # disable the feature because of switch display results
 			self.listfile.clear()
 			for filename in self.comparison['to_copy']:
 				self.listfile.append([True, filename, 'edit-copy'])
@@ -183,8 +200,7 @@ class SynchronisationGrid(Gtk.Grid):
 
 			for filename in self.comparison['to_del']:
 				self.listfile.append([False, filename, 'edit-delete'])
-		else:
-			print('same comparison results')
+
 
 	def execute_compare(self, button):
 		if self.can_execute:
