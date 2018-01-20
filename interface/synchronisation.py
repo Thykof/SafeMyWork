@@ -6,6 +6,7 @@ from gi.repository import Gtk, Gio, GObject
 
 import threading
 import asyncio
+import json
 
 from .helpers import open_folder as show_dir
 from .dialog import AbortDialog, foler_chooser
@@ -70,24 +71,33 @@ class SynchronisationGrid(Gtk.Grid):
 		box_sync.pack_start(self.button_execute, True, True, 5)
 		self.attach(box_sync, 0, 4, 2, 1)
 
+		box_conf = Gtk.Box()
+
 		box_display_results = Gtk.VBox()
 		box_display_results.pack_start(Gtk.Label('Display results:'), True, True, 1)
 		self.switch_display_results = Gtk.Switch()
 		self.switch_display_results.connect('notify::active', self.on_display_res_activate)
 		self.switch_display_results.set_active(True)
 		box_display_results.pack_start(self.switch_display_results, False, False, 5)
-		self.attach(box_display_results, 0, 5, 1, 1)
+		box_conf.pack_start(box_display_results, True, False, 5)
 
+		self.attach(box_conf, 0, 5, 2, 1)
+
+		box_analysis = Gtk.Box()
 		button_analysis = Gtk.Button.new_with_label('Analyse')
 		button_analysis.connect('clicked', self.analyse_folder)
-		self.attach(button_analysis, 0, 6, 1, 1)
-		self.attach(button_compare_analysis, 1, 6, 1, 1)
+		box_analysis.pack_start(button_analysis, True, False, 5)
 		button_compare_analysis = Gtk.Button.new_with_label('Compare from folder analysis')
 		button_compare_analysis.connect('clicked', self.compare_from_folder_analysis)
+		box_analysis.pack_start(button_compare_analysis, True, False, 5)
+		button_show_compare_analysis = Gtk.Button.new_with_label('Show campare analysis')
+		button_show_compare_analysis.connect('clicked', self.show_compare_analysis)
+		box_analysis.pack_start(button_show_compare_analysis, True, False, 5)
+		self.attach(box_analysis, 0, 6, 2, 1)
 
 
 		# List files:
-		self.attach(Gtk.Label("Selections des fichiers :"), 0, 7, 3, 1)
+		self.attach(Gtk.Label("Selections des fichiers :"), 0, 7, 2, 1)
 		self.scrolled_win_select_file = Gtk.ScrolledWindow()
 		self.scrolled_win_select_file.set_min_content_width(600)
 		self.scrolled_win_select_file.set_min_content_height(100)
@@ -147,7 +157,6 @@ class SynchronisationGrid(Gtk.Grid):
 
 	def on_display_res_activate(self, switch, active):
 		self.dislay_compare_results = switch.get_active()
-		print(self.dislay_compare_results)
 
 	def compare(self, button):
 		if self.local_path != "" and self.external_path != '':
@@ -261,6 +270,14 @@ class SynchronisationGrid(Gtk.Grid):
 		self.treeview_file.show()
 		self.can_execute = True
 		self.spinner.stop()
+
+	def show_compare_analysis(self, button):
+		print('show_compare_analysis')
+		filename = foler_chooser(self.parent, False, self.safer.destination)
+		with open(filename, 'r') as myfile:
+			comparison = json.loads(myfile.read())
+		self.show_compare_results(comparison)
+
 
 	def open_folder(self, button, local):
 		if local:
