@@ -193,11 +193,23 @@ class AbortDialog(Gtk.Dialog):
 	def close(self):
 		self.destroy()
 
-def foler_chooser(parent):
-	dialog = Gtk.FileChooserDialog("Selection d'un dossier", parent,
-		Gtk.FileChooserAction.SELECT_FOLDER,
-		(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-		 "Valider", Gtk.ResponseType.OK))
+def foler_chooser(parent, is_folder=True, folder=None, msg=None):
+	if not is_folder:
+		if msg is None:
+			msg = "Selection d'un fichier"
+		dialog = Gtk.FileChooserDialog(msg, parent,
+			Gtk.FileChooserAction.OPEN,
+			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+			 Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+		if folder:
+			dialog.set_current_folder(folder)
+	else:
+		if msg is None:
+			msg = "Selection d'un fichier"
+		dialog = Gtk.FileChooserDialog(msg, parent,
+			Gtk.FileChooserAction.SELECT_FOLDER,
+			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+			 "Selectionner", Gtk.ResponseType.OK))
 	dialog.set_default_size(800, 400)
 
 	response = dialog.run()
