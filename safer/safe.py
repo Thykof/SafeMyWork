@@ -304,7 +304,11 @@ class Safer(object):
 		self.logger.info('Done')
 
 		results = self.compare_from_analysis(local_dirs, locals_files, external_dirs, external_files)
-		json_filename = 'compare_' + path.basename(local_path) + '.json'
+		json_filename = 'compare'
+		# linux system:
+		json_filename += '_'.join(local_path.split('/'))
+		json_filename += '_VS_' + '_'.join(external_path.split('/'))
+		json_filename += '.json'
 		json_file = path.join(self.destination, json_filename)
 		print('Store analysis compare: ' + json_file)
 		with open(json_file, 'w') as myfile:
@@ -339,12 +343,12 @@ class Safer(object):
 		print('compare_form_files')
 		print(file_safe)
 		print(file_weak)
-		safe_filename = 'analysisW_' + path.basename(file_safe) + '.json'
+		safe_filename = 'analysisW' + '_'.join(file_safe.split('/')) + '.json'
 		safe_file = path.join(self.destination, safe_filename)
 		with open(safe_file, 'r') as myfile:
 			results_safe = json.loads(myfile.read())
 
-		weak_filename = 'analysisW_' + path.basename(file_weak) + '.json'
+		weak_filename = 'analysisW' + '_'.join(file_weak.split('/')) + '.json'
 		weak_file = path.join(self.destination, weak_filename)
 		with open(weak_file, 'r') as myfile:
 			results_weak = json.loads(myfile.read())
@@ -354,7 +358,8 @@ class Safer(object):
 		external_dirs = results_weak['dirs_to_make']
 		external_files = results_weak['list_files']
 		results = self.compare_from_analysis(local_dirs, locals_files, external_dirs, external_files)
-		json_filename = 'compareF_' + path.basename(file_safe) + '.json'
+		json_filename = 'compareF' + '_'.join(file_safe.split('/'))
+		json_filename += '_VS_' + '_'.join(file_weak.split('/')) + '.json'
 		json_file = path.join(self.destination, json_filename)
 		print('Store analysis compare from file: ' + json_file)
 		with open(json_file, 'w') as myfile:
@@ -437,7 +442,7 @@ class Safer(object):
 		results = dict()
 		results['list_files'] = list_files
 		results['dirs_to_make'] = dirs_to_make
-		json_filename = 'analysisW_' + directory_walk + '.json'
+		json_filename = 'analysisW' + '_'.join(directory.split('/')) + '.json'
 		json_file = path.join(self.destination, json_filename)
 		self.logger.info('Store analysis: ' + json_file)
 		print('Store analysis: ' + json_file)
@@ -466,7 +471,7 @@ class Safer(object):
 		results = dict()
 		results['saved'] = saved
 		results['dirs_maked'] = dirs_maked
-		json_filename = 'analysisS_' + directory + '.json'
+		json_filename = 'analysisS_' + '_'.join(directory.split('/')) + '.json'
 		json_file = path.join(self.destination, json_filename)
 		self.logger.info('Store analysis: ' + json_file)
 		print('Store analysis: ' + json_file)
