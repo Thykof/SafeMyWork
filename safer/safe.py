@@ -303,7 +303,7 @@ class Safer(object):
 
 		self.logger.info('Done')
 
-		results = self.compare_from_analysis(local_dirs, locals_files, external_dirs, external_files)
+		results = self.do_compare(local_dirs, locals_files, external_dirs, external_files)
 		json_filename = 'compare'
 		# linux system:
 		json_filename += '_'.join(local_path.split('/'))
@@ -315,7 +315,7 @@ class Safer(object):
 			myfile.write(json.dumps(results, indent=2))
 		return results
 
-	def compare_from_analysis(self, local_dirs, locals_files, external_dirs, external_files):
+	def do_compare(self, local_dirs, locals_files, external_dirs, external_files):
 		dirs_to_make = missing_item(local_dirs, external_dirs)
 
 		# Get new files, those not in external
@@ -357,7 +357,7 @@ class Safer(object):
 		locals_files = results_safe['list_files']
 		external_dirs = results_weak['dirs_to_make']
 		external_files = results_weak['list_files']
-		results = self.compare_from_analysis(local_dirs, locals_files, external_dirs, external_files)
+		results = self.do_compare(local_dirs, locals_files, external_dirs, external_files)
 		json_filename = 'compareF' + '_'.join(file_safe.split('/'))
 		json_filename += '_VS_' + '_'.join(file_weak.split('/')) + '.json'
 		json_file = path.join(self.destination, json_filename)
