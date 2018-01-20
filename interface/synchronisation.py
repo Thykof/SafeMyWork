@@ -81,9 +81,9 @@ class SynchronisationGrid(Gtk.Grid):
 		button_analysis = Gtk.Button.new_with_label('Analyse')
 		button_analysis.connect('clicked', self.analyse_folder)
 		self.attach(button_analysis, 0, 6, 1, 1)
-		button_compare_analysis = Gtk.Button.new_with_label('Compare from analysis')
-		button_compare_analysis.connect('clicked', self.compare_from_analysis)
 		self.attach(button_compare_analysis, 1, 6, 1, 1)
+		button_compare_analysis = Gtk.Button.new_with_label('Compare from folder analysis')
+		button_compare_analysis.connect('clicked', self.compare_from_folder_analysis)
 
 
 		# List files:
@@ -249,9 +249,9 @@ class SynchronisationGrid(Gtk.Grid):
 			loop = asyncio.get_event_loop()
 		loop.run_until_complete(self.safer.get_to_save(folder))
 
-	def compare_from_analysis(self, button):
+	def compare_from_folder_analysis(self, button):
 		"""Based on self.do_compare"""
-		print('compare_from_analysis')
+		print('compare_from_folder_analysis')
 		self.spinner.start()
 		self.last_comparison = self.comparison
 		self.comparison = self.safer.compare_form_files(self.local_path, self.external_path, self.loop)
