@@ -179,7 +179,9 @@ class Settings_dial(Gtk.Dialog):
 			self.parent.safer.config[elt].remove(new)
 
 	def change_archive(self, button):
-		self.archive_label.set_text(foler_chooser(self))
+		new_folder = folder_chooser(self)
+		if new_folder:
+			self.archive_label.set_text(new_folder)
 
 class AbortDialog(Gtk.Dialog):
 	def __init__(self, parent):
@@ -198,7 +200,7 @@ class AbortDialog(Gtk.Dialog):
 	def close(self):
 		self.destroy()
 
-def foler_chooser(parent, is_folder=True, folder=None, msg=None):
+def folder_chooser(parent, is_folder=True, folder=None, msg=None):
 	if not is_folder:
 		if msg is None:
 			msg = "Selection d'un fichier"

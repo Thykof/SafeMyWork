@@ -9,7 +9,7 @@ import asyncio
 import json
 
 from .helpers import open_folder as show_dir
-from .dialog import AbortDialog, foler_chooser
+from .dialog import AbortDialog, folder_chooser
 
 GObject.threads_init()
 
@@ -134,12 +134,12 @@ class SynchronisationGrid(Gtk.Grid):
 
 
 	def select_local(self, button):
-		folder = foler_chooser(self.parent)
+		folder = folder_chooser(self.parent)
 		self.local_path = folder
 		self.label_local.set_text(folder)
 
 	def select_ext(self, button):
-		folder = foler_chooser(self.parent)
+		folder = folder_chooser(self.parent)
 		self.external_path = folder
 		self.label_external.set_text(folder)
 

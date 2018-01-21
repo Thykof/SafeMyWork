@@ -9,7 +9,7 @@ elif SYSTEM == 'Windows':
 else:
 	print('Import Error: system')
 
-def open_folder(_, folder_name):
+def open_folder(folder_name):
     """Open in nautilus or file explorer, in the safe directory."""
     if folder_name != '':
         if SYSTEM == 'Linux':
