@@ -88,7 +88,7 @@ class SynchronisationGrid(Gtk.Grid):
 		button_analysis.connect('clicked', self.analyse_folder)
 		box_analysis.pack_start(button_analysis, True, False, 5)
 		button_compare_analysis = Gtk.Button.new_with_label('Compare from folder analysis')
-		button_compare_analysis.connect('clicked', self.compare_from_folder_analysis)
+		button_compare_analysis.connect('clicked', self.on_compare_analysis)
 		box_analysis.pack_start(button_compare_analysis, True, False, 5)
 		button_show_compare_analysis = Gtk.Button.new_with_label('Show campare analysis')
 		button_show_compare_analysis.connect('clicked', self.show_compare_analysis)
@@ -158,6 +158,13 @@ class SynchronisationGrid(Gtk.Grid):
 	def on_display_res_activate(self, switch, active):
 		self.dislay_compare_results = switch.get_active()
 
+	def on_compare_analysis(self, button):
+		path1 = folder_chooser(self.parent, False, self.safer.destination, "Local")
+		path2 = folder_chooser(self.parent, False, self.safer.destination, "Externe")
+		if path1 is not None and path2 is not None:
+			print('call do compare')
+			self.do_compare(path1, path2)
+
 	def compare(self, button):
 		if self.local_path != "" and self.external_path != '':
 			can = True
@@ -181,11 +188,13 @@ class SynchronisationGrid(Gtk.Grid):
 			self.parent.info_label.set_text("Veuillez selectionner des dossiers")
 			self.select_all.set_active(False)
 
-	def do_compare(self):
-		print('do_compare')
+	def do_compare(self, path1=None, path2=None):
 		self.spinner.start()
 		self.last_comparison = self.comparison
-		self.comparison = self.safer.compare(self.local_path, self.external_path, self.loop)
+		if path1 is not None and path2 is not None:
+			self.comparison = self.safer.compare_form_files(path1, path2, self.loop)
+		else:
+			self.comparison = self.safer.compare(self.local_path, self.external_path, self.loop)
 		self.select_all.set_active(True)
 		self.parent.info_label.set_text("Faites vos choix de synchronisation")
 		self.show_compare_results()
@@ -209,7 +218,6 @@ class SynchronisationGrid(Gtk.Grid):
 
 			for filename in self.comparison['to_del']:
 				self.listfile.append([False, filename, 'edit-delete'])
-
 
 	def execute_compare(self, button):
 		if self.can_execute:
@@ -252,32 +260,20 @@ class SynchronisationGrid(Gtk.Grid):
 		self.spinner.stop()
 
 	def analyse_folder(self, button, loop=None):
-		print('analyse')
-		folder = foler_chooser(self.parent)
-		if loop is None:
-			loop = asyncio.get_event_loop()
-		loop.run_until_complete(self.safer.get_to_save(folder))
-
-	def compare_from_folder_analysis(self, button):
-		"""Based on self.do_compare"""
-		print('compare_from_folder_analysis')
-		self.spinner.start()
-		self.last_comparison = self.comparison
-		self.comparison = self.safer.compare_form_files(self.local_path, self.external_path, self.loop)
-		self.select_all.set_active(True)
-		self.parent.info_label.set_text("Faites vos choix de synchronisation")
-		self.show_compare_results()
-		self.treeview_file.show()
-		self.can_execute = True
-		self.spinner.stop()
+		folder = folder_chooser(self.parent)
+		if folder:
+			if loop is None:
+				loop = asyncio.get_event_loop()
+			loop.run_until_complete(self.safer.get_to_save(folder))
 
 	def show_compare_analysis(self, button):
 		print('show_compare_analysis')
-		filename = foler_chooser(self.parent, False, self.safer.destination)
-		with open(filename, 'r') as myfile:
-			comparison = json.loads(myfile.read())
-		self.show_compare_results(comparison)
-
+		filename = folder_chooser(self.parent, False, self.safer.destination)
+		if filename:
+			if 'compare' in filename and filename[-5:] == '.json':
+				with open(filename, 'r') as myfile:
+					comparison = json.loads(myfile.read())
+				self.show_compare_results(comparison)
 
 	def open_folder(self, button, local):
 		if local:

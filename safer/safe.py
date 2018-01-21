@@ -340,17 +340,10 @@ class Safer(object):
 		return results
 
 	def compare_form_files(self, file_safe, file_weak, loop=None):
-		print('compare_form_files')
-		print(file_safe)
-		print(file_weak)
-		safe_filename = 'analysisW' + '_'.join(file_safe.split('/')) + '.json'
-		safe_file = path.join(self.destination, safe_filename)
-		with open(safe_file, 'r') as myfile:
+		with open(file_safe, 'r') as myfile:
 			results_safe = json.loads(myfile.read())
 
-		weak_filename = 'analysisW' + '_'.join(file_weak.split('/')) + '.json'
-		weak_file = path.join(self.destination, weak_filename)
-		with open(weak_file, 'r') as myfile:
+		with open(file_weak, 'r') as myfile:
 			results_weak = json.loads(myfile.read())
 
 		local_dirs = results_safe['dirs_to_make']
