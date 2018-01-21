@@ -126,6 +126,9 @@ class AutoSavingGrid(Gtk.Grid):
 		message += " minutes" if timedelta > 1 else " minute"
 		self.parent.info_label.set_text(message)
 
+	def on_show_saved(self, button):
+		open_folder(self.safer.destination)
+
 	def scan_now(self, *args):  # start the thread
 		"""Make thread, that scan and copy files, if no one is already started.
 		Call by the button or by start_scan."""
