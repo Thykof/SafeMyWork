@@ -310,7 +310,7 @@ class Safer(object):
 		json_filename += '_VS_' + '_'.join(external_path.split('/'))
 		json_filename += '.json'
 		json_file = path.join(self.destination, json_filename)
-		print('Store analysis compare: ' + json_file)
+		self.logger.info('Store analysis compare: ' + json_file)
 		with open(json_file, 'w') as myfile:
 			myfile.write(json.dumps(results, indent=2))
 		return results
@@ -361,7 +361,7 @@ class Safer(object):
 		json_filename = 'compareF' + '_'.join(file_safe.split('/'))
 		json_filename += '_VS_' + '_'.join(file_weak.split('/')) + '.json'
 		json_file = path.join(self.destination, json_filename)
-		print('Store analysis compare from file: ' + json_file)
+		self.logger.info('Store analysis compare from file: ' + json_file)
 		with open(json_file, 'w') as myfile:
 			myfile.write(json.dumps(results, indent=2))
 		return results
@@ -445,7 +445,6 @@ class Safer(object):
 		json_filename = 'analysisW' + '_'.join(directory.split('/')) + '.json'
 		json_file = path.join(self.destination, json_filename)
 		self.logger.info('Store analysis: ' + json_file)
-		print('Store analysis: ' + json_file)
 		with open(json_file, 'w') as myfile:
 			myfile.write(json.dumps(results, indent=2))
 
@@ -474,7 +473,6 @@ class Safer(object):
 		json_filename = 'analysisS_' + '_'.join(directory.split('/')) + '.json'
 		json_file = path.join(self.destination, json_filename)
 		self.logger.info('Store analysis: ' + json_file)
-		print('Store analysis: ' + json_file)
 		with open(json_file, 'w') as myfile:
 			myfile.write(json.dumps(results, indent=2))
 
