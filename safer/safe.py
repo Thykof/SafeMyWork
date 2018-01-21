@@ -377,11 +377,8 @@ class Safer(object):
 		for dirname in orders['dirs_to_del']:
 			dirpath = path.join(external_path, dirname)
 			self.logger.info('Remove tree: ' + dirpath)
-			try:
+			if path.exists(dirpath):
 				rmtree(dirpath)
-			except:
-				print('Error execute remove directories: ' + dirpath)
-				pass  # Directory already removed
 
 		self.logger.info('Done')
 
