@@ -29,7 +29,8 @@ class AutoSavingGrid(Gtk.Grid):
 		self.set_row_spacing(5)
 		# Widgets
 		button_show_saved = Gtk.Button.new_with_label('Fichiers sauvés')
-		button_show_saved.connect('clicked', open_folder, self.safer.config['safe_dir'])
+		#button_show_saved.connect('clicked', open_folder, self.safer.destination)
+		button_show_saved.connect('clicked', self.on_show_saved)
 		self.attach(button_show_saved, 0, 0, 1, 1)
 
 		button_scan_now = Gtk.Button.new_with_label('Scanner maintenant')
