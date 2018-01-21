@@ -221,6 +221,8 @@ def folder_chooser(parent, is_folder=True, folder=None, msg=None):
 
 	response = dialog.run()
 	if response == Gtk.ResponseType.OK:
-		folder = dialog.get_filename()
+		result = dialog.get_filename()
+	else:
+		result = None
 	dialog.destroy()
-	return folder
+	return result
