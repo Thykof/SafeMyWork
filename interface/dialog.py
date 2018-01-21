@@ -130,10 +130,12 @@ class Settings_dial(Gtk.Dialog):
 		# Archive directory:
 		box_archive_dir = Gtk.Box(spacing=6)
 		box_archive_dir.pack_start(Gtk.Label('Dossier archive : '), False, False, 0)
-		self.archive_entry = Gtk.Entry()
-		self.archive_entry.set_width_chars(50)
-		self.archive_entry.set_text(self.parent.safer.destination)
-		box_archive_dir.pack_start(self.archive_entry, False, False, 0)
+		self.archive_label = Gtk.Label()
+		self.archive_label.set_text(self.parent.safer.destination)
+		self.archive_change_button = Gtk.Button.new_with_label('Change')
+		self.archive_change_button.connect('clicked', self.change_archive)
+		box_archive_dir.pack_start(self.archive_label, False, False, 0)
+		box_archive_dir.pack_start(self.archive_change_button, False, False, 0)
 
 		# Pack boxes
 		box.pack_start(box_time, False, False, 0)
@@ -153,7 +155,7 @@ class Settings_dial(Gtk.Dialog):
 		self.parent.safer.config['timedelta'] = timedelta
 
 		# Set new safe path
-		new = self.archive_entry.get_text()
+		new = self.archive_label.get_text()
 		if new != '':
 			self.parent.safer.set_destination(new)
 		self.destroy()
@@ -175,6 +177,9 @@ class Settings_dial(Gtk.Dialog):
 			new = model[tree_iter][0]
 			combo_list.remove(int(combo_list.get_active()))
 			self.parent.safer.config[elt].remove(new)
+
+	def change_archive(self, button):
+		self.archive_label.set_text(foler_chooser(self))
 
 class AbortDialog(Gtk.Dialog):
 	def __init__(self, parent):
