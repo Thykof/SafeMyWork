@@ -160,8 +160,10 @@ class SynchronisationGrid(Gtk.Grid):
 
 	def on_compare_analysis(self, button):
 		path1 = folder_chooser(self.parent, False, self.safer.destination, "Local")
+		if path1 is None:
+			return
 		path2 = folder_chooser(self.parent, False, self.safer.destination, "Externe")
-		if path1 is not None and path2 is not None:
+		if path2 is not None:
 			print('call do compare')
 			self.do_compare(path1, path2)
 
