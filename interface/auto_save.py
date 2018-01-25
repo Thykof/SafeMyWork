@@ -2,11 +2,10 @@
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gio
+from gi.repository import Gtk
 
 import asyncio
 from time import time
-from os import path
 import threading
 
 from .helpers import open_folder
@@ -153,10 +152,8 @@ class AutoSavingGrid(Gtk.Grid):
 		elif self.state == 'maj':
 			self.safer.update(loop=self.loop)
 
-		"""
-		(main.py:6313): Pango-CRITICAL **: pango_layout_get_line_count: assertion 'layout != NULL' failed
-		(main.py:6313): Pango-CRITICAL **: pango_layout_get_pixel_extents: assertion 'PANGO_IS_LAYOUT (layout)' failed
-		"""
+		#(main.py:6313): Pango-CRITICAL **: pango_layout_get_line_count: assertion 'layout != NULL' failed
+		#(main.py:6313): Pango-CRITICAL **: pango_layout_get_pixel_extents: assertion 'PANGO_IS_LAYOUT (layout)' failed
 
 		end = time()
 		self.scan_time = round(end - begin, 2)

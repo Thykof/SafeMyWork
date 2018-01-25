@@ -2,14 +2,14 @@
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gio, GObject
+from gi.repository import Gtk, GObject
 
 import threading
 import asyncio
 import json
 
 from .helpers import open_folder as show_dir
-from .dialog import AbortDialog, folder_chooser
+from .dialog import folder_chooser
 
 GObject.threads_init()
 
@@ -26,7 +26,6 @@ class SynchronisationGrid(Gtk.Grid):
 		self.can_execute = False
 		self.comparison = None
 		self.last_comparison = None
-		self.last_comparison
 
 		# Properties
 		self.set_column_spacing(5)
@@ -176,7 +175,7 @@ class SynchronisationGrid(Gtk.Grid):
 			self.do_compare(path1, path2)
 
 	def on_soft_sync(self, switch, active):
-		self.safer.set_soft_sync(switch.get_active())
+		self.safer.set_soft_sync(switch.get_active())  # safer.soft_sync
 
 	def compare(self, button):
 		if self.local_path != "" and self.external_path != '':

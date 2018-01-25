@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
-from os import path as ospath
-
 """Define some fonctions."""
+
+from os import path as ospath
 
 def combine_list(list1, list2):
 	"""Create a list with only elements in common of the two lists.

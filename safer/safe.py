@@ -316,7 +316,7 @@ class Safer(object):
 		json_file = path.join(self.destination, json_filename)
 		self.logger.info('Store analysis compare: ' + json_file)
 		with open(json_file, 'w') as myfile:
-			myfile.write(json.dumps(results, indent=2))
+			myfile.write(json.dumps(results, indent=2, encoding='utf-8'))
 		return results
 
 	def do_compare(self, local_dirs, locals_files, external_dirs, external_files):
@@ -384,7 +384,7 @@ class Safer(object):
 		json_file = path.join(self.destination, json_filename)
 		self.logger.info('Store analysis compare from file: ' + json_file)
 		with open(json_file, 'w') as myfile:
-			myfile.write(json.dumps(results, indent=2))
+			myfile.write(json.dumps(results, indent=2, encoding='utf-8'))
 		return results
 
 	def execute(self, orders, local_path, external_path):
@@ -464,7 +464,7 @@ class Safer(object):
 		json_file = path.join(self.destination, json_filename)
 		self.logger.info('Store analysis: ' + json_file)
 		with open(json_file, 'w') as myfile:
-			myfile.write(json.dumps(results, indent=2))
+			myfile.write(json.dumps(results, indent=2, encoding='utf-8'))
 
 
 	async def get_saved(self, directory):
@@ -492,7 +492,7 @@ class Safer(object):
 		json_file = path.join(self.destination, json_filename)
 		self.logger.info('Store analysis: ' + json_file)
 		with open(json_file, 'w') as myfile:
-			myfile.write(json.dumps(results, indent=2))
+			myfile.write(json.dumps(results, indent=2, encoding='utf-8'))
 
 
 	def save_files(self, to_save, safe_path, path_delicate):
