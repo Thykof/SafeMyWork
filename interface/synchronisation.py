@@ -81,6 +81,14 @@ class SynchronisationGrid(Gtk.Grid):
 		box_display_results.pack_start(self.switch_display_results, False, False, 5)
 		box_conf.pack_start(box_display_results, True, False, 5)
 
+		box_soft_sync = Gtk.VBox()
+		box_soft_sync.pack_start(Gtk.Label('Soft sync:'), True, True, 1)
+		switch_soft_sync = Gtk.Switch()
+		switch_soft_sync.connect('notify::active', self.on_soft_sync)
+		switch_soft_sync.set_active(False)
+		box_soft_sync.pack_start(switch_soft_sync, False, False, 5)
+		box_conf.pack_start(box_soft_sync, True, False, 5)
+
 		self.attach(box_conf, 0, 5, 2, 1)
 
 		box_analysis = Gtk.Box()
@@ -167,6 +175,9 @@ class SynchronisationGrid(Gtk.Grid):
 			print('call do compare')
 			self.do_compare(path1, path2)
 
+	def on_soft_sync(self, switch, active):
+		self.safer.set_soft_sync(switch.get_active())
+
 	def compare(self, button):
 		if self.local_path != "" and self.external_path != '':
 			can = True
@@ -199,7 +210,7 @@ class SynchronisationGrid(Gtk.Grid):
 			self.comparison = self.safer.compare(self.local_path, self.external_path, self.loop)
 		self.select_all.set_active(True)
 		self.parent.info_label.set_text("Faites vos choix de synchronisation")
-		self.show_compare_results()
+		self.show_compare_results()  # use self.comparison
 		self.treeview_file.show()
 		self.can_execute = True
 		self.spinner.stop()

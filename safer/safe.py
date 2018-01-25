@@ -47,6 +47,7 @@ class Safer(object):
 		#self.logger.addHandler(stream_handler)
 
 		# Config
+		self.soft_sync = False
 		self.cfg_dir = path.join(path.expanduser('~'), '.safemywork')
 		self.cfg_file = path.join(self.cfg_dir, 'config.yml')
 		if config is None:
@@ -107,6 +108,9 @@ class Safer(object):
 			mkdir(self.cfg_dir)
 		with open(self.cfg_file, 'w') as ymlfile:
 			dump(self.config, ymlfile)
+
+	def set_soft_sync(self, soft_sync):
+		self.soft_sync = soft_sync
 
 	def set_destination(self, destination):
 		self.destination = destination
@@ -316,6 +320,13 @@ class Safer(object):
 		return results
 
 	def do_compare(self, local_dirs, locals_files, external_dirs, external_files):
+		"""
+		missing_item: Return the list of directory in `list1` but not in `list2`.
+		combine_list: Create a list with only elements in common of the two lists.
+		"""
+		orders_local = dict()
+		orders_ext = dict()
+
 		dirs_to_make = missing_item(local_dirs, external_dirs)
 
 		# Get new files, those not in external
@@ -330,14 +341,31 @@ class Safer(object):
 		# Get old folders, to be deleted
 		# dirs_to_del: directories copied, deleted in delicate drectory -> to delete from safe directory
 		dirs_to_del = missing_item(external_dirs, local_dirs)
-
-		results = dict()
-		results['dirs_to_make'] = dirs_to_make
-		results['dirs_to_del'] = dirs_to_del
-		results['to_copy'] = to_copy  # files
-		results['to_update'] = to_update  # files
-		results['to_del'] = to_del  #files
-		return results
+		orders_ext['dirs_to_make'] = dirs_to_make
+		orders_ext['dirs_to_del'] = dirs_to_del
+		orders_ext['to_copy'] = to_copy  # files
+		orders_ext['to_update'] = to_update  # files
+		orders_ext['to_del'] = to_del  #files
+		if not self.soft_sync:
+			return orders_ext
+		else:
+			print('deep sync')
+			dirs_to_make = missing_item(external_dirs, local_dirs)
+			# Get new files, those not in external
+			to_copy = missing_item(external_files, locals_files)
+			# Get existing files in safe path
+			to_update = combine_list(locals_files, external_files)
+			# Get old files, thos not in local
+			to_del = missing_item(locals_files, external_files)
+			# Get old folders, to be deleted
+			# dirs_to_del: directories copied, deleted in delicate drectory -> to delete from safe directory
+			dirs_to_del = missing_item(external_dirs, local_dirs)
+			orders_local['dirs_to_make'] = dirs_to_make
+			orders_local['dirs_to_del'] = dirs_to_del
+			orders_local['to_copy'] = to_copy  # files
+			orders_local['to_update'] = to_update  # files
+			orders_local['to_del'] = to_del  #files
+			return orders_ext, orders_local
 
 	def compare_form_files(self, file_safe, file_weak, loop=None):
 		with open(file_safe, 'r') as myfile:
