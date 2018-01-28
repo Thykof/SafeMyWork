@@ -10,6 +10,7 @@ import json
 
 from .helpers import open_folder as show_dir
 from .dialog import folder_chooser
+from .conflict import ConflictDialog
 
 GObject.threads_init()
 
@@ -222,14 +223,23 @@ class SynchronisationGrid(Gtk.Grid):
 				self.comparison = comparison
 			#if self.last_comparison != self.comparison:  # disable the feature because of switch display results
 			self.listfile.clear()
-			for filename in self.comparison['to_copy']:
-				self.listfile.append([True, filename, 'edit-copy'])
+			if not self.safer.soft_sync:  # Deep sync, show ConflictDialog
+				conflict_dialog = ConflictDialog(self.parent, self.comparison)
+				conflict_dialog.run()
+				# ...
 
-			for filename in self.comparison['to_update']:
-				self.listfile.append([True, filename, 'system-software-update'])
+				# Confirm dialog
+				orders = conflict_dialog.results
+				# execute sync
+			else:  # Soft sync
+				for filename in self.comparison['to_copy']:
+					self.listfile.append([True, filename, 'edit-copy'])
 
-			for filename in self.comparison['to_del']:
-				self.listfile.append([False, filename, 'edit-delete'])
+				for filename in self.comparison['to_update']:
+					self.listfile.append([True, filename, 'system-software-update'])
+
+				for filename in self.comparison['to_del']:
+					self.listfile.append([False, filename, 'edit-delete'])
 
 	def execute_compare(self, button):
 		if self.can_execute:

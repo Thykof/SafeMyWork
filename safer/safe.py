@@ -293,6 +293,7 @@ class Safer(object):
 		Une option Garder le dernier fichier (pour les fichiers presents dans la source et la destination).
 
 		"""
+		self.working_paths = (local_path, external_path)
 		self.logger.info('Start comparing')
 
 		loop.run_until_complete(self.get_to_save(local_path))
@@ -311,7 +312,12 @@ class Safer(object):
 		json_filename = 'compare'
 		# linux system:
 		json_filename += '_'.join(local_path.split('/'))
-		json_filename += '_VS_' + '_'.join(external_path.split('/'))
+		json_filename += '_VS'
+		if self.soft_sync:
+			json_filename += 'S_'
+		else:
+			json_filename += 'D_'
+		json_filename += '_'.join(external_path.split('/'))
 		json_filename += '.json'
 		json_file = path.join(self.destination, json_filename)
 		self.logger.info('Store analysis compare: ' + json_file)
@@ -324,8 +330,7 @@ class Safer(object):
 		missing_item: Return the list of directory in `list1` but not in `list2`.
 		combine_list: Create a list with only elements in common of the two lists.
 		"""
-		orders_local = dict()
-		orders_ext = dict()
+		results = dict()
 
 		dirs_to_make = missing_item(local_dirs, external_dirs)
 
@@ -341,31 +346,40 @@ class Safer(object):
 		# Get old folders, to be deleted
 		# dirs_to_del: directories copied, deleted in delicate drectory -> to delete from safe directory
 		dirs_to_del = missing_item(external_dirs, local_dirs)
-		orders_ext['dirs_to_make'] = dirs_to_make
-		orders_ext['dirs_to_del'] = dirs_to_del
-		orders_ext['to_copy'] = to_copy  # files
-		orders_ext['to_update'] = to_update  # files
-		orders_ext['to_del'] = to_del  #files
-		if not self.soft_sync:
-			return orders_ext
+		results['dirs_to_make'] = dirs_to_make
+		results['dirs_to_del'] = dirs_to_del
+		results['to_copy'] = to_copy  # files
+		results['to_update'] = to_update  # files
+		results['to_del'] = to_del  #files
+		if self.soft_sync:
+			print('soft_sync')
+			return results
 		else:
 			print('deep sync')
 			dirs_to_make = missing_item(external_dirs, local_dirs)
-			# Get new files, those not in external
 			to_copy = missing_item(external_files, locals_files)
-			# Get existing files in safe path
-			to_update = combine_list(locals_files, external_files)
-			# Get old files, thos not in local
-			to_del = missing_item(locals_files, external_files)
-			# Get old folders, to be deleted
-			# dirs_to_del: directories copied, deleted in delicate drectory -> to delete from safe directory
-			dirs_to_del = missing_item(external_dirs, local_dirs)
-			orders_local['dirs_to_make'] = dirs_to_make
-			orders_local['dirs_to_del'] = dirs_to_del
-			orders_local['to_copy'] = to_copy  # files
-			orders_local['to_update'] = to_update  # files
-			orders_local['to_del'] = to_del  #files
-			return orders_ext, orders_local
+			conflicts = list()
+			results = dict()
+			# Get date and size of files under conflict (to update):
+			for filename in to_update:
+				# stat:
+				stat_local = stat(path.join(self.working_paths[0], filename))
+				stat_ext = stat(path.join(self.working_paths[1], filename))
+				# size:
+				size_local = stat_local.st_size
+				size_ext = stat_ext.st_size
+				# date (the older has st_mtime lower):
+				date_local = stat_local.st_mtime
+				date_ext = stat_ext.st_mtime
+				conflicts.append([filename, (size_local, size_ext), (date_local, date_ext)])
+			results = dict()
+			results['copy_file_local'] = to_copy
+			results['copy_dirs_local'] = dirs_to_make
+			results['copy_dirs_ext'] = dirs_to_make
+			results['copy_file_ext'] = to_copy
+			results['conflicts'] = conflicts
+			results['working_paths'] = self.working_paths  # needed by ConflictDialog
+			return results
 
 	def compare_form_files(self, file_safe, file_weak, loop=None):
 		with open(file_safe, 'r') as myfile:
