@@ -204,7 +204,7 @@ class SynchronisationGrid(Gtk.Grid):
 	def do_compare(self, path1=None, path2=None):
 		self.spinner.start()
 		self.last_comparison = self.comparison
-		if path1 is not None and path2 is not None:
+		if path1 is not None and path2 is not None:  # on compare from analysis
 			self.comparison = self.safer.compare_form_files(path1, path2, self.loop)
 		else:
 			self.comparison = self.safer.compare(self.local_path, self.external_path, self.loop)
@@ -216,6 +216,7 @@ class SynchronisationGrid(Gtk.Grid):
 		self.spinner.stop()
 
 	def show_compare_results(self, comparison=None):
+		# Called by do_compare or show_compare_analysis
 		if not self.dislay_compare_results:
 			self.listfile.clear()
 		else:
