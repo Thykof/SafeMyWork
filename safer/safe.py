@@ -352,12 +352,10 @@ class Safer(object):
 		results['to_update'] = to_update  # files
 		results['to_del'] = to_del  #files
 		if self.soft_sync:
-			print('soft_sync')
 			return results
 		else:
-			print('deep sync')
-			dirs_to_make = missing_item(external_dirs, local_dirs)
-			to_copy = missing_item(external_files, locals_files)
+			dirs_to_make_local = missing_item(external_dirs, local_dirs)
+			to_copy_local = missing_item(external_files, locals_files)
 			conflicts = list()
 			results = dict()
 			# Get date and size of files under conflict (to update):
@@ -373,12 +371,16 @@ class Safer(object):
 				date_ext = stat_ext.st_mtime
 				conflicts.append([filename, (size_local, size_ext), (date_local, date_ext)])
 			results = dict()
-			results['copy_file_local'] = to_copy
-			results['copy_dirs_local'] = dirs_to_make
+			results['copy_file_in_local'] = to_copy_local
+			results['copy_dirs_in_local'] = dirs_to_make_local
 			results['copy_dirs_ext'] = dirs_to_make
 			results['copy_file_ext'] = to_copy
 			results['conflicts'] = conflicts
 			results['working_paths'] = self.working_paths  # needed by ConflictDialog
+			json_filename = 'analysisSYNCAVANT'
+			json_file = path.join(self.destination, json_filename)
+			with open(json_file, 'w', encoding='utf-8') as myfile:
+				myfile.write(json.dumps(results, indent=2))
 			return results
 
 	def compare_form_files(self, file_safe, file_weak, loop=None):
@@ -407,7 +409,13 @@ class Safer(object):
 			self.logger.info('Make directory: ' + dirpath)
 			mkdir(dirpath)
 		self.save_files(orders['to_copy'], external_path, local_path)
-		self.update_files(orders['to_update'], external_path, local_path)
+		to_update = list()
+		for filename in orders['to_update']:
+			src = path.join(local_path, filename)
+			dst = path.join(external_path, filename)
+			if self.compare_file(src, dst):
+				to_update.append(filename)
+		self.update_files(to_update, external_path, local_path)
 		self.remove_files(orders['to_del'], external_path)
 		for dirname in orders['dirs_to_del']:
 			dirpath = path.join(external_path, dirname)
@@ -416,6 +424,51 @@ class Safer(object):
 				rmtree(dirpath)
 
 		self.logger.info('Done')
+
+	def sync(self, orders):
+		json_filename = 'analysisSYNC'
+		json_file = path.join(self.destination, json_filename)
+		with open(json_file, 'w', encoding='utf-8') as myfile:
+			myfile.write(json.dumps(orders, indent=2))
+
+		local_path = orders['working_paths'][0]
+		ext_path = orders['working_paths'][1]
+
+		"""
+		for dirname in orders['copy_dirs_in_local']:
+			dirpath = path.join(local_path, dirname)
+			self.logger.info('Make directory: ' + dirpath)
+			if 1:  # TODO
+				mkdir(dirpath)
+
+		for dirname in orders['copy_dirs_ext']:
+			dirpath = path.join(ext_path, dirname)
+			self.logger.info('Make directory: ' + dirpath)
+			if 1:  # TODO
+				mkdir(dirpath)
+		"""
+
+		def create(dirname):  #TODO: unit test
+			basename_dir = path.dirname(dirname)
+			if not path.exists(basename_dir):
+				create(basename_dir)
+			else:
+				mkdir(dirname)
+
+		def save_files(files, dst, src):  #TODO: unit test
+			for filename in files:
+				src_path = path.join(src, filename)
+				dst_path = path.join(dst, filename)
+				if not path.exists(path.dirname(dst_path)):
+					create(path.dirname(dst_path))
+				if path.exists(path.dirname(dst_path)) and path.exists(src_path):
+					copy2(src_path, dst_path)
+				else:
+					print('FileNotFoundError copy save files: ' + filename)
+					#TODO: put these file in a list and show it after, to notify what failed
+
+		save_files(orders['copy_file_in_local'], local_path, ext_path)
+		save_files(orders['copy_file_ext'], ext_path, local_path)
 
 	async def get_to_save(self, directory):
 		"""Return a list of file to save from a the given delicate directory, using `os.walk`.
@@ -526,12 +579,11 @@ class Safer(object):
 			src = path.join(path_delicate, file_path)
 			dst = path.join(safe_path, file_path)
 			try:
-				if self.compare_file(src, dst):
-					self.logger.info('Update: '+ file_path)
-					with open(src, 'rb') as myfile:
-						content = myfile.read()
-					with open(dst, 'wb') as myfile:
-						myfile.write(content)
+				self.logger.info('Update: '+ file_path)
+				with open(src, 'rb') as myfile:
+					content = myfile.read()
+				with open(dst, 'wb') as myfile:
+					myfile.write(content)
 			except FileNotFoundError:
 				print('FileNotFoundError open update_files: ' + src, ' ' + dst)
 				#TODO: put these file in a list and show it after, to notify what failed

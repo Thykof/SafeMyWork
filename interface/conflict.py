@@ -29,28 +29,55 @@ class ConflictDialog(Gtk.Dialog):
 
 		self.show_all()
 
+	def add_in_local(self, filename):
+		self.comparison['copy_file_in_local'].append(filename)
+
+	def remove_in_local(self, filename):
+		self.comparison['copy_file_in_local'].remove(filename)
+
+	def add_in_ext(self, filename):
+		self.comparison['copy_file_ext'].append(filename)
+
+	def remove_in_ext(self, filename):
+		self.comparison['copy_file_ext'].remove(filename)
+
+	def on_button_toggled(self, button, path_type, num):
+		if button.get_active():
+			if path_type == 'ext':
+				if self.conflicts[num][0] not in self.comparison['copy_file_in_local']:
+					self.add_in_local(self.conflicts[num][0])
+				if self.conflicts[num][0] in self.comparison['copy_file_ext']:
+					self.remove_in_ext(self.conflicts[num][0])
+			else:  # path_type == 'local'
+				if self.conflicts[num][0] not in self.comparison['copy_file_ext']:
+					self.add_in_ext(self.conflicts[num][0])
+				if self.conflicts[num][0] in self.comparison['copy_file_in_local']:
+					self.remove_in_local(self.conflicts[num][0])
+
 	def initialise_box(self):
 		self.box.set_spacing(6)
-		print('initialise_box')
 		self.box.pack_start(Gtk.Label('Liste des conflits :'), False, False, 5)
 		box_conflicts = Gtk.VBox()
 		scrolled = Gtk.ScrolledWindow()
-		for fileinfo in self.conflicts:
+		for i, fileinfo in enumerate(self.conflicts):  # self.conflicts = comparison['conflicts']
 			# fileinfo [0]: filename
 			# fileinfo [1]: tuple size
 			# fileinfo [2]: tuple date
 			box = Gtk.VBox()
 			box.pack_start(Gtk.Label(fileinfo[0]), True, True, 5)
 
-			date_local = datetime.date.fromtimestamp(fileinfo[2][0]).strftime('%c')
-			local_text = 'Dans ' + self.paths[0] + ' , dernier accès : '
+			date_local = datetime.datetime.fromtimestamp(fileinfo[2][0]).strftime('%c')
+			local_text = 'Dans ' + self.paths[0] + ' , dernière modification : '
 			local_text += date_local + ' , taille : ' + str(int(fileinfo[1][0])/1000) + ' Ko'
 			radio_local = Gtk.RadioButton.new_with_label_from_widget(None, local_text)
+			radio_local.connect("toggled", self.on_button_toggled, "local", i)
 
-			date_ext = datetime.date.fromtimestamp(fileinfo[2][1]).strftime('%c')
-			ext_text = 'Dans ' + self.paths[1] + ' , dernier accès : '
+			date_ext = datetime.datetime.fromtimestamp(fileinfo[2][1]).strftime('%c')
+			ext_text = 'Dans ' + self.paths[1] + ' , dernière modification : '
 			ext_text += date_ext + ' , taille : ' + str(int(fileinfo[1][1])/1000) + ' Ko'
 			radio_ext = Gtk.RadioButton.new_with_label_from_widget(radio_local, ext_text)
+			radio_ext.connect("toggled", self.on_button_toggled, "ext", i)
+
 			if fileinfo[2][0] > fileinfo[2][1]:  # local is more recent
 				box.pack_start(radio_local, True, True, 1)
 				box.pack_start(radio_ext, True, True, 1)

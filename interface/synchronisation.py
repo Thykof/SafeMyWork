@@ -172,7 +172,6 @@ class SynchronisationGrid(Gtk.Grid):
 			return
 		path2 = folder_chooser(self.parent, False, self.safer.destination, "Externe")
 		if path2 is not None:
-			print('call do compare')
 			self.do_compare(path1, path2)
 
 	def on_soft_sync(self, switch, active):
@@ -193,10 +192,6 @@ class SynchronisationGrid(Gtk.Grid):
 				thread.daemon = True
 				thread.start()
 				self.can_execute = False
-				print('yes')
-			else:
-				print('no')
-
 		else:
 			self.parent.info_label.set_text("Veuillez selectionner des dossiers")
 			self.select_all.set_active(False)
@@ -226,12 +221,18 @@ class SynchronisationGrid(Gtk.Grid):
 			self.listfile.clear()
 			if not self.safer.soft_sync:  # Deep sync, show ConflictDialog
 				conflict_dialog = ConflictDialog(self.parent, self.comparison)
-				conflict_dialog.run()
-				# ...
+				response = conflict_dialog.run()
+				if response == Gtk.ResponseType.OK:
+					conflict_dialog.destroy()
+					# Confirm dialog
 
-				# Confirm dialog
-				orders = conflict_dialog.results
-				# execute sync
+					orders = conflict_dialog.comparison
+					# execute sync
+					self.safer.sync(orders)
+					self.can_execute = False
+				else:
+					conflict_dialog.destroy()
+					return
 			else:  # Soft sync
 				for filename in self.comparison['to_copy']:
 					self.listfile.append([True, filename, 'edit-copy'])
@@ -290,7 +291,6 @@ class SynchronisationGrid(Gtk.Grid):
 			loop.run_until_complete(self.safer.get_to_save(folder))
 
 	def show_compare_analysis(self, button):
-		print('show_compare_analysis')
 		filename = folder_chooser(self.parent, False, self.safer.destination)
 		if filename:
 			if 'compare' in filename and filename[-5:] == '.json':
