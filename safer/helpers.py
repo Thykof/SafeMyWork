@@ -3,6 +3,7 @@
 """Define some fonctions."""
 
 from os import path as ospath
+import json
 
 def combine_list(list1, list2):
 	"""Create a list with only elements in common of the two lists.
@@ -53,3 +54,8 @@ def split_path(path):
 		path = ospath.dirname(path)
 
 	return dirs
+
+def store(content, pathdir, filename):
+    json_file = ospath.join(pathdir, filename)
+    with open(json_file, 'w', encoding='utf-8') as myfile:
+        myfile.write(json.dumps(content, indent=2))

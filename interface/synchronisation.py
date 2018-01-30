@@ -203,6 +203,14 @@ class SynchronisationGrid(Gtk.Grid):
 			self.comparison = self.safer.compare_form_files(path1, path2, self.loop)
 		else:
 			self.comparison = self.safer.compare(self.local_path, self.external_path, self.loop)
+
+		def compare():
+			myscan = scan.Scan()
+			files1 = myscan.scan_dir(self.local_path)
+			files2 = myscan.scan_dir(self.external_path)
+			self.mysync = sync.Sync(self.local_path, self.external_path)
+			return self.mysync.compare(files1, files2)
+		self.comparison_ = compare()
 		self.select_all.set_active(True)
 		self.parent.info_label.set_text("Faites vos choix de synchronisation")
 		self.show_compare_results()  # use self.comparison
@@ -220,15 +228,14 @@ class SynchronisationGrid(Gtk.Grid):
 			#if self.last_comparison != self.comparison:  # disable the feature because of switch display results
 			self.listfile.clear()
 			if not self.safer.soft_sync:  # Deep sync, show ConflictDialog
-				conflict_dialog = ConflictDialog(self.parent, self.comparison)
+				conflict_dialog = ConflictDialog(self.parent, self.comparison_)
 				response = conflict_dialog.run()
 				if response == Gtk.ResponseType.OK:
 					conflict_dialog.destroy()
-					# Confirm dialog
-
+					# TODO: Confirm dialog
 					orders = conflict_dialog.comparison
 					# execute sync
-					self.safer.sync(orders)
+					self.mysync.sync(orders)
 					self.can_execute = False
 				else:
 					conflict_dialog.destroy()

@@ -17,7 +17,7 @@ class ConflictDialog(Gtk.Dialog):
 		self.results = None  # orders
 		self.comparison = comparison
 		self.conflicts = comparison['conflicts']
-		self.paths = comparison['working_paths']
+		self.paths = comparison['paths']
 
 		# Properties
 		self.set_border_width(10)
@@ -30,28 +30,28 @@ class ConflictDialog(Gtk.Dialog):
 		self.show_all()
 
 	def add_in_local(self, filename):
-		self.comparison['copy_file_in_local'].append(filename)
+		self.comparison['local'].append(filename)
 
 	def remove_in_local(self, filename):
-		self.comparison['copy_file_in_local'].remove(filename)
+		self.comparison['local'].remove(filename)
 
 	def add_in_ext(self, filename):
-		self.comparison['copy_file_ext'].append(filename)
+		self.comparison['ext'].append(filename)
 
 	def remove_in_ext(self, filename):
-		self.comparison['copy_file_ext'].remove(filename)
+		self.comparison['ext'].remove(filename)
 
 	def on_button_toggled(self, button, path_type, num):
 		if button.get_active():
 			if path_type == 'ext':
-				if self.conflicts[num][0] not in self.comparison['copy_file_in_local']:
+				if self.conflicts[num][0] not in self.comparison['local']:
 					self.add_in_local(self.conflicts[num][0])
-				if self.conflicts[num][0] in self.comparison['copy_file_ext']:
+				if self.conflicts[num][0] in self.comparison['ext']:
 					self.remove_in_ext(self.conflicts[num][0])
 			else:  # path_type == 'local'
-				if self.conflicts[num][0] not in self.comparison['copy_file_ext']:
+				if self.conflicts[num][0] not in self.comparison['ext']:
 					self.add_in_ext(self.conflicts[num][0])
-				if self.conflicts[num][0] in self.comparison['copy_file_in_local']:
+				if self.conflicts[num][0] in self.comparison['local']:
 					self.remove_in_local(self.conflicts[num][0])
 
 	def initialise_box(self):
