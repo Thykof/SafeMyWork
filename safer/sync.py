@@ -59,7 +59,16 @@ class Sync(object):
 			# date (the older has st_mtime lower):
 			date_local = stat_local.st_mtime
 			date_ext = stat_ext.st_mtime
-			conflicts.append([filename, (size_local, size_ext), (date_local, date_ext)])
+			ss = False
+			sd = False
+			if date_ext == date_local:
+				sd = True
+			if size_ext == size_local:
+				ss = True
+			if ss and sd:
+				pass
+			else:
+				conflicts.append([filename, (size_local, size_ext), (date_local, date_ext)])
 		orders['conflicts'] = conflicts
 		orders['paths'] = self.local_path, self.ext_path  # needed by ConflictDialog
 		store(orders, self.safe_doc, 'analysisSYNCAVANT')
