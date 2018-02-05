@@ -2,17 +2,15 @@
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GObject
+from gi.repository import Gtk, GObject, GLib
 
-import threading
 import asyncio
 import json
 
 from .helpers import open_folder as show_dir
 from .dialog import folder_chooser
 from .conflict import ConflictDialog
-
-GObject.threads_init()
+from safer import scan, sync
 
 class SynchronisationGrid(Gtk.Grid):
 	def __init__(self, parent, safer):
@@ -179,19 +177,10 @@ class SynchronisationGrid(Gtk.Grid):
 
 	def compare(self, button):
 		if self.local_path != "" and self.external_path != '':
-			can = True
-			for thread in threading.enumerate():
-				if thread.name == 'compare' and thread.is_alive():
-					can = False
-				if thread.name == 'execute_compare' and thread.is_alive():
-					can = False
-			if can:
-				self.parent.info_label.set_text("Comparaison lancé")
-				self.treeview_file.hide()
-				thread = threading.Thread(target=self.do_compare, name="compare")
-				thread.daemon = True
-				thread.start()
-				self.can_execute = False
+			GLib.idle_add(self.do_compare)
+			self.parent.info_label.set_text("Comparaison lancé")
+			self.treeview_file.hide()
+			self.can_execute = False
 		else:
 			self.parent.info_label.set_text("Veuillez selectionner des dossiers")
 			self.select_all.set_active(False)
@@ -252,19 +241,9 @@ class SynchronisationGrid(Gtk.Grid):
 
 	def execute_compare(self, button):
 		if self.can_execute:
-			can = True
-			for thread in threading.enumerate():
-				if thread.name == 'compare' and thread.is_alive():
-					can = False
-				if thread.name == 'execute_compare' and thread.is_alive():
-					can = False
-
-			if can:
-				self.parent.info_label.set_text("Synchronisation lancé")
-				thread = threading.Thread(target=self.prepare_execute, name='execute_compare')
-				thread.daemon = True
-				thread.start()
-				self.can_execute = False
+			GLib.idle_add(self.prepare_execute)
+			self.parent.info_label.set_text("Synchronisation lancé")
+			self.can_execute = False
 		else:
 			self.parent.info_label.set_text("Veuillez d'abord comparer")
 
