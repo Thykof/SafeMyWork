@@ -170,7 +170,7 @@ class SynchronisationGrid(Gtk.Grid):
 			return
 		path2 = folder_chooser(self.parent, False, self.safer.destination, "Externe")
 		if path2 is not None:
-			self.do_compare(path1, path2)
+			GLib.idle_add(self.do_compare, path1, path2)
 
 	def on_soft_sync(self, switch, active):
 		self.safer.set_soft_sync(switch.get_active())  # safer.soft_sync
@@ -180,7 +180,6 @@ class SynchronisationGrid(Gtk.Grid):
 			GLib.idle_add(self.do_compare)
 			self.parent.info_label.set_text("Comparaison lancé")
 			self.treeview_file.hide()
-			self.can_execute = False
 		else:
 			self.parent.info_label.set_text("Veuillez selectionner des dossiers")
 			self.select_all.set_active(False)
@@ -224,8 +223,7 @@ class SynchronisationGrid(Gtk.Grid):
 					# TODO: Confirm dialog
 					orders = conflict_dialog.comparison
 					# execute sync
-					self.mysync.sync(orders)
-					self.can_execute = False
+					GLib.idle_add(self.mysync.sync, orders)
 				else:
 					conflict_dialog.destroy()
 					return
@@ -241,6 +239,7 @@ class SynchronisationGrid(Gtk.Grid):
 
 	def execute_compare(self, button):
 		if self.can_execute:
+			self.spinner.start()
 			GLib.idle_add(self.prepare_execute)
 			self.parent.info_label.set_text("Synchronisation lancé")
 			self.can_execute = False
@@ -262,9 +261,7 @@ class SynchronisationGrid(Gtk.Grid):
 					orders['to_update'].append(self.listfile[path][1])
 				if self.listfile[path][2] == 'edit-delete':
 					orders['to_del'].append(self.listfile[path][1])
-		self.spinner.start()
 		self.safer.execute(orders, self.local_path, self.external_path)
-		# here: Erreur de segmentation (core dumped) :
 		self.select_all.set_active(False)
 		self.parent.info_label.set_text("Synchronisation terminé")
 		self.spinner.stop()
