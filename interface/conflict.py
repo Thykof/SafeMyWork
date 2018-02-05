@@ -64,7 +64,7 @@ class ConflictDialog(Gtk.Dialog):
 			# fileinfo [1]: tuple size
 			# fileinfo [2]: tuple date
 			box = Gtk.VBox()
-			box.pack_start(Gtk.Label(fileinfo[0]), True, True, 5)
+			box.pack_start(Gtk.Label(fileinfo[0]), False, False, 5)
 
 			date_local = datetime.datetime.fromtimestamp(fileinfo[2][0]).strftime('%c')
 			local_text = 'Dans ' + self.paths[0] + ' , dernière modification : '
@@ -79,15 +79,15 @@ class ConflictDialog(Gtk.Dialog):
 			radio_ext.connect("toggled", self.on_button_toggled, "ext", i)
 
 			if fileinfo[2][0] > fileinfo[2][1]:  # local is more recent
-				box.pack_start(radio_local, True, True, 1)
-				box.pack_start(radio_ext, True, True, 1)
+				box.pack_start(radio_local, False, False, 1)
+				box.pack_start(radio_ext, False, False, 1)
 				radio_local.set_active(True)
 			else:
-				box.pack_start(radio_ext, True, True, 1)
-				box.pack_start(radio_local, True, True, 1)
+				box.pack_start(radio_ext, False, False, 1)
+				box.pack_start(radio_local, False, False, 1)
 				radio_ext.set_active(True)
 
-			box_conflicts.pack_start(box, True, True, 5)
+			box_conflicts.pack_start(box, False, False, 5)
 			# end for
 		scrolled.add(box_conflicts)
 		self.box.pack_start(scrolled, True, True, 2)
