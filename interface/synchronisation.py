@@ -141,13 +141,17 @@ class SynchronisationGrid(Gtk.Grid):
 
 	def select_local(self, button):
 		folder = folder_chooser(self.parent)
-		self.local_path = folder
-		self.label_local.set_text(folder)
+		if folder:
+			self.local_path = folder
+			self.label_local.set_text(folder)
+			self.safer.config['local_path'] = folder
 
 	def select_ext(self, button):
 		folder = folder_chooser(self.parent)
-		self.external_path = folder
-		self.label_external.set_text(folder)
+		if folder:
+			self.external_path = folder
+			self.label_external.set_text(folder)
+			self.safer.config['external_path'] = folder
 
 	def on_cell_toggled_file(self, widget, path):
 		self.listfile[path][0] = not self.listfile[path][0]
