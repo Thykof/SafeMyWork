@@ -19,8 +19,6 @@ class SynchronisationGrid(Gtk.Grid):
 		# Varaibles
 		self.parent = parent
 		self.safer = safer
-		self.local_path = ''
-		self.external_path = ''
 		self.loop = asyncio.get_event_loop()
 		self.can_execute = False
 		self.comparison = None
@@ -142,14 +140,12 @@ class SynchronisationGrid(Gtk.Grid):
 	def select_local(self, button):
 		folder = folder_chooser(self.parent)
 		if folder:
-			self.local_path = folder
 			self.label_local.set_text(folder)
 			self.safer.config['local_path'] = folder
 
 	def select_ext(self, button):
 		folder = folder_chooser(self.parent)
 		if folder:
-			self.external_path = folder
 			self.label_external.set_text(folder)
 			self.safer.config['external_path'] = folder
 
@@ -180,7 +176,7 @@ class SynchronisationGrid(Gtk.Grid):
 		self.safer.set_soft_sync(switch.get_active())  # safer.soft_sync
 
 	def compare(self, button):
-		if self.local_path != "" and self.external_path != '':
+		if self.label_local.get_text() != "" and self.label_external.get_text() != '':
 			GLib.idle_add(self.do_compare)
 			self.parent.info_label.set_text("Comparaison lancé")
 			self.treeview_file.hide()
@@ -194,13 +190,13 @@ class SynchronisationGrid(Gtk.Grid):
 		if path1 is not None and path2 is not None:  # on compare from analysis
 			self.comparison = self.safer.compare_form_files(path1, path2, self.loop)
 		else:
-			self.comparison = self.safer.compare(self.local_path, self.external_path, self.loop)
+			self.comparison = self.safer.compare(self.label_local.get_text(), self.label_external.get_text(), self.loop)
 
 		def compare():
 			myscan = scan.Scan()
-			files1 = myscan.scan_dir(self.local_path)
-			files2 = myscan.scan_dir(self.external_path)
-			self.mysync = sync.Sync(self.local_path, self.external_path)
+			files1 = myscan.scan_dir(self.label_local.get_text())
+			files2 = myscan.scan_dir(self.label_external.get_text())
+			self.mysync = sync.Sync(self.label_local.get_text(), self.label_external.get_text())
 			return self.mysync.compare(files1, files2)
 		self.comparison_ = compare()
 		self.select_all.set_active(True)
@@ -220,6 +216,7 @@ class SynchronisationGrid(Gtk.Grid):
 			#if self.last_comparison != self.comparison:  # disable the feature because of switch display results
 			self.listfile.clear()
 			if not self.safer.soft_sync:  # Deep sync, show ConflictDialog
+				print(self.comparison_)
 				conflict_dialog = ConflictDialog(self.parent, self.comparison_)
 				response = conflict_dialog.run()
 				if response == Gtk.ResponseType.OK:
@@ -227,6 +224,7 @@ class SynchronisationGrid(Gtk.Grid):
 					# TODO: Confirm dialog
 					orders = conflict_dialog.comparison
 					# execute sync
+					print(orders)
 					GLib.idle_add(self.mysync.sync, orders)
 				else:
 					conflict_dialog.destroy()
@@ -265,7 +263,7 @@ class SynchronisationGrid(Gtk.Grid):
 					orders['to_update'].append(self.listfile[path][1])
 				if self.listfile[path][2] == 'edit-delete':
 					orders['to_del'].append(self.listfile[path][1])
-		self.safer.execute(orders, self.local_path, self.external_path)
+		self.safer.execute(orders, self.label_local.get_text(), self.label_external.get_text())
 		self.select_all.set_active(False)
 		self.parent.info_label.set_text("Synchronisation terminé")
 		self.spinner.stop()
@@ -287,12 +285,12 @@ class SynchronisationGrid(Gtk.Grid):
 
 	def open_folder(self, button, local):
 		if local:
-			if self.local_path != '':
-				show_dir(None, self.local_path)
+			if self.label_local.get_text() != '':
+				show_dir(None, self.label_local.get_text())
 			else:
 				self.parent.info_label.set_text("Veuillez selectionner un dossier local")
 		else:
-			if self.external_path != '':
-				show_dir(None, self.external_path)
+			if self.label_external.get_text() != '':
+				show_dir(None, self.label_external.get_text())
 			else:
 				self.parent.info_label.set_text("Veuillez selectionner un dossier externe")
