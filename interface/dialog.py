@@ -116,7 +116,6 @@ class Settings_dial(Gtk.Dialog):
 		box_paths = Gtk.Box(spacing=6)
 		box_paths.pack_start(Gtk.Label('chemin : '), False, False, 0)
 		paths_list = Gtk.ComboBoxText.new_with_entry()
-		paths_list.set_entry_text_column(50)
 		button_add_paths = Gtk.Button.new_with_label('Ajouter')
 		button_add_paths.connect('clicked', lambda arg: self.add('dirpath', paths_list))
 		button_del_paths = Gtk.Button.new_with_label('Supprimer')
