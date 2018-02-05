@@ -188,8 +188,12 @@ class Safer(object):
 		It create the directories requires.
 
 		"""
+		if not size_delicate(self.safe_dirs):
+			return False
 		self.logger.info('Start saving with filters')
 		for path_delicate, safe_path in self.safe_dirs.items():
+			if not path.exists(path_delicate):
+				break
 			if safe_path['activate']:
 				safe_path_filter = safe_path['FILTER']
 				self.logger.info(path_delicate)
@@ -217,6 +221,8 @@ class Safer(object):
 	def copy_files(self):
 		self.logger.info('Start copying')
 		for path_delicate, safe_path in self.safe_dirs.items():
+			if not path.exists(path_delicate):
+				break
 			if safe_path['activate']:
 				self.logger.info('Saving ' + path_delicate)
 				copytree(path_delicate, safe_path['COPY'])
@@ -234,6 +240,8 @@ class Safer(object):
 		"""
 		self.logger.info('Start updating')
 		for path_delicate, safe_path in self.safe_dirs.items():
+			if not path.exists(path_delicate):
+				break
 			if safe_path['activate']:
 				self.logger.info(path_delicate)
 				safe_path_last = safe_path['LAST']
