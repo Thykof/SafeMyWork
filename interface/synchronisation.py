@@ -9,7 +9,7 @@ import json
 
 from .helpers import open_folder as show_dir
 from .dialog import folder_chooser
-from .conflict import ConflictDialog
+from .conflict import ConflictDialog, ConfirmDialog
 from safer import scan, sync
 
 class SynchronisationGrid(Gtk.Grid):
@@ -216,19 +216,25 @@ class SynchronisationGrid(Gtk.Grid):
 			#if self.last_comparison != self.comparison:  # disable the feature because of switch display results
 			self.listfile.clear()
 			if not self.safer.soft_sync:  # Deep sync, show ConflictDialog
-				print(self.comparison_)
-				conflict_dialog = ConflictDialog(self.parent, self.comparison_)
-				response = conflict_dialog.run()
-				if response == Gtk.ResponseType.OK:
-					conflict_dialog.destroy()
-					# TODO: Confirm dialog
-					orders = conflict_dialog.comparison
-					# execute sync
-					print(orders)
-					GLib.idle_add(self.mysync.sync, orders)
+				if len(self.comparison_['conflicts']) > 0:
+					conflict_dialog = ConflictDialog(self.parent, self.comparison_)
+					response = conflict_dialog.run()
+					if response == Gtk.ResponseType.OK:
+						conflict_dialog.destroy()
+						orders = conflict_dialog.comparison
+						confirm_dialog = ConfirmDialog(self.parent, orders)
+						response = confirm_dialog.run()
+						if response == Gtk.ResponseType.OK:
+							confirm_dialog.destroy()
+							# execute sync
+							GLib.idle_add(self.mysync.sync, orders)
+						else:
+							confirm_dialog.destroy()
+							self.parent.info_label.set_text("Sync aborted")
+					else:
+						conflict_dialog.destroy()
 				else:
-					conflict_dialog.destroy()
-					return
+					self.parent.info_label.set_text("Done")
 			else:  # Soft sync
 				for filename in self.comparison['to_copy']:
 					self.listfile.append([True, filename, 'edit-copy'])
