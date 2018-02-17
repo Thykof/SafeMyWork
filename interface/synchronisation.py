@@ -51,23 +51,26 @@ class SynchronisationGrid(Gtk.Grid):
 		self.attach(button_choose_external, 1, 2, 1, 1)
 
 		if self.safer.config['external_path'] == '':
-			self.label_external = Gtk.Label("< selectionner un dossier externe >")
+			self.label_external = Gtk.Label("< Select external folder >")
 		else:
 			self.label_external = Gtk.Label(self.safer.config['external_path'])
 		self.attach(self.label_external, 0, 3, 2, 1)
 
 		box_sync = Gtk.Box()
 		self.spinner = Gtk.Spinner()
-		self.button_compare = Gtk.Button.new_with_label('Comparer')
+		self.button_compare = Gtk.Button.new_with_label('Sync / Compare')
 		self.button_compare.connect('clicked', self.compare)
-		self.button_execute = Gtk.Button.new_with_label('Executer')
-		self.button_execute.connect('clicked', self.execute_compare)
 		box_sync.pack_start(self.button_compare, True, True, 5)
-		box_sync.pack_start(self.spinner, True, True, 5)
-		box_sync.pack_start(self.button_execute, True, True, 5)
+		box_sync.pack_start(self.spinner, False, False, 5)
 		self.attach(box_sync, 0, 4, 2, 1)
 
+		self.attach(Gtk.Label('Advanced :'), 0, 5, 2, 1)
+
 		box_conf = Gtk.Box()
+
+		self.button_execute = Gtk.Button.new_with_label('Execute')
+		self.button_execute.connect('clicked', self.execute_compare)
+		box_conf.pack_start(self.button_execute, False, False, 5)
 
 		box_display_results = Gtk.VBox()
 		box_display_results.pack_start(Gtk.Label('Display results:'), True, True, 1)
@@ -85,7 +88,7 @@ class SynchronisationGrid(Gtk.Grid):
 		box_soft_sync.pack_start(switch_soft_sync, False, False, 5)
 		box_conf.pack_start(box_soft_sync, True, False, 5)
 
-		self.attach(box_conf, 0, 5, 2, 1)
+		self.attach(box_conf, 0, 6, 2, 1)
 
 		box_analysis = Gtk.Box()
 		button_analysis = Gtk.Button.new_with_label('Analyse')
@@ -97,11 +100,11 @@ class SynchronisationGrid(Gtk.Grid):
 		button_show_compare_analysis = Gtk.Button.new_with_label('Show campare analysis')
 		button_show_compare_analysis.connect('clicked', self.show_compare_analysis)
 		box_analysis.pack_start(button_show_compare_analysis, True, False, 5)
-		self.attach(box_analysis, 0, 6, 2, 1)
+		self.attach(box_analysis, 0, 7, 2, 1)
 
 
 		# List files:
-		self.attach(Gtk.Label("Selections des fichiers :"), 0, 7, 2, 1)
+		self.attach(Gtk.Label("Selections des fichiers :"), 0, 8, 2, 1)
 		self.scrolled_win_select_file = Gtk.ScrolledWindow()
 		self.scrolled_win_select_file.set_min_content_width(600)
 		self.scrolled_win_select_file.set_min_content_height(100)
@@ -109,7 +112,7 @@ class SynchronisationGrid(Gtk.Grid):
 		self.scrolled_win_select_file.set_max_content_height(1500)
 		self.scrolled_win_select_file.set_hexpand(True)
 		self.scrolled_win_select_file.set_vexpand(True)
-		self.attach(self.scrolled_win_select_file, 0, 8, 2, 1)
+		self.attach(self.scrolled_win_select_file, 0, 9, 2, 1)
 
 		self.listfile = Gtk.ListStore(bool, str, str)
 		self.treeview_file = Gtk.TreeView.new_with_model(self.listfile)
