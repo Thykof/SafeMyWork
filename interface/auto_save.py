@@ -146,19 +146,27 @@ class AutoSavingGrid(Gtk.Grid):
 		self.parent.info_label.set_text('Scan en cours')
 		begin = time()
 		if self.state == 'Copier':
-			self.safer.copy_files()
+			error = self.safer.copy_files()
 		elif self.state == 'Filtrer':
-			self.safer.save_with_filters(loop=self.loop)
+			error = self.safer.save_with_filters(loop=self.loop)
 		elif self.state == 'maj':
-			self.safer.update(loop=self.loop)
+			error = self.safer.update(loop=self.loop)
 
-		#(main.py:6313): Pango-CRITICAL **: pango_layout_get_line_count: assertion 'layout != NULL' failed
-		#(main.py:6313): Pango-CRITICAL **: pango_layout_get_pixel_extents: assertion 'PANGO_IS_LAYOUT (layout)' failed
-
+		self.spinner.stop()
 		end = time()
 		self.scan_time = round(end - begin, 2)
-		self.spinner.stop()
-		self.parent.info_label.set_text('Scanné en ' + str(self.scan_time) + ' s')
+		self.parent.info_label.set_text('Scaned in ' + str(self.scan_time) + ' s')
+
+		if len(error) > 0:
+			dialog = Gtk.MessageDialog(self.parent, 0, Gtk.MessageType.INFO,
+				Gtk.ButtonsType.OK, "Limit size reached, abort")
+			msg = ''
+			for folder in error:
+				msg += folder + '\n'
+			dialog.format_secondary_text(
+				msg + "One of these folder is more than 3 Go.")
+			dialog.run()
+			dialog.destroy()
 
 	def start_scan(self):  # perpetual scan
 		"""Run `scan_now`, start a timer thread to itself for perpetual scan.

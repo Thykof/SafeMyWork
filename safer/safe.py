@@ -188,12 +188,16 @@ class Safer(object):
 		It create the directories requires.
 
 		"""
+		error = list()
 		if not size_delicate(self.safe_dirs):
 			return False
 		self.logger.info('Start saving with filters')
 		for path_delicate, safe_path in self.safe_dirs.items():
 			if not path.exists(path_delicate):
 				break
+			if getFolderSize(path_delicate) > 3000000000:
+				error.append(path_delicate)
+				continue
 			if safe_path['activate']:
 				safe_path_filter = safe_path['FILTER']
 				self.logger.info(path_delicate)
@@ -217,18 +221,26 @@ class Safer(object):
 
 		self.logger.info('Done')
 		self.safe_dirs = self.get_dst_path()
+		return error
 
 	def copy_files(self):
+		error = list()
 		self.logger.info('Start copying')
 		for path_delicate, safe_path in self.safe_dirs.items():
 			if not path.exists(path_delicate):
 				break
 			if safe_path['activate']:
-				self.logger.info('Saving ' + path_delicate)
-				copytree(path_delicate, safe_path['COPY'])
+				size = getFolderSize(path_delicate)
+				if size < 3000000000:
+					self.logger.info('Saving ' + path_delicate)
+					copytree(path_delicate, safe_path['COPY'])
+				else:
+					self.logger.info('Limit size reached, abort')
+					error.append(path_delicate)
 
 		self.logger.info('Done')
 		self.safe_dirs = self.get_dst_path()
+		return error
 
 	def update(self, loop=None):
 		"""Update the safe directory.
@@ -238,10 +250,14 @@ class Safer(object):
 		Remove directories trees is necessary.
 
 		"""
+		error = list()
 		self.logger.info('Start updating')
 		for path_delicate, safe_path in self.safe_dirs.items():
 			if not path.exists(path_delicate):
 				break
+			if getFolderSize(path_delicate) > 3000000000:
+				error.append(path_delicate)
+				continue
 			if safe_path['activate']:
 				self.logger.info(path_delicate)
 				safe_path_last = safe_path['LAST']
@@ -288,6 +304,7 @@ class Safer(object):
 
 		self.logger.info('Done')
 		self.safe_dirs = self.get_dst_path()  # !!! probleme avec activate
+		return error
 
 	def compare(self, local_path, external_path, loop):
 		"""
