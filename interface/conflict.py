@@ -60,7 +60,10 @@ class ConflictDialog(Gtk.Dialog):
 		self.box.pack_start(Gtk.Label('Liste des conflits :'), False, False, 5)
 		box_conflicts = Gtk.VBox()
 		scrolled = Gtk.ScrolledWindow()
-		for i, fileinfo in enumerate(self.conflicts):  # self.conflicts = comparison['conflicts']
+		if len(self.conflicts) > 500:
+			self.box.pack_start(Gtk.Label("""There is more than 500 conflicts,
+			they are not all show here. You should sync subfolders before."""), False, False, 5)
+		for i, fileinfo in enumerate(self.conflicts[0:500]):  # self.conflicts = comparison['conflicts']
 			# fileinfo [0]: filename
 			# fileinfo [1]: tuple size
 			# fileinfo [2]: tuple date
