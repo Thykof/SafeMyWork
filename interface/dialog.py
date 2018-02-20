@@ -44,7 +44,7 @@ class Settings_dial(Gtk.Dialog):
 		- the extentions to avoid
 		- the filenames to avoid
 		- the directories to avoid
-		- TODO: the paths to avoid
+		- the paths to avoid
 
 	"""
 	def __init__(self, parent):

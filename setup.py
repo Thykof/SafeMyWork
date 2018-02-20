@@ -28,3 +28,5 @@ setup(
         'Environment :: X11 Applications :: GTK'
     ],
 )
+
+# run tests: python3 -m pytest
