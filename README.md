@@ -16,11 +16,14 @@ Current version is 1.0
 Work in progress...
 
 #### TODO
+ - show the size to estimate how long will it take
+ - show the size of safe_doc
+ - 3 Go limit in settings
+ - empty listview when executed
+ - PEP 471 : use of os.scandir instead of walk
  - make an history of each files
  - compress files
  - add little icon to symbolize file explorer in buttons
- - show the size to estimate how long will it take
- - limit copytree to a limit size
 
 ## What for ?
 SafeMyWork is intend for people who handle lot of files which can be texts, images, songs.
