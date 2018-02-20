@@ -16,6 +16,8 @@ Current version is 1.0
 Work in progress...
 
 #### TODO
+ - fix ConfirmDialog
+ - threading
  - show the size to estimate how long will it take
  - show the size of safe_doc
  - 3 Go limit in settings
