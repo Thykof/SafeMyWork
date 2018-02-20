@@ -29,24 +29,24 @@ class SynchronisationGrid(Gtk.Grid):
 		self.set_row_spacing(5)
 
 		# Widgets
-		button_show_local = Gtk.Button.new_with_label('Ouvrir dossier local')
+		button_show_local = Gtk.Button.new_with_label('Open local folder')
 		button_show_local.connect('clicked', self.open_folder, True)
 		self.attach(button_show_local, 0, 0, 1, 1)
 
-		button_choose_local = Gtk.Button.new_with_label("Selection du dossier local")
+		button_choose_local = Gtk.Button.new_with_label("Select local folder")
 		button_choose_local.connect('clicked', self.select_local)
 		self.attach(button_choose_local, 1, 0, 1, 1)
 
 		if self.safer.config['local_path'] == '':
-			self.label_local = Gtk.Label("< selectionner un dossier local >")
+			self.label_local = Gtk.Label("< select local folder >")
 		else:
 			self.label_local = Gtk.Label(self.safer.config['local_path'])
 		self.attach(self.label_local, 0, 1, 2, 1)
 
-		button_show_external = Gtk.Button.new_with_label('Ouvrir dossier externe')
+		button_show_external = Gtk.Button.new_with_label('Open external folder')
 		button_show_external.connect('clicked', self.open_folder, False)
 		self.attach(button_show_external, 0, 2, 1, 1)
-		button_choose_external = Gtk.Button.new_with_label("Selection du dossier externe")
+		button_choose_external = Gtk.Button.new_with_label("Select external folder")
 		button_choose_external.connect('clicked', self.select_ext)
 		self.attach(button_choose_external, 1, 2, 1, 1)
 
@@ -181,10 +181,10 @@ class SynchronisationGrid(Gtk.Grid):
 	def compare(self, button):
 		if self.label_local.get_text() != "" and self.label_external.get_text() != '':
 			GLib.idle_add(self.do_compare)
-			self.parent.info_label.set_text("Comparaison lancé")
 			self.treeview_file.hide()
+			self.parent.info_label.set_text("Sync runing")
 		else:
-			self.parent.info_label.set_text("Veuillez selectionner des dossiers")
+			self.parent.info_label.set_text("Please select folders")
 			self.select_all.set_active(False)
 
 	def do_compare(self, path1=None, path2=None):

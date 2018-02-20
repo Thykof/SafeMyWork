@@ -71,14 +71,14 @@ class ConflictDialog(Gtk.Dialog):
 			box.pack_start(Gtk.Label(fileinfo[0]), False, False, 5)
 
 			date_local = datetime.datetime.fromtimestamp(fileinfo[2][0]).strftime('%c')
-			local_text = 'Dans ' + self.paths[0] + ' , dernière modification : '
-			local_text += date_local + ' , taille : ' + str(int(fileinfo[1][0])/1000) + ' Ko'
+			local_text = 'In ' + self.paths[0] + ' , last modification : '
+			local_text += date_local + ' , size : ' + str(int(fileinfo[1][0])/1000) + ' Ko'
 			radio_local = Gtk.RadioButton.new_with_label_from_widget(None, local_text)
 			radio_local.connect("toggled", self.on_button_toggled, "local", i)
 
 			date_ext = datetime.datetime.fromtimestamp(fileinfo[2][1]).strftime('%c')
-			ext_text = 'Dans ' + self.paths[1] + ' , dernière modification : '
-			ext_text += date_ext + ' , taille : ' + str(int(fileinfo[1][1])/1000) + ' Ko'
+			ext_text = 'In ' + self.paths[1] + ' , last modification : '
+			ext_text += date_ext + ' , size : ' + str(int(fileinfo[1][1])/1000) + ' Ko'
 			radio_ext = Gtk.RadioButton.new_with_label_from_widget(radio_local, ext_text)
 			radio_ext.connect("toggled", self.on_button_toggled, "ext", i)
 
@@ -98,7 +98,7 @@ class ConflictDialog(Gtk.Dialog):
 
 class ConfirmDialog(Gtk.Dialog):
 	def __init__(self, parent, orders):
-		Gtk.Dialog.__init__(self, "Confim", parent, 0,
+		Gtk.Dialog.__init__(self, "Confirm", parent, 0,
 			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
 			Gtk.STOCK_OK, Gtk.ResponseType.OK))
 
@@ -126,7 +126,7 @@ class ConfirmDialog(Gtk.Dialog):
 		for filename in self.orders['ext']:
 			files.append(path.join(self.orders['paths'][1], filename))
 
-		self.box.pack_start(Gtk.Label('These files will be lost:'), True, True, 5)
+		self.box.pack_start(Gtk.Label('These files will be lost:'), True, True, 5)  # actually not really!
 		box = Gtk.VBox()
 		scrolled = Gtk.ScrolledWindow()
 		for filename in files[:1000]:

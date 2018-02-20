@@ -25,7 +25,7 @@ class MyWindow(Gtk.ApplicationWindow):
 		hb = Gtk.HeaderBar()
 		hb.set_show_close_button(True)
 		hb.props.title = 'SafeMyWork!'
-		hb.props.subtitle = 'Sauvegarde et synchronisation de vos fichiers'
+		hb.props.subtitle = 'Save and sync your files'
 		self.set_titlebar(hb)
 
 		button = Gtk.Button()
@@ -48,7 +48,7 @@ class MyWindow(Gtk.ApplicationWindow):
 
 		# Header box
 		header_box = Gtk.Box(spacing=6)
-		self.info_label = Gtk.Label('Bienvenue !')
+		self.info_label = Gtk.Label('Welcome!')
 		header_box.pack_start(self.info_label, True, True, 0)
 		main_box.pack_start(header_box, False, False, 0)
 
@@ -58,11 +58,11 @@ class MyWindow(Gtk.ApplicationWindow):
 
 		# Auto-saving page
 		self.page_auto_save = AutoSavingGrid(self, self.safer)
-		self.notebook.append_page(self.page_auto_save, Gtk.Label('Sauvegarde automatique'))
+		self.notebook.append_page(self.page_auto_save, Gtk.Label('Auto-saving'))
 
 		# Synchronisation page
 		page_synchronisation = SynchronisationGrid(self, self.safer)
-		self.notebook.append_page(page_synchronisation, Gtk.Label('Synchronisation'))
+		self.notebook.append_page(page_synchronisation, Gtk.Label('Sync'))
 
 	def settings(self, _):
 		'''Open the setting dialog.'''
@@ -78,8 +78,7 @@ class MyWindow(Gtk.ApplicationWindow):
 		about_dialog.set_website('https://github.com/Thykof/SafeMyWork')
 		about_dialog.set_website_label('Github')
 		about_dialog.set_authors(['Nathan Seva'])
-		about_dialog.set_comments('Utilitaire SafeMyWork')
-		about_dialog.set_license('SafeMyWork est sous la license GNU GPL(v3). \n\n https://github.com/Thykof/SafeMyWork/blob/master/LICENSE')
+		about_dialog.set_license('SafeMyWork is under GNU GPL(v3) license. \n\n https://github.com/Thykof/SafeMyWork/blob/master/LICENSE')
 		pixbuf = GdkPixbuf.Pixbuf.new_from_file('logo_smw.png')
 		about_dialog.set_logo(pixbuf)
 

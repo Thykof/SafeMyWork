@@ -57,7 +57,7 @@ class Settings_dial(Gtk.Dialog):
 		box = self.get_content_area()
 		box.set_spacing(6)
 
-		button_close = Gtk.Button.new_with_label('Femrer')
+		button_close = Gtk.Button.new_with_label('Close')
 		button_close.connect('clicked', self.close)
 
 		# Set timedelta:
@@ -66,17 +66,17 @@ class Settings_dial(Gtk.Dialog):
 		self.spinbutton = Gtk.SpinButton(adjustment=adjustment)
 		self.spinbutton.set_digits(0)
 		self.spinbutton.set_value(self.parent.safer.config['timedelta'])
-		box_time.pack_start(Gtk.Label('Scan tous les :'), False, False, 0)
+		box_time.pack_start(Gtk.Label('Scan every :'), False, False, 0)
 		box_time.pack_start(self.spinbutton, False, False, 0)
-		box_time.pack_start(Gtk.Label('Minutes. '), False, False, 0)
+		box_time.pack_start(Gtk.Label('minutes. '), False, False, 0)
 
 		# Exclude extenstions:
 		box_ext = Gtk.Box(spacing=6)
 		box_ext.pack_start(Gtk.Label('Extensions : '), False, False, 0)
 		ext_list = Gtk.ComboBoxText.new_with_entry()
-		button_add_ext = Gtk.Button.new_with_label('Ajouter')
+		button_add_ext = Gtk.Button.new_with_label('Add')
 		button_add_ext.connect('clicked', lambda arg: self.add('extention', ext_list))
-		button_del_ext = Gtk.Button.new_with_label('Supprimer')
+		button_del_ext = Gtk.Button.new_with_label('Del')
 		button_del_ext.connect('clicked', lambda arg: self.delete('extention', ext_list))
 		box_ext.pack_start(ext_list, False, False, 0)
 		box_ext.pack_start(button_add_ext, False, False, 0)
@@ -86,11 +86,11 @@ class Settings_dial(Gtk.Dialog):
 
 		# Exclude files:
 		box_files = Gtk.Box(spacing=6)
-		box_files.pack_start(Gtk.Label('Fichiers : '), False, False, 0)
+		box_files.pack_start(Gtk.Label('Files: '), False, False, 0)
 		file_list = Gtk.ComboBoxText.new_with_entry()
-		button_add_file = Gtk.Button.new_with_label('Ajouter')
+		button_add_file = Gtk.Button.new_with_label('Add')
 		button_add_file.connect('clicked', lambda arg: self.add('filename', file_list))
-		button_del_file = Gtk.Button.new_with_label('Supprimer')
+		button_del_file = Gtk.Button.new_with_label('Del')
 		button_del_file.connect('clicked', lambda arg: self.delete('filename', file_list))
 		box_files.pack_start(file_list, False, False, 0)
 		box_files.pack_start(button_add_file, False, False, 0)
@@ -100,11 +100,11 @@ class Settings_dial(Gtk.Dialog):
 
 		# Exclude directories:
 		box_dirs = Gtk.Box(spacing=6)
-		box_dirs.pack_start(Gtk.Label('Dossiers : '), False, False, 0)
+		box_dirs.pack_start(Gtk.Label('Folders: '), False, False, 0)
 		dirs_list = Gtk.ComboBoxText.new_with_entry()
-		button_add_dirs = Gtk.Button.new_with_label('Ajouter')
+		button_add_dirs = Gtk.Button.new_with_label('Add')
 		button_add_dirs.connect('clicked', lambda arg: self.add('dirname', dirs_list))
-		button_del_dirs = Gtk.Button.new_with_label('Supprimer')
+		button_del_dirs = Gtk.Button.new_with_label('Del')
 		button_del_dirs.connect('clicked', lambda arg: self.delete('dirname', dirs_list))
 		box_dirs.pack_start(dirs_list, False, False, 0)
 		box_dirs.pack_start(button_add_dirs, False, False, 0)
@@ -114,11 +114,11 @@ class Settings_dial(Gtk.Dialog):
 
 		# Exclude paths:
 		box_paths = Gtk.Box(spacing=6)
-		box_paths.pack_start(Gtk.Label('chemin : '), False, False, 0)
+		box_paths.pack_start(Gtk.Label('Paths: '), False, False, 0)
 		paths_list = Gtk.ComboBoxText.new_with_entry()
-		button_add_paths = Gtk.Button.new_with_label('Ajouter')
+		button_add_paths = Gtk.Button.new_with_label('Add')
 		button_add_paths.connect('clicked', lambda arg: self.add('dirpath', paths_list))
-		button_del_paths = Gtk.Button.new_with_label('Supprimer')
+		button_del_paths = Gtk.Button.new_with_label('Del')
 		button_del_paths.connect('clicked', lambda arg: self.delete('dirpath', paths_list))
 		box_paths.pack_start(paths_list, False, False, 0)
 		box_paths.pack_start(button_add_paths, False, False, 0)
@@ -128,7 +128,7 @@ class Settings_dial(Gtk.Dialog):
 
 		# Archive directory:
 		box_archive_dir = Gtk.Box(spacing=6)
-		box_archive_dir.pack_start(Gtk.Label('Dossier archive : '), False, False, 0)
+		box_archive_dir.pack_start(Gtk.Label('Safe folder: '), False, False, 0)
 		self.archive_label = Gtk.Label()
 		self.archive_label.set_text(self.parent.safer.destination)
 		self.archive_change_button = Gtk.Button.new_with_label('Change')
@@ -138,7 +138,7 @@ class Settings_dial(Gtk.Dialog):
 
 		# Pack boxes
 		box.pack_start(box_time, False, False, 0)
-		box.pack_start(Gtk.Label('Règles d\'exclusion : '), False, False, 0)
+		box.pack_start(Gtk.Label('Exclusion rules: '), False, False, 0)
 		box.pack_start(box_ext, False, False, 0)
 		box.pack_start(box_files, False, False, 0)
 		box.pack_start(box_dirs, False, False, 0)
@@ -184,13 +184,13 @@ class Settings_dial(Gtk.Dialog):
 
 class AbortDialog(Gtk.Dialog):
 	def __init__(self, parent):
-		Gtk.Dialog.__init__(self, "Traitement en cours...", parent, 0,
+		Gtk.Dialog.__init__(self, "Work in progress...", parent, 0,
 			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL))
 		self.parent = parent
 
 		self.set_modal(True)
 
-		label = Gtk.Label("Traitement en cours...")
+		label = Gtk.Label("Work in progress...")
 
 		box = self.get_content_area()
 		box.add(label)
@@ -202,7 +202,7 @@ class AbortDialog(Gtk.Dialog):
 def folder_chooser(parent, is_folder=True, folder=None, msg=None):
 	if not is_folder:
 		if msg is None:
-			msg = "Selection d'un fichier"
+			msg = "Select a folder"
 		dialog = Gtk.FileChooserDialog(msg, parent,
 			Gtk.FileChooserAction.OPEN,
 			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
@@ -211,11 +211,11 @@ def folder_chooser(parent, is_folder=True, folder=None, msg=None):
 			dialog.set_current_folder(folder)
 	else:
 		if msg is None:
-			msg = "Selection d'un fichier"
+			msg = "Select a file"
 		dialog = Gtk.FileChooserDialog(msg, parent,
 			Gtk.FileChooserAction.SELECT_FOLDER,
 			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-			 "Selectionner", Gtk.ResponseType.OK))
+			 "Select", Gtk.ResponseType.OK))
 	dialog.set_default_size(800, 400)
 
 	response = dialog.run()
