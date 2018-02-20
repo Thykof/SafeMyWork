@@ -237,6 +237,7 @@ class SynchronisationGrid(Gtk.Grid):
 					else:
 						conflict_dialog.destroy()
 				else:
+					GLib.idle_add(self.mysync.sync, self.comparison_)
 					self.parent.info_label.set_text("Done")
 			else:  # Soft sync
 				for filename in self.comparison['to_copy']:
