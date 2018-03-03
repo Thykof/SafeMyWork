@@ -91,6 +91,7 @@ class Safer(object):
 				'local_path': '',
 				'external_path': '',
 				'timedelta': 1,
+				'advanced': False,
 				}
 			self.save_config()
 

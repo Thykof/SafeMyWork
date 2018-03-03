@@ -136,6 +136,17 @@ class Settings_dial(Gtk.Dialog):
 		box_archive_dir.pack_start(self.archive_label, False, False, 0)
 		box_archive_dir.pack_start(self.archive_change_button, False, False, 0)
 
+		# Advanced:
+		box_advanced = Gtk.VBox(spacing=10)
+		box_advanced.pack_start(Gtk.Label('Advanced'), False, False, 0)
+		box_disable = Gtk.Box()
+		box_disable.pack_start(Gtk.Label('Disable safe restrictions:'), False, False, 0)
+		switch_disable = Gtk.Switch()
+		switch_disable.set_active(self.parent.safer.config['advanced'])
+		switch_disable.connect('notify::active', self.on_switch_disable)
+		box_disable.pack_start(switch_disable, False, False, 0)
+		box_advanced.pack_start(box_disable, False, False, 0)
+
 		# Pack boxes
 		box.pack_start(box_time, False, False, 0)
 		box.pack_start(Gtk.Label('Exclusion rules: '), False, False, 0)
@@ -144,6 +155,7 @@ class Settings_dial(Gtk.Dialog):
 		box.pack_start(box_dirs, False, False, 0)
 		box.pack_start(box_paths, False, False, 0)
 		box.pack_start(box_archive_dir, False, False, 0)
+		box.pack_start(box_advanced, False, False, 10)
 		box.pack_start(button_close, False, False, 0)
 		self.show_all()
 
@@ -181,6 +193,9 @@ class Settings_dial(Gtk.Dialog):
 		new_folder = folder_chooser(self)
 		if new_folder:
 			self.archive_label.set_text(new_folder)
+
+	def on_switch_disable(self, switch, active):
+		self.parent.safer.config['advanced'] = switch.get_active()
 
 class AbortDialog(Gtk.Dialog):
 	def __init__(self, parent):
