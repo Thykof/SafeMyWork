@@ -72,6 +72,10 @@ class Sync(object):
 		orders['conflicts'] = conflicts
 		orders['paths'] = self.local_path, self.ext_path  # needed by ConflictDialog
 		store(orders, self.safe_doc, 'analysisSYNCAVANT')
+
+		self.comparison = orders
+		self.conflicts = orders['conflicts']
+
 		return orders
 
 	def sync(self, orders):
@@ -79,3 +83,36 @@ class Sync(object):
 		errors1 = save_files(orders['local'], orders['paths'][0], orders['paths'][1])
 		errors2 = save_files(orders['ext'], orders['paths'][1], orders['paths'][0])
 		return errors1, errors2
+
+	def solve_conflicts(self):
+		for num, fileinfo in enumerate(self.conflicts):
+			if fileinfo[2][0] > fileinfo[2][1]:  # local is more recent
+				self.change_dst('local', num)
+			else:
+				self.change_dst('ext', num)
+
+	def change_dst(self, path_type, num):
+		print('cahnge dst')
+		print(path_type, num)
+		if path_type == 'ext':
+			if self.conflicts[num][0] not in self.comparison['local']:
+				self.add_in_local(self.conflicts[num][0])
+			if self.conflicts[num][0] in self.comparison['ext']:
+				self.remove_in_ext(self.conflicts[num][0])
+		else:  # path_type == 'local'
+			if self.conflicts[num][0] not in self.comparison['ext']:
+				self.add_in_ext(self.conflicts[num][0])
+			if self.conflicts[num][0] in self.comparison['local']:
+				self.remove_in_local(self.conflicts[num][0])
+
+	def add_in_local(self, filename):
+		self.comparison['local'].append(filename)
+
+	def remove_in_local(self, filename):
+		self.comparison['local'].remove(filename)
+
+	def add_in_ext(self, filename):
+		self.comparison['ext'].append(filename)
+
+	def remove_in_ext(self, filename):
+		self.comparison['ext'].remove(filename)

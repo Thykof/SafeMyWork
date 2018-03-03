@@ -93,13 +93,17 @@ class SynchronisationGrid(Gtk.Grid):
 
 	def show_compare_results(self, compare_results):
 		cancel = False
+		max_conflicts = 2
 		if len(compare_results['conflicts']) > 0:
-			conflict_dialog = ConflictDialog(self.parent, compare_results)
+			conflict_dialog = ConflictDialog(self.parent, compare_results, self.mysync, max_conflicts)
 			response = conflict_dialog.run()
 			if response == Gtk.ResponseType.OK:
 				compare_results = conflict_dialog.comparison
 			else:
 				cancel = True
+			if len(compare_results['conflicts']) > max_conflicts and self.safer.config['advanced'] == False:
+				if conflict_dialog.switch.get_active():
+					self.mysync.solve_conflicts()
 			conflict_dialog.destroy()
 
 		if not cancel:
@@ -111,6 +115,8 @@ class SynchronisationGrid(Gtk.Grid):
 			else:
 				self.parent.info_label.set_text("Sync aborted")
 			confirm_dialog.destroy()
+		else:
+			self.parent.info_label.set_text("Sync aborted")
 
 	def open_folder(self, button, local):
 		if local:

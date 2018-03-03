@@ -8,13 +8,15 @@ import datetime
 from os import path
 
 class ConflictDialog(Gtk.Dialog):
-	def __init__(self, parent, comparison):
+	def __init__(self, parent, comparison, mysync, max_conflicts):
 		Gtk.Dialog.__init__(self, "Conflits", parent, 0,
 			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
 			Gtk.STOCK_OK, Gtk.ResponseType.OK))
 
 		# Varaibles
 		self.parent = parent
+		self.mysync = mysync
+		self.max_conflicts = max_conflicts
 		self.results = None  # orders
 		self.comparison = comparison
 		self.conflicts = comparison['conflicts']
@@ -30,40 +32,23 @@ class ConflictDialog(Gtk.Dialog):
 
 		self.show_all()
 
-	def add_in_local(self, filename):
-		self.comparison['local'].append(filename)
-
-	def remove_in_local(self, filename):
-		self.comparison['local'].remove(filename)
-
-	def add_in_ext(self, filename):
-		self.comparison['ext'].append(filename)
-
-	def remove_in_ext(self, filename):
-		self.comparison['ext'].remove(filename)
-
 	def on_button_toggled(self, button, path_type, num):
+		print('toggle')
 		if button.get_active():
-			if path_type == 'ext':
-				if self.conflicts[num][0] not in self.comparison['local']:
-					self.add_in_local(self.conflicts[num][0])
-				if self.conflicts[num][0] in self.comparison['ext']:
-					self.remove_in_ext(self.conflicts[num][0])
-			else:  # path_type == 'local'
-				if self.conflicts[num][0] not in self.comparison['ext']:
-					self.add_in_ext(self.conflicts[num][0])
-				if self.conflicts[num][0] in self.comparison['local']:
-					self.remove_in_local(self.conflicts[num][0])
+			print('yes active')
+			self.mysync.change_dst(path_type, num)
 
 	def initialise_box(self):
 		self.box.set_spacing(6)
-		self.box.pack_start(Gtk.Label('Liste des conflits :'), False, False, 5)
+		self.box.pack_start(Gtk.Label('List of conflicts :'), False, False, 5)
 		box_conflicts = Gtk.VBox()
 		scrolled = Gtk.ScrolledWindow()
-		if len(self.conflicts) > 500:
-			self.box.pack_start(Gtk.Label("""There is more than 500 conflicts,
-			they are not all show here. You should sync subfolders before."""), False, False, 5)
-		for i, fileinfo in enumerate(self.conflicts[0:500]):  # self.conflicts = comparison['conflicts']
+		show_confilcts = self.conflicts
+		if len(self.conflicts) > self.max_conflicts and self.parent.safer.config['advanced'] == False:
+			self.box.pack_start(Gtk.Label("There is more than {} conflicts, \
+			they are not all show here. You should sync subfolders before.".format(self.max_conflicts)), False, False, 5)
+			show_confilcts = self.conflicts[0:self.max_conflicts]
+		for i, fileinfo in enumerate(show_confilcts):  # self.conflicts = comparison['conflicts']
 			# fileinfo [0]: filename
 			# fileinfo [1]: tuple size
 			# fileinfo [2]: tuple date
@@ -86,13 +71,24 @@ class ConflictDialog(Gtk.Dialog):
 				box.pack_start(radio_local, False, False, 1)
 				box.pack_start(radio_ext, False, False, 1)
 				radio_local.set_active(True)
+				self.mysync.change_dst('local', i)
 			else:
 				box.pack_start(radio_ext, False, False, 1)
 				box.pack_start(radio_local, False, False, 1)
 				radio_ext.set_active(True)
+				self.mysync.change_dst('ext', i)
 
 			box_conflicts.pack_start(box, False, False, 5)
+
 			# end for
+
+		if len(show_confilcts) != len(self.conflicts):
+			box_default = Gtk.Box()
+			box_default.pack_start(Gtk.Label('Default conflict resolution\nfor every not shown conflicts?'), False, False, 0)
+			self.switch = Gtk.Switch()
+			box_default.pack_start(self.switch, False, False, 5)
+			box_conflicts.pack_start(box_default, False, False, 10)
+
 		scrolled.add(box_conflicts)
 		self.box.pack_start(scrolled, True, True, 2)
 
