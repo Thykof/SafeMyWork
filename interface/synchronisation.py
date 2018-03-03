@@ -114,12 +114,12 @@ class SynchronisationGrid(Gtk.Grid):
 
 	def open_folder(self, button, local):
 		if local:
-			if self.label_local.get_text() != '':
-				show_dir(None, self.label_local.get_text())
+			if self.label_local.get_text()[0] != '<':
+				show_dir(self.label_local.get_text())
 			else:
-				self.parent.info_label.set_text("Veuillez selectionner un dossier local")
+				self.parent.info_label.set_text("Please select local folder")
 		else:
-			if self.label_external.get_text() != '':
-				show_dir(None, self.label_external.get_text())
+			if self.label_external.get_text()[0] != '<':
+				show_dir(self.label_external.get_text())
 			else:
-				self.parent.info_label.set_text("Veuillez selectionner un dossier externe")
+				self.parent.info_label.set_text("Please select external folder")
