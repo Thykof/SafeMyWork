@@ -47,7 +47,6 @@ class Safer(object):
 		#self.logger.addHandler(stream_handler)
 
 		# Config
-		self.soft_sync = False
 		self.cfg_dir = path.join(path.expanduser('~'), '.safemywork')
 		self.cfg_file = path.join(self.cfg_dir, 'config.yml')
 		if config is None:
@@ -108,9 +107,6 @@ class Safer(object):
 			mkdir(self.cfg_dir)
 		with open(self.cfg_file, 'w') as ymlfile:
 			dump(self.config, ymlfile)
-
-	def set_soft_sync(self, soft_sync):
-		self.soft_sync = soft_sync
 
 	def set_destination(self, destination):
 		self.destination = destination
@@ -305,110 +301,6 @@ class Safer(object):
 		self.logger.info('Done')
 		self.safe_dirs = self.get_dst_path()  # !!! probleme avec activate
 		return error
-
-	def compare(self, local_path, external_path, loop):
-		"""
-		Il faudrait une fenetre avec 3 onglets :
-			- fichiers a copier : qui manquent dans la destination
-			- fichiers a supprimer : qui ne sont plus dans la source
-			- fichier a mettre a jour : qui sont déjà dans la destination et qui sont nouveau
-				(ici attention il faut garder les fichiers les plus recents)
-		... et on pourrait choisir quel fichier copier/supprimer/mettre a jour.
-		Une option Garder les fichiers de la destination qui ne sont plus dans la sources.
-		Une option Garder le dernier fichier (pour les fichiers presents dans la source et la destination).
-
-		"""
-		self.working_paths = (local_path, external_path)
-		self.logger.info('Start comparing')
-
-		loop.run_until_complete(self.get_to_save(local_path))
-
-		local_dirs = self.dirs_to_make
-		locals_files = self.list_files
-
-		loop.run_until_complete(self.get_to_save(external_path))
-
-		external_dirs = self.dirs_to_make
-		external_files = self.list_files
-
-		self.logger.info('Done')
-
-		results = self.do_compare(local_dirs, locals_files, external_dirs, external_files)
-		json_filename = 'compare'
-		# linux system:
-		json_filename += '_'.join(local_path.split('/'))
-		json_filename += '_VS'
-		if self.soft_sync:
-			json_filename += 'S_'
-		else:
-			json_filename += 'D_'
-		json_filename += '_'.join(external_path.split('/'))
-		json_filename += '.json'
-		json_file = path.join(self.destination, json_filename)
-		self.logger.info('Store analysis compare: ' + json_file)
-		with open(json_file, 'w', encoding='utf-8') as myfile:
-			myfile.write(json.dumps(results, indent=2))
-		return results
-
-	def do_compare(self, local_dirs, locals_files, external_dirs, external_files):
-		"""
-		missing_item: Return the list of directory in `list1` but not in `list2`.
-		combine_list: Create a list with only elements in common of the two lists.
-		"""
-		results = dict()
-
-		dirs_to_make = missing_item(local_dirs, external_dirs)
-
-		# Get new files, those not in external
-		to_copy = missing_item(locals_files, external_files)
-
-		# Get existing files in safe path
-		to_update = combine_list(locals_files, external_files)
-
-		# Get old files, thos not in local
-		to_del = missing_item(external_files, locals_files)
-
-		# Get old folders, to be deleted
-		# dirs_to_del: directories copied, deleted in delicate drectory -> to delete from safe directory
-		dirs_to_del = missing_item(external_dirs, local_dirs)
-		results['dirs_to_make'] = dirs_to_make
-		results['dirs_to_del'] = dirs_to_del
-		results['to_copy'] = to_copy  # files
-		results['to_update'] = to_update  # files
-		results['to_del'] = to_del  #files
-		if self.soft_sync:
-			return results
-		else:
-			dirs_to_make_local = missing_item(external_dirs, local_dirs)
-			to_copy_local = missing_item(external_files, locals_files)
-			conflicts = list()
-			results = dict()
-			# Get date and size of files under conflict (to update):
-			for filename in to_update:
-				# stat:
-				stat_local = stat(path.join(self.working_paths[0], filename))
-				stat_ext = stat(path.join(self.working_paths[1], filename))
-				# size:
-				size_local = stat_local.st_size
-				size_ext = stat_ext.st_size
-				# date (the older has st_mtime lower):
-				date_local = stat_local.st_mtime
-				date_ext = stat_ext.st_mtime
-				conflicts.append([filename, (size_local, size_ext), (date_local, date_ext)])
-			results = dict()
-			results['copy_file_in_local'] = to_copy_local
-			results['copy_dirs_in_local'] = dirs_to_make_local
-			results['copy_dirs_ext'] = dirs_to_make
-			results['copy_file_ext'] = to_copy
-			results['conflicts'] = conflicts
-			results['working_paths'] = self.working_paths  # needed by ConflictDialog
-			json_filename = 'analysisSYNCAVANT'
-			json_file = path.join(self.destination, json_filename)
-			with open(json_file, 'w', encoding='utf-8') as myfile:
-				myfile.write(json.dumps(results, indent=2))
-			return results
-
-
 
 	async def get_to_save(self, directory):
 		"""Return a list of file to save from a the given delicate directory, using `os.walk`.
