@@ -7,7 +7,7 @@ class BaseTest(object):
 		pass
 
 class TestSafer(BaseTest):
-    def test_safer(self):
+    def _test_safer(self):
         path1 = '/home/thykof/Téléchargements'
         path2 = '/home/thykof/Vidéos'
         myscan = scan.Scan()
