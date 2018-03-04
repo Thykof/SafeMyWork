@@ -50,6 +50,7 @@ class ConfirmDialog(Gtk.Dialog):
 		# Properties
 		self.set_border_width(10)
 		self.set_modal(True)
+		self.set_default_size(800, 250)
 
 		# Content
 		self.box = self.get_content_area()
@@ -59,22 +60,50 @@ class ConfirmDialog(Gtk.Dialog):
 
 	def initialise_box(self):
 		self.box.set_spacing(6)
+		box_wrapper = Gtk.Box()
 
-		files = list()
+		files_lost = list()
+		conflict_files = list()
+		files_create = list()
+		for fileinfo in self.orders['conflicts']:
+			conflict_files.append(fileinfo[0])
 		for filename in self.orders['local']:
-			files.append(path.join(self.orders['paths'][0], filename))
+			path_file = path.join(self.orders['paths'][0], filename)
+			if filename in conflict_files:
+				files_lost.append(path_file)
+			else:
+				files_create.append(path_file)
 
 		for filename in self.orders['ext']:
-			files.append(path.join(self.orders['paths'][1], filename))
+			path_file = path.join(self.orders['paths'][0], filename)
+			if filename in conflict_files:
+				files_lost.append(path_file)
+			else:
+				files_create.append(path_file)
 
-		self.box.pack_start(Gtk.Label('These files will be lost:'), True, True, 5)  # actually not really!
-		box = Gtk.VBox()
+		box_lost = Gtk.VBox()
+		box_lost.pack_start(Gtk.Label('These files will be lost:'), False, False, 5)
+		box_filenames = Gtk.VBox()
 		scrolled = Gtk.ScrolledWindow()
-		for filename in files[:1000]:
-			box.pack_start(Gtk.Label(filename), False, False, 1)
+		for filename in files_lost[:1000]:
+			box_filenames.pack_start(Gtk.Label(filename), False, False, 1)
 
-		scrolled.add(box)
-		self.box.pack_start(scrolled, True, True, 2)
+		scrolled.add(box_filenames)
+		box_lost.pack_start(scrolled, True, True, 2)
+
+		box_create = Gtk.VBox()
+		box_create.pack_start(Gtk.Label('These files will be create:'), False, False, 5)
+		box_filenames = Gtk.VBox()
+		scrolled = Gtk.ScrolledWindow()
+		for filename in files_create:
+			box_filenames.pack_start(Gtk.Label(filename), False, False, 1)
+		scrolled.add(box_filenames)
+		box_create.pack_start(scrolled, True, True, 2)
+
+		box_wrapper.pack_start(box_lost, True, True, 5)
+		box_wrapper.pack_start(box_create, True, True, 5)
+
+		self.box.pack_start(box_wrapper, True, True, 0)
 
 class AbortDialog(Gtk.Dialog):
 	def __init__(self, parent):

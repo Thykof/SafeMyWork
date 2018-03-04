@@ -24,6 +24,7 @@ class ConflictDialog(Gtk.Dialog):
 		# Properties
 		self.set_border_width(10)
 		self.set_modal(True)
+		self.set_default_size(800, 400)
 
 		# Content
 		self.box = self.get_content_area()
