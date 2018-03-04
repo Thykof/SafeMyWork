@@ -7,7 +7,7 @@ from gi.repository import Gtk, Gio, GdkPixbuf
 
 from .auto_save import AutoSavingGrid
 from .synchronisation import SynchronisationGrid
-from .dialog import Settings_dial
+from .dialogs.settings import Settings_dial
 from safer.safe import Safer
 
 class MyWindow(Gtk.ApplicationWindow):

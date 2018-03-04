@@ -5,8 +5,9 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GObject, GLib
 
 from .helpers import open_folder as show_dir
-from .dialog import folder_chooser
-from .conflict import ConflictDialog, ConfirmDialog
+from .dialogs.dialog import folder_chooser
+from .dialogs.conflict import ConflictDialog
+from .dialogs.dialog import ConfirmDialog
 from safer import scan, sync
 
 class SynchronisationGrid(Gtk.Grid):

@@ -9,7 +9,7 @@ from time import time
 import threading
 
 from .helpers import open_folder
-from .dialog import DelDirDialog
+from .dialogs.dialog import DelDirDialog
 
 class AutoSavingGrid(Gtk.Grid):
 	"""The first page of the notebook."""
