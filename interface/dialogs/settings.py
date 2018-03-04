@@ -4,38 +4,6 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
-class DelDirDialog(Gtk.Dialog):
-
-	def __init__(self, parent, list_delicate):
-		Gtk.Dialog.__init__(self, "", parent, 0,
-			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-			 Gtk.STOCK_OK, Gtk.ResponseType.OK))
-		self.set_modal(True)
-		self.set_resizable(False)
-		self.set_border_width(10)
-		# Result values:
-		self.dirname = None
-		self.diriter = None
-
-		box = self.get_content_area()
-		box.set_spacing(6)
-		combo = Gtk.ComboBox.new_with_model(list_delicate)
-		combo.set_hexpand(True)
-		combo.connect("changed", self.on_combo_changed)
-		renderer_text = Gtk.CellRendererText()
-		combo.pack_start(renderer_text, True)
-		combo.add_attribute(renderer_text, "text", 0)
-		box.pack_start(combo, False, False, True)
-
-		#box.add()
-		self.show_all()
-
-	def on_combo_changed(self, combo):
-		self.diriter = combo.get_active_iter()
-		if self.diriter is not None:  # otherwise raise error when destroy dialog
-			self.dirname = combo.get_model().get_value(self.diriter, 0)
-
-
 class Settings_dial(Gtk.Dialog):
 	"""Setting dialog
 
@@ -196,47 +164,3 @@ class Settings_dial(Gtk.Dialog):
 
 	def on_switch_disable(self, switch, active):
 		self.parent.safer.config['advanced'] = switch.get_active()
-
-class AbortDialog(Gtk.Dialog):
-	def __init__(self, parent):
-		Gtk.Dialog.__init__(self, "Work in progress...", parent, 0,
-			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL))
-		self.parent = parent
-
-		self.set_modal(True)
-
-		label = Gtk.Label("Work in progress...")
-
-		box = self.get_content_area()
-		box.add(label)
-		self.show_all()
-
-	def close(self):
-		self.destroy()
-
-def folder_chooser(parent, is_folder=True, folder=None, msg=None):
-	if not is_folder:
-		if msg is None:
-			msg = "Select a folder"
-		dialog = Gtk.FileChooserDialog(msg, parent,
-			Gtk.FileChooserAction.OPEN,
-			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-			 Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-		if folder:
-			dialog.set_current_folder(folder)
-	else:
-		if msg is None:
-			msg = "Select a file"
-		dialog = Gtk.FileChooserDialog(msg, parent,
-			Gtk.FileChooserAction.SELECT_FOLDER,
-			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-			 "Select", Gtk.ResponseType.OK))
-	dialog.set_default_size(800, 400)
-
-	response = dialog.run()
-	if response == Gtk.ResponseType.OK:
-		result = dialog.get_filename()
-	else:
-		result = None
-	dialog.destroy()
-	return result
