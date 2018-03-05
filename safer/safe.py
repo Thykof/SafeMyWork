@@ -11,6 +11,7 @@ import json
 
 from .helpers import *
 
+MAX_DIR_SIZE = 3000000000
 
 class Safer(object):
 	"""Manage the creation of the duplicate directory of the folder placed under supervision.
@@ -186,13 +187,11 @@ class Safer(object):
 
 		"""
 		error = list()
-		if not size_delicate(self.safe_dirs):
-			return False
 		self.logger.info('Start saving with filters')
 		for path_delicate, safe_path in self.safe_dirs.items():
 			if not path.exists(path_delicate):
 				break
-			if getFolderSize(path_delicate) > 3000000000:
+			if getFolderSize(path_delicate) > MAX_DIR_SIZE and not self.config['advanced']:
 				error.append(path_delicate)
 				continue
 			if safe_path['activate']:
@@ -228,7 +227,7 @@ class Safer(object):
 				break
 			if safe_path['activate']:
 				size = getFolderSize(path_delicate)
-				if size < 3000000000:
+				if size < MAX_DIR_SIZE and self.config['advanced']:
 					self.logger.info('Saving ' + path_delicate)
 					copytree(path_delicate, safe_path['COPY'])
 				else:
@@ -252,7 +251,7 @@ class Safer(object):
 		for path_delicate, safe_path in self.safe_dirs.items():
 			if not path.exists(path_delicate):
 				break
-			if getFolderSize(path_delicate) > 3000000000:
+			if getFolderSize(path_delicate) > MAX_DIR_SIZE and not self.config['advanced']:
 				error.append(path_delicate)
 				continue
 			if safe_path['activate']:
