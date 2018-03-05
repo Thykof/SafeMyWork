@@ -195,7 +195,7 @@ class AutoSavingGrid(Gtk.Grid):
 		response = dialog.run()
 		if response == Gtk.ResponseType.OK:
 			dirname = dialog.get_filename()
-			if dirname != '' and dirname not in self.safer.delicate_dirs:
+			if dirname != '' and dirname not in self.safer.delicate_dirs and dirname != self.safer.destination:
 				self.list_delicate.append([dirname])
 				self.safer.add_delicate_dir(dirname)
 				self.parent.info_label.set_text("Folder added")
