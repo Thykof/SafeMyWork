@@ -10,6 +10,7 @@ import threading
 
 from .helpers import open_folder
 from .dialogs.dialog import DelDirDialog
+from .thread import Thread
 
 class AutoSavingGrid(Gtk.Grid):
 	"""The first page of the notebook."""
@@ -137,31 +138,32 @@ class AutoSavingGrid(Gtk.Grid):
 			if thread.name == 'scan' and thread.is_alive():
 					can = False
 		if can:  # No thread are already saving files
-			self.thread = threading.Thread(target=self.execute, name='scan')
+			self.thread = Thread(self.execute, self.after_execute, name='scan')
 			self.thread.start()
 
 	def execute(self):  # target of thread
 		"""Call by a thread in `scan_now`, run `Safer`."""
 		self.spinner.start()
 		self.parent.info_label.set_text('Scan runing')
-		begin = time()
+		self.begin = time()
 		if self.state == 'Copy':
-			error = self.safer.copy_files()
+			self.error = self.safer.copy_files()
 		elif self.state == 'Filter':
-			error = self.safer.save_with_filters(loop=self.loop)
+			self.error = self.safer.save_with_filters(loop=self.loop)
 		elif self.state == 'Update':
-			error = self.safer.update(loop=self.loop)
+			self.error = self.safer.update(loop=self.loop)
 
+	def after_execute(self):
 		self.spinner.stop()
 		end = time()
-		self.scan_time = round(end - begin, 2)
+		self.scan_time = round(end - self.begin, 2)
 		self.parent.info_label.set_text('Scaned in ' + str(self.scan_time) + ' s')
 
-		if len(error) > 0:
+		if len(self.error) > 0:
 			dialog = Gtk.MessageDialog(self.parent, 0, Gtk.MessageType.INFO,
 				Gtk.ButtonsType.OK, "Limit size reached, abort")
 			msg = ''
-			for folder in error:
+			for folder in self.error:
 				msg += folder + '\n'
 			dialog.format_secondary_text(
 				msg + "One of these folder is more than 3 Go.")
