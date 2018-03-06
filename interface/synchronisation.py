@@ -1,30 +1,15 @@
 #!/usr/bin/python3
 
-import threading
-
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GObject, GLib, Gio
+from gi.repository import Gtk
 
 from .helpers import open_folder as show_dir
 from .dialogs.dialog import folder_chooser
 from .dialogs.conflict import ConflictDialog
 from .dialogs.dialog import ConfirmDialog, AbortDialog
+from .thread import Thread
 from safer import sync
-
-class Thread(threading.Thread):
-	def __init__(self, target, callback):
-		super().__init__()
-		self.daemon = True
-		self.target = target
-		self.callback = callback
-
-	def run(self):
-		print('run')
-		self.target()
-		print('apres target')
-		GLib.idle_add(self.callback)
-		print('end run')
 
 class SynchronisationGrid(Gtk.Grid):
 	def __init__(self, parent, safer):
@@ -109,7 +94,6 @@ class SynchronisationGrid(Gtk.Grid):
 		self.thread.start()
 
 	def after_scan_compare(self):
-		print('after_scan_compare')
 		#self.dialog.destroy()  # AbortDialog
 		self.show_compare_results()
 
@@ -147,7 +131,6 @@ class SynchronisationGrid(Gtk.Grid):
 			self.after_sync()
 
 	def after_sync(self):
-		print('after_sync')
 		self.spinner.stop()
 		self.parent.info_label.set_text(self.state)
 
