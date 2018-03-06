@@ -12,20 +12,20 @@ Current version is 1.0
  - watch different directories
  - specify directories, files and extensions to exclude
  - interface (gtk)
+ - safe mode:
+  - 3 Go copy max
+  - 250 conflicts max show
 
 Work in progress...
 
 #### TODO
- - fix ConfirmDialog
- - threading
  - show the size to estimate how long will it take
  - show the size of safe_doc
  - 3 Go limit in settings
- - empty listview when executed
  - PEP 471 : use of os.scandir instead of walk
  - make an history of each files
  - compress files
- - add little icon to symbolize file explorer in buttons
+ - add little icon to symbolize file explorer in open folder buttons
 
 ## What for ?
 SafeMyWork is intend for people who handle lot of files which can be texts, images, songs.
