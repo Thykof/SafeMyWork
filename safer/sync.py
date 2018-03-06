@@ -100,6 +100,7 @@ class Sync(object):
 
 		self.locals_files = self.scan_dir(local_path)
 		self.ext_files = self.scan_dir(ext_path)
+		self.compare()
 
 	def sync(self, comparison=None):
 		if comparison is None:
