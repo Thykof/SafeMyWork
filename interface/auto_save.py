@@ -9,7 +9,7 @@ from time import time
 import threading
 
 from .helpers import open_folder
-from .dialogs.dialog import DelDirDialog
+from .dialogs.dialog import DelDirDialog, ErrorsDialog
 from .thread import Thread
 
 class AutoSavingGrid(Gtk.Grid):
@@ -174,13 +174,7 @@ class AutoSavingGrid(Gtk.Grid):
 			dialog.destroy()
 
 		if len(error_not_found) != 0:
-			dialog = Gtk.MessageDialog(self.parent, 0, Gtk.MessageType.INFO,
-				Gtk.ButtonsType.OK, "Files not found")
-			msg = ''
-			for filename in error_not_found:
-				msg += filename + '\n'
-			dialog.format_secondary_text(
-				msg + "These files were not found.")
+			dialog = ErrorsDialog(self.parent, error_not_found)
 			dialog.run()
 			dialog.destroy()
 

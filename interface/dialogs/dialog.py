@@ -122,6 +122,29 @@ class AbortDialog(Gtk.Dialog):
 	def close(self):
 		self.destroy()
 
+class ErrorsDialog(Gtk.Dialog):
+	def __init__(self, parent, errors):
+		Gtk.Dialog.__init__(self, "Files not found", parent, 0,
+			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL))
+		self.parent = parent
+		self.set_modal(True)
+
+		msg = 'These files were not found:'
+		for filename in errors:
+			msg += filename + '\n'
+		label = Gtk.Label(msg)
+
+		box = Gtk.VBox()
+		box.pack_start(Gtk.Label('These files were not found:'), True, False, 3)
+		box.pack_start(label, True, False, 3)
+
+		scrolled = Gtk.ScrolledWindow()
+		scrolled.set_min_content_height(300)
+		scrolled.add(box)
+		box = self.get_content_area()
+		box.add(scrolled)
+		self.show_all()
+
 def folder_chooser(parent, is_folder=True, folder=None, msg=None):
 	if not is_folder:
 		if msg is None:
