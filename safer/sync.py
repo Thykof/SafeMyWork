@@ -155,7 +155,7 @@ class Sync(object):
 				conflicts.append([filename, (size_local, size_ext), (date_local, date_ext)])
 		comparison['conflicts'] = conflicts
 		comparison['paths'] = self.local_path, self.ext_path  # needed by ConflictDialog
-		helpers.tore(comparison, self.safe_doc, 'analysisSYNCAVANT')
+		helpers.store(comparison, self.safe_doc, 'analysisSYNCAVANT')
 
 		self.comparison = comparison
 
