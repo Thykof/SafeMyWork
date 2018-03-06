@@ -12,7 +12,7 @@ from .dialogs.conflict import ConflictDialog
 from .dialogs.dialog import ConfirmDialog, AbortDialog
 from safer import sync
 
-class SyncThread(threading.Thread):
+class Thread(threading.Thread):
 	def __init__(self, target, callback):
 		super().__init__()
 		self.daemon = True
@@ -29,7 +29,7 @@ class SyncThread(threading.Thread):
 class SynchronisationGrid(Gtk.Grid):
 	def __init__(self, parent, safer):
 		Gtk.Grid.__init__(self)
-		self.thread = SyncThread(None, None)
+		self.thread = Thread(None, None)
 		self.state = ''
 
 		# Varaibles
@@ -105,7 +105,7 @@ class SynchronisationGrid(Gtk.Grid):
 
 	def do_compare(self, local_dir, ext_dir):
 		self.mysync = sync.Sync(local_dir, ext_dir)
-		self.thread = SyncThread(self.mysync.scan_compare, self.after_scan_compare)
+		self.thread = Thread(self.mysync.scan_compare, self.after_scan_compare)
 		self.thread.start()
 
 	def after_scan_compare(self):
@@ -135,7 +135,7 @@ class SynchronisationGrid(Gtk.Grid):
 			if response == Gtk.ResponseType.OK:
 				# Work:
 				self.thread.join()
-				self.thread = SyncThread(self.mysync.sync, self.after_sync)
+				self.thread = Thread(self.mysync.sync, self.after_sync)
 				self.thread.start()
 				self.state = "Done"
 			else:
