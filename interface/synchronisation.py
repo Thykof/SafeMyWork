@@ -1,18 +1,36 @@
 #!/usr/bin/python3
 
+import threading
+
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GObject, GLib
+from gi.repository import Gtk, GObject, GLib, Gio
 
 from .helpers import open_folder as show_dir
 from .dialogs.dialog import folder_chooser
 from .dialogs.conflict import ConflictDialog
-from .dialogs.dialog import ConfirmDialog
-from safer import scan, sync
+from .dialogs.dialog import ConfirmDialog, AbortDialog
+from safer import sync
+
+class SyncThread(threading.Thread):
+	def __init__(self, target, callback):
+		super().__init__()
+		self.daemon = True
+		self.target = target
+		self.callback = callback
+
+	def run(self):
+		print('run')
+		self.target()
+		print('apres target')
+		GLib.idle_add(self.callback)
+		print('end run')
 
 class SynchronisationGrid(Gtk.Grid):
 	def __init__(self, parent, safer):
 		Gtk.Grid.__init__(self)
+		self.thread = SyncThread(None, None)
+		self.state = ''
 
 		# Varaibles
 		self.parent = parent
@@ -71,32 +89,36 @@ class SynchronisationGrid(Gtk.Grid):
 			self.safer.config['external_path'] = folder
 
 	def compare(self, button):
-		if self.label_local.get_text() != "" and self.label_external.get_text() != '':
-			GLib.idle_add(self.do_compare)
-			self.parent.info_label.set_text("Sync runing")
+		local_dir = self.label_local.get_text()
+		ext_dir = self.label_external.get_text()
+		if local_dir != '' and ext_dir != '' and local_dir[0] != '<' and ext_dir[0] != '<':
+			if not self.thread.is_alive():
+				self.spinner.start()
+				self.parent.info_label.set_text("Sync runing")
+				#self.dialog = AbortDialog(self.parent)
+				#self.dialog.run()
+				self.do_compare(local_dir, ext_dir)
+			else:
+				self.parent.info_label.set_text("Already runing")
 		else:
 			self.parent.info_label.set_text("Please select folders")
-			self.select_all.set_active(False)
 
-	def do_compare(self, path1=None, path2=None):
-		self.spinner.start()
+	def do_compare(self, local_dir, ext_dir):
+		self.mysync = sync.Sync(local_dir, ext_dir)
+		self.thread = SyncThread(self.mysync.scan_compare, self.after_scan_compare)
+		self.thread.start()
 
-		def compare():
-			myscan = scan.Scan()
-			files1 = myscan.scan_dir(self.label_local.get_text())
-			files2 = myscan.scan_dir(self.label_external.get_text())
-			self.mysync = sync.Sync(self.label_local.get_text(), self.label_external.get_text())
-			return self.mysync.compare(files1, files2)
+	def after_scan_compare(self):
+		print('after_scan_compare')
+		#self.dialog.destroy()  # AbortDialog
+		self.show_compare_results()
 
-		compare_results = compare()
-		self.show_compare_results(compare_results)
-		self.spinner.stop()
-
-	def show_compare_results(self, compare_results):
+	def show_compare_results(self):
+		compare_results = self.mysync.comparison
 		cancel = False
 		max_conflicts = 2
 		if len(compare_results['conflicts']) > 0:
-			conflict_dialog = ConflictDialog(self.parent, compare_results, self.mysync, max_conflicts)
+			conflict_dialog = ConflictDialog(self.parent, self.mysync, max_conflicts)
 			response = conflict_dialog.run()
 			if response == Gtk.ResponseType.OK:
 				compare_results = conflict_dialog.comparison
@@ -111,13 +133,23 @@ class SynchronisationGrid(Gtk.Grid):
 			confirm_dialog = ConfirmDialog(self.parent, compare_results)
 			response = confirm_dialog.run()
 			if response == Gtk.ResponseType.OK:
-				GLib.idle_add(self.mysync.sync, compare_results)
-				self.parent.info_label.set_text("Done")
+				# Work:
+				self.thread.join()
+				self.thread = SyncThread(self.mysync.sync, self.after_sync)
+				self.thread.start()
+				self.state = "Done"
 			else:
-				self.parent.info_label.set_text("Sync aborted")
+				self.state = "Sync aborted"
+				self.after_sync()
 			confirm_dialog.destroy()
 		else:
-			self.parent.info_label.set_text("Sync aborted")
+			self.state = "Sync aborted"
+			self.after_sync()
+
+	def after_sync(self):
+		print('after_sync')
+		self.spinner.stop()
+		self.parent.info_label.set_text(self.state)
 
 	def open_folder(self, button, local):
 		if local:

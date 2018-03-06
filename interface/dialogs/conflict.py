@@ -7,7 +7,7 @@ from gi.repository import Gtk
 import datetime
 
 class ConflictDialog(Gtk.Dialog):
-	def __init__(self, parent, comparison, mysync, max_conflicts):
+	def __init__(self, parent, mysync, max_conflicts):
 		Gtk.Dialog.__init__(self, "Conflits", parent, 0,
 			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
 			Gtk.STOCK_OK, Gtk.ResponseType.OK))
@@ -17,9 +17,9 @@ class ConflictDialog(Gtk.Dialog):
 		self.mysync = mysync
 		self.max_conflicts = max_conflicts
 		self.results = None  # orders
-		self.comparison = comparison
-		self.conflicts = comparison['conflicts']
-		self.paths = comparison['paths']
+		self.comparison = self.mysync.comparison
+		self.conflicts = self.mysync.comparison['conflicts']
+		self.paths = self.mysync.comparison['paths']
 
 		# Properties
 		self.set_border_width(10)
