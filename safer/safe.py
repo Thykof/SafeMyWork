@@ -186,7 +186,8 @@ class Safer(object):
 		It create the directories requires.
 
 		"""
-		error = list()
+		error = list()  # limit size
+		errors = list()  # file not found
 		self.logger.info('Start saving with filters')
 		for path_delicate, safe_path in self.safe_dirs.items():
 			if not path.exists(path_delicate):
@@ -213,11 +214,11 @@ class Safer(object):
 					self.logger.info('Make directory: ' + dirpath)
 					if not path.exists(dirpath):
 						mkdir(dirpath)  # e.g. safe_docs/my_work/my_workV--n/folder
-				self.save_files(to_save, safe_path_filter, path_delicate)
+				errors.extend(self.save_files(to_save, safe_path_filter, path_delicate))
 
 		self.logger.info('Done')
 		self.safe_dirs = self.get_dst_path()
-		return error
+		return error, errors
 
 	def copy_files(self):
 		error = list()
@@ -246,7 +247,8 @@ class Safer(object):
 		Remove directories trees is necessary.
 
 		"""
-		error = list()
+		error = list()  # limit size
+		errors = list()  # File not found
 		self.logger.info('Start updating')
 		for path_delicate, safe_path in self.safe_dirs.items():
 			if not path.exists(path_delicate):
@@ -277,15 +279,15 @@ class Safer(object):
 
 				# Copy new files
 				to_copy = missing_item(to_save, saved)
-				self.save_files(to_copy, safe_path_last, path_delicate)
+				errors.extend(self.save_files(to_copy, safe_path_last, path_delicate))
 
 				# Update existing files in safe path
 				to_update = combine_list(to_save, saved)
-				self.update_files(to_update, safe_path_last, path_delicate)
+				errors.extend(self.update_files(to_update, safe_path_last, path_delicate))
 
 				# Remove old files
 				to_del = missing_item(saved, to_save)
-				self.remove_files(to_del, safe_path_last)
+				errors.extend(self.remove_files(to_del, safe_path_last))
 
 				# Delete old folders
 				# dirs_to_del: directories copied, deleted in delicate drectory -> to delete from safe directory
@@ -300,7 +302,7 @@ class Safer(object):
 
 		self.logger.info('Done')
 		self.safe_dirs = self.get_dst_path()  # !!! probleme avec activate
-		return error
+		return error, errors
 
 	async def get_to_save(self, directory):
 		"""Return a list of file to save from a the given delicate directory, using `os.walk`.
@@ -396,6 +398,7 @@ class Safer(object):
 
 	def save_files(self, to_save, safe_path, path_delicate):
 		"""Copy the files in `to_save` in the `safe_path`."""
+		errors = list()
 		for filename in to_save:
 			dst = path.join(safe_path, filename)
 			self.logger.info('Copy: '+ dst)
@@ -403,10 +406,12 @@ class Safer(object):
 				copy2(path.join(path_delicate, filename), dst)
 			except FileNotFoundError:
 				print('FileNotFoundError copy save files: ' + filename)
-				#TODO: put these file in a list and show it after, to notify what failed
+				errors.append(filename)
+		return errors
 
 	def update_files(self, to_update, safe_path, path_delicate):
 		"""Update the files in `to_update`."""
+		errors = list()
 		for file_path in to_update:
 			src = path.join(path_delicate, file_path)
 			dst = path.join(safe_path, file_path)
@@ -418,10 +423,12 @@ class Safer(object):
 					myfile.write(content)
 			except FileNotFoundError:
 				print('FileNotFoundError open update_files: ' + src, ' ' + dst)
-				#TODO: put these file in a list and show it after, to notify what failed
+				errors.append(file_path)
+		return errors
 
 	def remove_files(self, to_del, safe_path_last):
 		"""Remove the files in `to_del`."""
+		errors = list()
 		for filename in to_del:
 			target = path.join(safe_path_last, filename)
 			self.logger.info('Remove: ' + target)
@@ -429,7 +436,8 @@ class Safer(object):
 				remove(target)
 			except FileNotFoundError:
 				print('FileNotFoundError remove remove_files :' + target)
-				#TODO: put these file in a list and show it after, to notify what failed
+				errors.append(target)
+		return errors
 
 	def compare_file(self, file1, file2):
 		"""Return True if `file1` is most recent than `file2`."""

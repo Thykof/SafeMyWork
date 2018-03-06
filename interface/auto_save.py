@@ -159,14 +159,28 @@ class AutoSavingGrid(Gtk.Grid):
 		self.scan_time = round(end - self.begin, 2)
 		self.parent.info_label.set_text('Scaned in ' + str(self.scan_time) + ' s')
 
-		if len(self.error) > 0:
+		error_limit_size = self.error[0]
+		error_not_found = self.error[1]
+
+		if len(error_limit_size) > 0:
 			dialog = Gtk.MessageDialog(self.parent, 0, Gtk.MessageType.INFO,
 				Gtk.ButtonsType.OK, "Limit size reached, abort")
 			msg = ''
-			for folder in self.error:
+			for folder in error_limit_size:
 				msg += folder + '\n'
 			dialog.format_secondary_text(
 				msg + "One of these folder is more than 3 Go.")
+			dialog.run()
+			dialog.destroy()
+
+		if len(error_not_found) != 0:
+			dialog = Gtk.MessageDialog(self.parent, 0, Gtk.MessageType.INFO,
+				Gtk.ButtonsType.OK, "Files not found")
+			msg = ''
+			for filename in error_not_found:
+				msg += filename + '\n'
+			dialog.format_secondary_text(
+				msg + "These files were not found.")
 			dialog.run()
 			dialog.destroy()
 
@@ -184,7 +198,6 @@ class AutoSavingGrid(Gtk.Grid):
 			self.timer.cancel()
 			self.timer.join()
 		self.text.set_text('Waiting...')
-		# TODO:Cherche un thread de copy en cours de traitement et indiquer que ça va se finir mais que ça continue
 
 	def add_delicate_dir(self, button):
 		"""Add a dirctory to scan."""
