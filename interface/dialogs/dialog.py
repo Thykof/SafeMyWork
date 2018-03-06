@@ -85,8 +85,10 @@ class ConfirmDialog(Gtk.Dialog):
 		box_lost.pack_start(Gtk.Label('These files will be lost:'), False, False, 5)
 		box_filenames = Gtk.VBox()
 		scrolled = Gtk.ScrolledWindow()
+		msg_label = ''
 		for filename in files_lost[:1000]:
-			box_filenames.pack_start(Gtk.Label(filename), False, False, 1)
+			msg_label += filename + '\n'
+		box_filenames.pack_start(Gtk.Label(msg_label), False, False, 1)
 
 		scrolled.add(box_filenames)
 		box_lost.pack_start(scrolled, True, True, 2)
@@ -95,8 +97,10 @@ class ConfirmDialog(Gtk.Dialog):
 		box_create.pack_start(Gtk.Label('These files will be create:'), False, False, 5)
 		box_filenames = Gtk.VBox()
 		scrolled = Gtk.ScrolledWindow()
+		msg_label = ''
 		for filename in files_create:
-			box_filenames.pack_start(Gtk.Label(filename), False, False, 1)
+			msg_label += filename + '\n'
+		box_filenames.pack_start(Gtk.Label(msg_label), False, False, 1)
 		scrolled.add(box_filenames)
 		box_create.pack_start(scrolled, True, True, 2)
 
