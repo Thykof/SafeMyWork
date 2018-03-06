@@ -7,9 +7,9 @@ class BaseTest(object):
 		pass
 
 class TestSafer(BaseTest):
-    def _test_safer(self):
-        path1 = '/home/thykof/Téléchargements'
-        path2 = '/home/thykof/Vidéos'
+	def _test_safer(self):
+		path1 = '/home/thykof/Téléchargements'
+		path2 = '/home/thykof/Vidéos'
 		mysync = sync.Sync(path1, path2)
 		errors = mysync.exec_sync()
-        assert errors == (list(), list())
+		assert errors == (list(), list())
