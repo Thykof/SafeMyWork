@@ -60,8 +60,8 @@ class Sync(object):
 		walked_dir = path.basename(dirname)
 		for info in walk(walked_dir):  # walk() return a generator
 			dirpath, filenames = info[0], info[2]
-			# dirpath = dirname, for the first time
-			# dirpath = subdirs of dirname
+			# dirpath: dirname, for the first time
+			# dirpath: subdirs of dirname
 			if self.stop:
 				break
 

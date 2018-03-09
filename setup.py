@@ -30,3 +30,4 @@ setup(
 )
 
 # run tests: python3 -m pytest
+# or python3 setup.py test

@@ -133,7 +133,7 @@ class ErrorsDialog(Gtk.Dialog):
 		self.parent = parent
 		self.set_modal(True)
 
-		msg = 'These files were not found:'
+		msg = ''
 		for filename in errors:
 			msg += filename + '\n'
 		label = Gtk.Label(msg)

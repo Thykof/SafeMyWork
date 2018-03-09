@@ -33,9 +33,7 @@ class ConflictDialog(Gtk.Dialog):
 		self.show_all()
 
 	def on_button_toggled(self, button, path_type, num):
-		print('toggle')
 		if button.get_active():
-			print('yes active')
 			self.mysync.change_dst(path_type, num)
 
 	def initialise_box(self):

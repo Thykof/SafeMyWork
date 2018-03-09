@@ -8,15 +8,17 @@ class SettingsDialog(Gtk.Dialog):
 	"""Setting dialog
 
 	Can change:
-		- the time between two scan
+		- the time between two scans
 		- the extentions to avoid
 		- the filenames to avoid
 		- the directories to avoid
 		- the paths to avoid
+		- the path to saved folrders
+		- enable safe restrictions
 
 	"""
 	def __init__(self, parent):
-		Gtk.Dialog.__init__(self, 'Préférences', parent, 0)
+		Gtk.Dialog.__init__(self, 'Settings', parent, 0)
 		self.parent = parent
 		self.set_modal(True)
 		self.set_resizable(False)
