@@ -9,7 +9,7 @@ from yaml import load, dump
 import json
 
 
-from .helpers import *
+from safer import helpers as h
 
 MAX_DIR_SIZE = 3000000000
 
@@ -209,7 +209,7 @@ class Safer(object):
 				to_save = self.list_files
 
 				for dirname in dirs_to_make:
-					#dirname = path_without_root(dirname)
+					#dirname = h.path_without_root(dirname)
 					dirpath = path.join(safe_path_filter, dirname)
 					self.logger.info('Make directory: ' + dirpath)
 					if not path.exists(dirpath):
@@ -272,27 +272,27 @@ class Safer(object):
 
 				# Make new folders
 				# dirs_to_make: new directories, not yet copying
-				dirs_to_make = missing_item(dirs_to_save, dirs_maked)
+				dirs_to_make = h.missing_item(dirs_to_save, dirs_maked)
 				for dirname in dirs_to_make:
 					self.logger.info('Make directory: ' + path.join(safe_path_last, dirname))
 					mkdir(path.join(safe_path_last, dirname))
 
 				# Copy new files
-				to_copy = missing_item(to_save, saved)
+				to_copy = h.missing_item(to_save, saved)
 				errors.extend(self.save_files(to_copy, safe_path_last, path_delicate))
 
 				# Update existing files in safe path
-				to_update = combine_list(to_save, saved)
+				to_update = h.combine_list(to_save, saved)
 				errors.extend(self.update_files(to_update, safe_path_last, path_delicate))
 
 				# Remove old files
-				to_del = missing_item(saved, to_save)
+				to_del = h.missing_item(saved, to_save)
 				errors.extend(self.remove_files(to_del, safe_path_last))
 
 				# Delete old folders
 				# dirs_to_del: directories copied, deleted in delicate drectory -> to delete from safe directory
 				# Remove the directory tree
-				dirs_to_del = missing_item(dirs_maked, dirs_to_save)
+				dirs_to_del = h.missing_item(dirs_maked, dirs_to_save)
 				for dirname in dirs_to_del:
 					self.logger.info('Remove tree: ' + path.join(safe_path_last, dirname))
 					try:
@@ -323,7 +323,7 @@ class Safer(object):
 
 			# Exclude a directory name
 			can = True
-			for dirname in split_path(dirpath):
+			for dirname in h.split_path(dirpath):
 				if dirname in self.config['dirname']:
 					can = False
 			if not can:
@@ -337,7 +337,7 @@ class Safer(object):
 					can = False
 
 			if can:
-				dirname = path_without_root(dirpath)
+				dirname = h.path_without_root(dirpath)
 				if dirpath != directory_walk:  # Exclude root path
 					dirs_to_make.append(dirname)
 				else:
@@ -378,7 +378,7 @@ class Safer(object):
 		for dirpath, dirnames, filenames in walk(directory):  # walk() return a generator
 			# dirpath = directory, for the first time
 			# dirpath = subdirs of directory
-			dirname = path_without_root(dirpath)
+			dirname = h.path_without_root(dirpath)
 			if 'UPTODATE' not in dirname and dirname != '':
 				dirs_maked.append(dirname)
 			for filename in filenames:
