@@ -227,17 +227,17 @@ class Safer(object):
 			if not path.exists(path_delicate):
 				break
 			if safe_path['activate']:
-				size = getFolderSize(path_delicate)
-				if size < MAX_DIR_SIZE and self.config['advanced']:
-					self.logger.info('Saving ' + path_delicate)
-					copytree(path_delicate, safe_path['COPY'])
-				else:
+				size = h.get_folder_size(path_delicate)
+				if size > MAX_DIR_SIZE and not self.config['advanced']:
 					self.logger.info('Limit size reached, abort')
 					error.append(path_delicate)
+				else:
+					self.logger.info('Saving ' + path_delicate)
+					copytree(path_delicate, safe_path['COPY'])
 
 		self.logger.info('Done')
 		self.safe_dirs = self.get_dst_path()
-		return error
+		return error, list()
 
 	def update(self, loop=None):
 		"""Update the safe directory.
