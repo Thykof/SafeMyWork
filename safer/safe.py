@@ -192,7 +192,7 @@ class Safer(object):
 		for path_delicate, safe_path in self.safe_dirs.items():
 			if not path.exists(path_delicate):
 				break
-			if getFolderSize(path_delicate) > MAX_DIR_SIZE and not self.config['advanced']:
+			if h.get_folder_size(path_delicate) > MAX_DIR_SIZE and not self.config['advanced']:
 				error.append(path_delicate)
 				continue
 			if safe_path['activate']:
@@ -253,7 +253,7 @@ class Safer(object):
 		for path_delicate, safe_path in self.safe_dirs.items():
 			if not path.exists(path_delicate):
 				break
-			if getFolderSize(path_delicate) > MAX_DIR_SIZE and not self.config['advanced']:
+			if h.get_folder_size(path_delicate) > MAX_DIR_SIZE and not self.config['advanced']:
 				error.append(path_delicate)
 				continue
 			if safe_path['activate']:

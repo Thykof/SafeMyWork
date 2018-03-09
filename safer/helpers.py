@@ -14,6 +14,7 @@ def combine_list(list1, list2):
 	:type list2: ``list``
 	:returns: the created list
 	:rtype: ``list``
+
 	"""
 	list3 = list()
 	for value in list1:
@@ -60,12 +61,12 @@ def store(content, pathdir, filename):
     with open(json_file, 'w', encoding='utf-8') as myfile:
         myfile.write(json.dumps(content, indent=2))
 
-def getFolderSize(folder):
+def get_folder_size(folder):
     total_size = ospath.getsize(folder)
     for item in listdir(folder):
         itempath = ospath.join(folder, item)
         if ospath.isfile(itempath):
             total_size += ospath.getsize(itempath)
         elif ospath.isdir(itempath):
-            total_size += getFolderSize(itempath)
+            total_size += get_folder_size(itempath)
     return total_size

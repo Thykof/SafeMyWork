@@ -7,7 +7,7 @@ from gi.repository import Gtk, Gio, GdkPixbuf
 
 from .auto_save import AutoSavingGrid
 from .synchronisation import SynchronisationGrid
-from .dialogs.settings import Settings_dial
+from .dialogs.settings import SettingsDialog
 from safer.safe import Safer
 
 class MyWindow(Gtk.ApplicationWindow):
@@ -66,7 +66,7 @@ class MyWindow(Gtk.ApplicationWindow):
 
 	def settings(self, _):
 		'''Open the setting dialog.'''
-		dialog_settings = Settings_dial(self)
+		dialog_settings = SettingsDialog(self)
 		dialog_settings.run()
 		self.page_auto_save.spinbutton.set_value(self.safer.config['timedelta'])
 
