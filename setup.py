@@ -1,12 +1,16 @@
 #!/usr/bin/python3
 
 from setuptools import setup, find_packages
+import io
 
 with open('README.md') as f:
     readme = f.read()
 
 with open('LICENSE') as f:
     license = f.read()
+
+with io.open('requirements.txt') as f:
+    required = f.readlines()
 
 setup(
     name='SafeMyWork',
@@ -18,6 +22,7 @@ setup(
     url='https://github.com/Thykof/SafeMyWork',
     setup_requires='pytest-runner',
     tests_require='pytest',
+    install_requires=required,
     license=license,
     packages=find_packages(exclude=('tests', 'docs')),
     classifiers=[
