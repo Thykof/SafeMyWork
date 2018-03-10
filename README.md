@@ -19,6 +19,7 @@ Current version is 1.0
 Work in progress...
 
 #### TODO
+ - **files in confirm dialog in a ListView widget with toggle buttons**
  - show the size to estimate how long will it take
  - show the size of safe_doc
  - 3 Go limit in settings
