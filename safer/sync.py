@@ -136,8 +136,11 @@ class Sync(object):
 		comparison['ext'] = helpers.missing_item(locals_files, ext_files)
 		for filename in helpers.combine_list(locals_files, ext_files):
 			# stat:
-			stat_local = stat(path.join(self.local_path, filename))
-			stat_ext = stat(path.join(self.ext_path, filename))
+			try:
+				stat_local = stat(path.join(self.local_path, filename))
+				stat_ext = stat(path.join(self.ext_path, filename))
+			except FileNotFoundError:
+				continue
 			# size:
 			size_local = stat_local.st_size
 			size_ext = stat_ext.st_size
