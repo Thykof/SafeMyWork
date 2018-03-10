@@ -20,6 +20,8 @@ Work in progress...
 
 #### TODO
  - **files in confirm dialog in a ListView widget with toggle buttons**
+ - **Conflict dialog: be able to keep the two files***
+ - dialog for errors (sync)
  - show the size to estimate how long will it take
  - show the size of safe_doc
  - 3 Go limit in settings
