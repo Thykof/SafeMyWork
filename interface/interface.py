@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import os
+
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio, GdkPixbuf
@@ -14,6 +16,7 @@ class MyWindow(Gtk.ApplicationWindow):
 	'''Application.'''
 	def __init__(self, app):
 		Gtk.Window.__init__(self, title='SafeMyWork 1.0', application=app)
+		self.smw_exe_path = os.getcwd()
 		# Varaibles
 		self.safer = Safer()
 		# Properties
@@ -79,7 +82,7 @@ class MyWindow(Gtk.ApplicationWindow):
 		about_dialog.set_website_label('Github')
 		about_dialog.set_authors(['Nathan Seva'])
 		about_dialog.set_license('SafeMyWork is under GNU GPL(v3) license. \n\n https://github.com/Thykof/SafeMyWork/blob/master/LICENSE')
-		pixbuf = GdkPixbuf.Pixbuf.new_from_file('logo_smw.png')
+		pixbuf = GdkPixbuf.Pixbuf.new_from_file(os.path.join(self.smw_exe_path, 'logo_smw.png'))
 		about_dialog.set_logo(pixbuf)
 
 		about_dialog.run()
