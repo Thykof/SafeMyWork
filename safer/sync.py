@@ -154,10 +154,9 @@ class Sync(object):
 				sd = True
 			if size_ext == size_local:
 				ss = True
-			if ss and sd:
-				pass
-			else:
+			if not (ss and sd):
 				conflicts.append([filename, (size_local, size_ext), (date_local, date_ext)])
+
 		comparison['conflicts'] = conflicts
 		comparison['paths'] = self.local_path, self.ext_path  # needed by ConflictDialog
 		helpers.store(comparison, self.safe_doc, 'analysisSYNCAVANT')
