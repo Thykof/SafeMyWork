@@ -146,7 +146,8 @@ class Sync(object):
 			date_ext = stat_ext.st_mtime
 			ss = False
 			sd = False
-			if date_ext == date_local:
+			diff_date = abs(date_ext - date_local)
+			if diff_date < 0.01:
 				sd = True
 			if size_ext == size_local:
 				ss = True
