@@ -11,7 +11,10 @@ def mk_path(pathdir):  # TODO: unit test
 	if not path.exists(basename_dir):
 		mk_path(basename_dir)
 	else:
-		mkdir(pathdir)
+		try:
+			mkdir(pathdir)
+		except FileExistsError:
+			pass
 
 def save_files(files, dst, src):  #TODO: unit test
 	errors = list()
@@ -21,7 +24,10 @@ def save_files(files, dst, src):  #TODO: unit test
 		if not path.exists(path.dirname(dst_path)):
 			mk_path(path.dirname(dst_path))
 		if path.exists(path.dirname(dst_path)) and path.exists(src_path):
-			copy2(src_path, dst_path)
+			try:
+				copy2(src_path, dst_path)
+			except OSError:
+				errors.append(filename)
 		else:
 			errors.append(filename)
 	return errors
