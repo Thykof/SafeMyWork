@@ -75,7 +75,7 @@ class ConfirmDialog(Gtk.Dialog):
 				files_create.append(path_file)
 
 		for filename in self.orders['ext']:
-			path_file = path.join(self.orders['paths'][0], filename)
+			path_file = path.join(self.orders['paths'][1], filename)
 			if filename in conflict_files:
 				files_lost.append(path_file)
 			else:
