@@ -4,7 +4,7 @@ import asyncio
 from shutil import copytree, copy2, rmtree
 import logging
 from logging.handlers import RotatingFileHandler
-from os import path, listdir, mkdir, walk, remove, stat, chdir
+from os import path, listdir, mkdir, walk, remove, chdir
 from yaml import load, dump
 import json
 
@@ -438,9 +438,3 @@ class Safer(object):
 				print('FileNotFoundError remove remove_files :' + target)
 				errors.append(target)
 		return errors
-
-	def compare_file(self, file1, file2):
-		"""Return True if `file1` is most recent than `file2`."""
-		stat_file1 = stat(file1)
-		stat_file2 = stat(file2)
-		return stat_file1.st_mtime > stat_file2.st_mtime
