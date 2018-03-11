@@ -8,7 +8,7 @@ import datetime
 
 class ConflictDialog(Gtk.Dialog):
 	def __init__(self, parent, mysync, max_conflicts):
-		Gtk.Dialog.__init__(self, "Conflits", parent, 0,
+		Gtk.Dialog.__init__(self, "Conflicts", parent, 0,
 			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
 			Gtk.STOCK_OK, Gtk.ResponseType.OK))
 
