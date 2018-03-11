@@ -124,18 +124,19 @@ class SynchronisationGrid(Gtk.Grid):
 				self.state = "Done"
 			else:
 				self.state = "Sync aborted"
-				self.after_sync()
+				self.after_sync(False)
 			confirm_dialog.destroy()
 		else:
 			self.state = "Sync aborted"
-			self.after_sync()
+			self.after_sync(False)
 
-	def after_sync(self):
+	def after_sync(self, done=True):
 		self.spinner.stop()
-		nb_errors = len(self.mysync.errors[0]) + len(self.mysync.errors[1])
-		if nb_errors > 0:
-			self.state += " | " + str(nb_errors) + " error(s)"
-			#TODO: dialog message
+		if done:
+			nb_errors = len(self.mysync.errors[0]) + len(self.mysync.errors[1])
+			if nb_errors > 0:
+				self.state += " | " + str(nb_errors) + " error(s)"
+				#TODO: dialog message
 		self.parent.info_label.set_text(self.state)
 
 	def open_folder(self, button, local):
