@@ -4,6 +4,7 @@ SafeMyWork save all files in the given directory into another directory to keep 
 [![Documentation Status](https://readthedocs.org/projects/safemywork/badge/?version=develop)](http://safemywork.readthedocs.io/en/develop/?badge=develop)
 [![Build Status](https://travis-ci.org/Thykof/SafeMyWork.svg?branch=master)](https://travis-ci.org/Thykof/SafeMyWork)
 [![Code Health](https://landscape.io/github/Thykof/SafeMyWork/master/landscape.svg?style=flat)](https://landscape.io/github/Thykof/SafeMyWork/master)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FThykof%2FSafeMyWork.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FThykof%2FSafeMyWork?ref=badge_shield)
 
 ## What for ?
 SafeMyWork is intend for people who handle lot of files which can be texts, images, songs.
@@ -45,3 +46,6 @@ The documentation is in `docs/_build/html/index.html`.
 
 ## License
 SafeMyWork is under the GNU GPL v3 license.
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FThykof%2FSafeMyWork.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FThykof%2FSafeMyWork?ref=badge_large)
