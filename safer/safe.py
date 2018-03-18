@@ -1,14 +1,17 @@
 #!/usr/bin/python3
 
+import asyncio
 from shutil import copytree, copy2, rmtree
 import logging
 from logging.handlers import RotatingFileHandler
-from os import path, listdir, mkdir, walk, remove, stat, chdir
+from os import path, listdir, mkdir, walk, remove, chdir
 from yaml import load, dump
+import json
 
 
-from .helpers import combine_list, path_without_root, missing_item
+from safer import helpers as h
 
+MAX_DIR_SIZE = 3000000000
 
 class Safer(object):
 	"""Manage the creation of the duplicate directory of the folder placed under supervision.
@@ -25,28 +28,28 @@ class Safer(object):
 	# Delicate folders in destination: make in get_dst_path, call in __init__
 	# Folder of version and delicate folder in version folder: make in save
 
-	def __init__(self, delicate_dirs=None, destination=None, config=None, items=None):
+	def __init__(self, delicate_dirs=None, destination=None, config=None):
 		"""Manage logging, make destination directory, manage destinations, manage config"""
 		# delicate_dirs: list of different directories placed under supervision
 		super(Safer, self).__init__()
+
 		# Logging
 		self.logger = logging.getLogger()
 		self.logger.setLevel(logging.DEBUG)
 		# Log in a file
-		file_handler = RotatingFileHandler('activity.log', 'a', 1000000, 1)
+		file_handler = RotatingFileHandler('log/activity.log', maxBytes=1000000, backupCount=50)
 		file_handler.setLevel(logging.DEBUG)
 		formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
 		file_handler.setFormatter(formatter)
 		self.logger.addHandler(file_handler)
 		# Log in the console
-		steam_handler = logging.StreamHandler()
-		steam_handler.setLevel(logging.DEBUG)
-		self.logger.addHandler(steam_handler)
+		stream_handler = logging.StreamHandler()
+		stream_handler.setLevel(logging.DEBUG)
+		#self.logger.addHandler(stream_handler)
 
 		# Config
 		self.cfg_dir = path.join(path.expanduser('~'), '.safemywork')
 		self.cfg_file = path.join(self.cfg_dir, 'config.yml')
-		self.items = items
 		if config is None:
 			self.get_config(delicate_dirs, destination)
 		else:
@@ -57,7 +60,9 @@ class Safer(object):
 				self.destination = config['safe_dir']
 			self.delicate_dirs = config['delicate_dirs']
 			self.save_config()
-		
+
+		self.stop = False
+
 		self.safe_dirs = self.get_dst_path()
 
 	def get_config(self, delicate_dirs, destination):
@@ -83,11 +88,12 @@ class Safer(object):
 				'dirname': [],
 				'dirpath': [],
 				'filename': [],
-				'extention': []
+				'extention': [],
+				'local_path': '',
+				'external_path': '',
+				'timedelta': 1,
+				'advanced': False,
 				}
-			if self.items:
-				for key, elt in self.items.items():
-					self.config[key] = elt
 			self.save_config()
 
 	def save_config(self):
@@ -107,7 +113,6 @@ class Safer(object):
 	def set_destination(self, destination):
 		self.destination = destination
 		self.safe_dirs = self.get_dst_path()
-		print(self.safe_dirs)
 
 	def set_delicate_dirs(self, delicate_dirs):
 		self.delicate_dirs = delicate_dirs
@@ -121,7 +126,7 @@ class Safer(object):
 		try:
 			self.delicate_dirs.remove(delicate_dir)
 		except ValueError:
-			pass
+			print('ERROR: del delicate dir, ValueError, safer')
 		self.safe_dirs = self.get_dst_path()
 
 	def get_dst_path(self):
@@ -150,8 +155,9 @@ class Safer(object):
 			dst = path.join(self.destination, safe_dirname, safe_dirname + 'UPTODATE')
 			dst_copy = path.join(self.destination, safe_dirname, safe_dirname + 'COPY-' + version_copy)
 			dst_filter = path.join(self.destination, safe_dirname, safe_dirname + 'FILTER-' + version_filter)
+			dst_sync = path.join(self.destination, safe_dirname, safe_dirname + 'SYNC')
 
-			destination = {'LAST': dst, 'COPY': dst_copy, 'FILTER': dst_filter}
+			destination = {'LAST': dst, 'COPY': dst_copy, 'FILTER': dst_filter, 'SYNC':dst_sync, 'activate': True}
 			safe_dirs[path_delicate] = destination
 		return safe_dirs
 
@@ -173,35 +179,67 @@ class Safer(object):
 			version = str(max(list_version) + 1)  # Take the last version + 1
 		return version
 
-	def save(self, _filter=True):
+	def save_with_filters(self, loop=None):
 		"""Save all folder under supervision.
 
 		It make a new version of safe directory
 		It create the directories requires.
-		If _filter is False (default), it don't save the files that don't match with the exclusion rules.
 
 		"""
-		if _filter:
-			self.logger.info('Start saving with filters')
-			for path_delicate, safe_path in self.safe_dirs.items():
+		error = list()  # limit size
+		errors = list()  # file not found
+		self.logger.info('Start saving with filters')
+		for path_delicate, safe_path in self.safe_dirs.items():
+			if not path.exists(path_delicate):
+				break
+			if h.get_folder_size(path_delicate) > MAX_DIR_SIZE and not self.config['advanced']:
+				error.append(path_delicate)
+				continue
+			if safe_path['activate']:
+				safe_path_filter = safe_path['FILTER']
 				self.logger.info(path_delicate)
-				self.logger.info('Make directory: ' + safe_path['FILTER'])
-				mkdir(safe_path['FILTER'])  # e.g. safe_docs/my_work/my_workV--n
-				to_save, dirs_to_make = self.get_to_save(path_delicate)
+				self.logger.info('Make directory: ' + safe_path_filter)
+				mkdir(safe_path_filter)  # e.g. safe_docs/my_work/my_workV--n
 
-				for path_delicate in dirs_to_make:
-					path_delicate = path_without_root(path_delicate)
-					self.logger.info('Make directory: ' + path.join(safe_path['FILTER'], path_delicate))
-					mkdir(path.join(safe_path['FILTER'], path_delicate))  # e.g. safe_docs/my_work/my_workV--n/folder
-				self.save_files(to_save, safe_path['FILTER'], path_delicate)
-		else:
-			self.logger.info('Start copying')
-			for path_delicate, safe_path in self.safe_dirs.items():
-				self.logger.info('Saving ' + path_delicate)
-				copytree(path_delicate, safe_path['COPY'])
+				if loop is None:
+					loop = asyncio.get_event_loop()
+				loop.run_until_complete(self.get_to_save(path_delicate))
+
+				dirs_to_make = self.dirs_to_make
+				to_save = self.list_files
+
+				for dirname in dirs_to_make:
+					#dirname = h.path_without_root(dirname)
+					dirpath = path.join(safe_path_filter, dirname)
+					self.logger.info('Make directory: ' + dirpath)
+					if not path.exists(dirpath):
+						mkdir(dirpath)  # e.g. safe_docs/my_work/my_workV--n/folder
+				errors.extend(self.save_files(to_save, safe_path_filter, path_delicate))
+
 		self.logger.info('Done')
+		self.safe_dirs = self.get_dst_path()
+		return error, errors
 
-	def update(self):
+	def copy_files(self):
+		error = list()
+		self.logger.info('Start copying')
+		for path_delicate, safe_path in self.safe_dirs.items():
+			if not path.exists(path_delicate):
+				break
+			if safe_path['activate']:
+				size = h.get_folder_size(path_delicate)
+				if size > MAX_DIR_SIZE and not self.config['advanced']:
+					self.logger.info('Limit size reached, abort')
+					error.append(path_delicate)
+				else:
+					self.logger.info('Saving ' + path_delicate)
+					copytree(path_delicate, safe_path['COPY'])
+
+		self.logger.info('Done')
+		self.safe_dirs = self.get_dst_path()
+		return error, list()
+
+	def update(self, loop=None):
 		"""Update the safe directory.
 
 		It create the directories requires and consider filtration rules.
@@ -209,51 +247,64 @@ class Safer(object):
 		Remove directories trees is necessary.
 
 		"""
+		error = list()  # limit size
+		errors = list()  # File not found
 		self.logger.info('Start updating')
 		for path_delicate, safe_path in self.safe_dirs.items():
-			self.logger.info(path_delicate)
-			safe_path_last = safe_path['LAST']
-			if not path.exists(safe_path_last):
-				self.logger.info('Make directory: ' + safe_path_last)
-				mkdir(safe_path_last)  # e.g. safe_docs/my_work/my_workUPTODATE
+			if not path.exists(path_delicate):
+				break
+			if h.get_folder_size(path_delicate) > MAX_DIR_SIZE and not self.config['advanced']:
+				error.append(path_delicate)
+				continue
+			if safe_path['activate']:
+				self.logger.info(path_delicate)
+				safe_path_last = safe_path['LAST']
+				if not path.exists(safe_path_last):
+					self.logger.info('Make directory: ' + safe_path_last)
+					mkdir(safe_path_last)  # e.g. safe_docs/my_work/my_workUPTODATE
 
+				if loop is None:
+					loop = asyncio.get_event_loop()
+				loop.run_until_complete(asyncio.wait([self.get_to_save(path_delicate), self.get_saved(safe_path_last),], loop=loop))
 
-			to_save, dirs_to_save = self.get_to_save(path_delicate)  # List delicate files
-			saved, dirs_maked = self.get_saved(safe_path_last)  # List saved files
+				dirs_to_save, dirs_maked = self.dirs_to_make, self.dirs_maked
+				to_save, saved = self.list_files, self.saved
 
-			# Make new folders
-			# dirs_to_make: new directories, not yet copying
-			dirs_to_make = missing_item(dirs_to_save, dirs_maked)
-			for dirname in dirs_to_make:
-				self.logger.info('Make directory: ' + path.join(safe_path_last, dirname))
-				mkdir(path.join(safe_path_last, dirname))  # e.g. safe_docs/my_work/my_workV--n/folder
+				# Make new folders
+				# dirs_to_make: new directories, not yet copying
+				dirs_to_make = h.missing_item(dirs_to_save, dirs_maked)
+				for dirname in dirs_to_make:
+					self.logger.info('Make directory: ' + path.join(safe_path_last, dirname))
+					mkdir(path.join(safe_path_last, dirname))
 
-			# Copy new files
-			to_copy = missing_item(to_save, saved)
-			self.save_files(to_copy, safe_path_last, path_delicate)
+				# Copy new files
+				to_copy = h.missing_item(to_save, saved)
+				errors.extend(self.save_files(to_copy, safe_path_last, path_delicate))
 
-			# Update existing files in safe path
-			to_update = combine_list(to_save, saved)
-			self.update_files(to_update, safe_path_last, path_delicate)
+				# Update existing files in safe path
+				to_update = h.combine_list(to_save, saved)
+				errors.extend(self.update_files(to_update, safe_path_last, path_delicate))
 
-			# Remove old files
-			to_del = missing_item(saved, to_save)
-			self.remove_files(to_del, safe_path_last)
+				# Remove old files
+				to_del = h.missing_item(saved, to_save)
+				errors.extend(self.remove_files(to_del, safe_path_last))
 
-			# Delete old folders
-			# dirs_to_del: directories copied, deleted in delicate drectory -> to delete from safe directory
-			# Remove the directory tree
-			dirs_to_del = missing_item(dirs_maked, dirs_to_save)
-			for dirname in dirs_to_del:
-				self.logger.info('Remove tree: ' + path.join(safe_path_last, dirname))
-				try:
-					rmtree(path.join(safe_path_last, dirname))
-				except FileNotFoundError:
-					pass  # Directory already removed
+				# Delete old folders
+				# dirs_to_del: directories copied, deleted in delicate drectory -> to delete from safe directory
+				# Remove the directory tree
+				dirs_to_del = h.missing_item(dirs_maked, dirs_to_save)
+				for dirname in dirs_to_del:
+					self.logger.info('Remove tree: ' + path.join(safe_path_last, dirname))
+					try:
+						rmtree(path.join(safe_path_last, dirname))
+					except FileNotFoundError:
+						pass  # Directory already removed
 
 		self.logger.info('Done')
+		self.safe_dirs = self.get_dst_path()  # !!! probleme avec activate
+		return error, errors
 
-	def get_to_save(self, directory):
+	async def get_to_save(self, directory):
 		"""Return a list of file to save from a the given delicate directory, using `os.walk`.
 
 		It make this list depending on exclusion rules.
@@ -262,27 +313,62 @@ class Safer(object):
 		list_files = list()  # List of relatif path to each file
 		dirs_to_make = list()  # List of directory to make in the safe root directory
 		chdir(path.dirname(directory))
-		directory = path.basename(directory)
-		for dirpath, dirnames, filenames in walk(directory):  # walk() return a generator
+		directory_walk = path.basename(directory)
+		for dirpath, dirnames, filenames in walk(directory_walk):  # walk() return a generator
 			# dirpath = directory, for the first time
 			# dirpath = subdirs of directory
+			if self.stop:
+				break
+			self.logger.info(dirpath)
+
 			# Exclude a directory name
-			if path.basename(dirpath) in self.config['dirname']:
+			can = True
+			for dirname in h.split_path(dirpath):
+				if dirname in self.config['dirname']:
+					can = False
+			if not can:
+				self.logger.info('Skip dirname: ' + dirpath)
 				continue
-			dirname = path_without_root(dirpath)
+
 			# Exclude a path
-			if dirname not in self.config['dirpath']:
-				if path.basename(dirpath) != directory:
+			can = True
+			for dirname in self.config['dirpath']:
+				if dirpath.find(dirname) != -1:
+					can = False
+
+			if can:
+				dirname = h.path_without_root(dirpath)
+				if dirpath != directory_walk:  # Exclude root path
 					dirs_to_make.append(dirname)
+				else:
+					self.logger.info('Skip root dir: ' + dirpath)
+
+				# Take all files (even in the root directory)
 				for filename in filenames:
 					# Find the extension
 					ext = path.splitext(filename)[1][1:]
 					if filename not in self.config['filename'] and ext not in self.config['extention']:
 						list_files.append(path.join(dirname, filename))
+					else:
+						self.logger.info('Skip filename or extention:' + path.join(dirname, filename))
+					if self.stop:
+						break
+			else:
+				self.logger.info('Skip dirpath: ' + dirpath)
 
-		return list_files, dirs_to_make
+		self.list_files = list_files
+		self.dirs_to_make = dirs_to_make
+		results = dict()
+		results['list_files'] = list_files
+		results['dirs_to_make'] = dirs_to_make
+		json_filename = 'analysisW' + '_'.join(directory.split('/')) + '.json'
+		json_file = path.join(self.destination, json_filename)
+		self.logger.info('Store analysis: ' + json_file)
+		with open(json_file, 'w', encoding='utf-8') as myfile:
+			myfile.write(json.dumps(results, indent=2))
 
-	def get_saved(self, directory):
+
+	async def get_saved(self, directory):
 		"""Return the files and the folders in the safe path (files already saved), using `os.walk`."""
 		saved = list()  # List of relatif path to each file
 		dirs_maked = list()  # List of directory to make in the safe root directory
@@ -292,41 +378,63 @@ class Safer(object):
 		for dirpath, dirnames, filenames in walk(directory):  # walk() return a generator
 			# dirpath = directory, for the first time
 			# dirpath = subdirs of directory
-			dirname = path_without_root(dirpath)
+			dirname = h.path_without_root(dirpath)
 			if 'UPTODATE' not in dirname and dirname != '':
 				dirs_maked.append(dirname)
 			for filename in filenames:
 				saved.append(path.join(dirname, filename))
-		return saved, dirs_maked
+
+		self.saved = saved
+		self.dirs_maked = dirs_maked
+		results = dict()
+		results['saved'] = saved
+		results['dirs_maked'] = dirs_maked
+		json_filename = 'analysisS_' + '_'.join(directory.split('/')) + '.json'
+		json_file = path.join(self.destination, json_filename)
+		self.logger.info('Store analysis: ' + json_file)
+		with open(json_file, 'w', encoding='utf-8') as myfile:
+			myfile.write(json.dumps(results, indent=2))
+
 
 	def save_files(self, to_save, safe_path, path_delicate):
 		"""Copy the files in `to_save` in the `safe_path`."""
+		errors = list()
 		for filename in to_save:
 			dst = path.join(safe_path, filename)
 			self.logger.info('Copy: '+ dst)
-			copy2(path.join(path_delicate, filename), dst)
+			try:
+				copy2(path.join(path_delicate, filename), dst)
+			except FileNotFoundError:
+				print('FileNotFoundError copy save files: ' + filename)
+				errors.append(filename)
+		return errors
 
 	def update_files(self, to_update, safe_path, path_delicate):
 		"""Update the files in `to_update`."""
+		errors = list()
 		for file_path in to_update:
 			src = path.join(path_delicate, file_path)
 			dst = path.join(safe_path, file_path)
-			if self.compare_file(src, dst):
+			try:
 				self.logger.info('Update: '+ file_path)
 				with open(src, 'rb') as myfile:
 					content = myfile.read()
 				with open(dst, 'wb') as myfile:
 					myfile.write(content)
+			except FileNotFoundError:
+				print('FileNotFoundError open update_files: ' + src, ' ' + dst)
+				errors.append(file_path)
+		return errors
 
 	def remove_files(self, to_del, safe_path_last):
 		"""Remove the files in `to_del`."""
+		errors = list()
 		for filename in to_del:
 			target = path.join(safe_path_last, filename)
 			self.logger.info('Remove: ' + target)
-			remove(target)
-
-	def compare_file(self, file1, file2):
-		"""Return True if `file1` is most recent than `file2`."""
-		stat_file1 = stat(file1)
-		stat_file2 = stat(file2)
-		return stat_file1.st_mtime > stat_file2.st_mtime
+			try:
+				remove(target)
+			except FileNotFoundError:
+				print('FileNotFoundError remove remove_files :' + target)
+				errors.append(target)
+		return errors

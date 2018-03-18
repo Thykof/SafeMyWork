@@ -16,18 +16,23 @@ Current version is 0.4
  - watch different directories
  - specify directories, files and extensions to exclude
  - interface (gtk)
- - update the safe directory
+ - safe mode:
+  - 3 Go copy max
+  - 250 conflicts max show
 
 Work in progress...
 
 #### TODO
- - Seetings: switch to enable infodialog
- - infodialog: N files in n s
- - asyncio: list saved files and files to save
- - dialog manual copy: directory source to directory destination
- - error repport to user (permissions in usb disks...)
+ - **files in confirm dialog in a ListView widget with toggle buttons**
+ - **Conflict dialog: be able to keep the two files***
+ - dialog for errors (sync)
+ - show the size to estimate how long will it take
+ - show the size of safe_doc
+ - 3 Go limit in settings
+ - PEP 471 : use of os.scandir instead of walk
  - make an history of each files
  - compress files
+ - add little icon to symbolize file explorer in open folder buttons
 
 
 ## Launch the app
@@ -35,7 +40,7 @@ Run `python3 main.py`.
 
 ## Documenation
 How to build the doc:
-	
+
 	git clone git@github.com:Thykof/SafeMyWork.git
 	cd SafeMyWork
 	cd docs

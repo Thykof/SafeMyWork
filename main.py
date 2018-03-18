@@ -25,16 +25,11 @@ class MyApplication(Gtk.Application):
 		quit_action.connect('activate', self.quit_callback)
 		self.add_action(quit_action)
 
-		builder = Gtk.Builder()
-		builder.add_from_file('interface/menubar.ui')
-
-		self.set_menubar(builder.get_object('menubar'))
-
 	def quit_callback(self, action, parameter):
 		"""Save config, stop scan and quit."""
-		self.win.text.set_text('Fermeture')
+		self.win.info_label.set_text('Fermeture')
 		self.win.safer.save_config()
-		self.win.switch_start.set_active(False)
+		self.win.page_auto_save.switch_auto_save.set_active(False)
 		sys.exit()
 
 if __name__ == '__main__':
