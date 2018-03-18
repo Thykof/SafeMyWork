@@ -6,37 +6,26 @@
 Welcome to SafeMyWork's documentation!
 **************************************
 
-.. image:: https://readthedocs.org/projects/safemywork/badge/?version=develop
-  :target: http://safemywork.readthedocs.org/en/develop
-  :alt: Documentation Status
+https://github.com/Thykof/SafeMyWork
 
 How it work
 ===========
 SafeMyWork look for your modified files and copy them to another directory.
-
-Launch the app
-++++++++++++++
-.. automodule:: main
-  :members:
-  :undoc-members:
+The second feature is synchronisation of two folders.
 
 Safer: save files
 =================
-.. autoclass:: watcher.safe.Safer
+.. autoclass:: safer.safe.Safer
+  :members:
+  :undoc-members:
+
+Sync: synchronise folders
+=========================
+.. autoclass:: safer.sync.Sync
   :members:
   :undoc-members:
 
 A module for simple functions
 +++++++++++++++++++++++++++++
-.. automodule:: watcher.helpers
-  :members:
-
-Interface
-=========
-.. autoclass:: interface.interface.MyWindow
-  :members:
-
-Dialog
-++++++
-.. automodule:: interface.dialog
+.. automodule:: safer.helpers
   :members:
