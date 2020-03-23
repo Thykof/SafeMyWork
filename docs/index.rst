@@ -5,33 +5,33 @@
 
 Welcome to SafeMyWork's documentation!
 **************************************
-Current version is 0.5
+The current version is 0.5.
 
 https://github.com/Thykof/SafeMyWork
 
-SafeMyWork is intend for people who handle lot of files which can be texts,
+SafeMyWork is intended for people who handle a lot of files which can be texts,
 images, songs... The aim is to **avoid losing** documents.
 
-How it work
-===========
-SafeMyWork look for your modified files and copy them to another directory.
-The second feature is synchronisation of two folders.
+How it works
+============
+SafeMyWork looks for your modified files and copies them to another directory.
+The second feature is the synchronization of two folders.
 
-Automitic saving
+Automatic saving
 ================
 Run SafeMyWork and select your working folders. Then while you are working,
-every a certain amount of time, all files in this folder will be copying into a
-separated folder. It keeps your files safe if you forget to save your work or
+every a certain amount of time, all files in this folder will be copied into a
+separate folder. It keeps your files safe if you forget to save your work or
 delete accidentally files.
 
 Synchronization
 ===============
 The application can synchronize two folders. After scanning the two folders
 selected by the user, a dialog message shows potential conflicts. A conflict
-occurs when a file has the same path and same name in both folders. The user
+occurs when a file has the same path and the same name in both folders. The user
 selects the file that she/he wants to keep. The size of the files and the last
 modification time are shown to help the choose. Then, a dialog shows what files
-would be lost (conflict resolution) and what files would be create (missing
+would be lost (conflict resolution) and what files would be created (missing
 files in a folder).
 
 
@@ -41,7 +41,7 @@ Safer: save files
   :members:
   :undoc-members:
 
-Sync: synchronise folders
+Sync: synchronize folders
 =========================
 .. autoclass:: safer.sync.Sync
   :members:

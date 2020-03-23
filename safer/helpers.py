@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-"""Define some fonctions."""
+"""Define some functions."""
 
 from os import path as ospath, listdir
 import json
@@ -35,7 +35,7 @@ def path_without_root(path):
 		return ''
 
 def missing_item(list1, list2):
-	"""Return the list of directory in `list1` but not in `list2`."""
+	"""Return the list of directories in `list1` but not in `list2`."""
 	result = list()
 	for item in list1:
 		if item not in list2:
@@ -43,7 +43,7 @@ def missing_item(list1, list2):
 	return result
 
 def split_path(path):
-	"""Return a list with all direcotry name in the given path."""
+	"""Return a list with all directory names in the given path."""
 	dirs = list()  # Result
 	stop = False
 	while not stop:
