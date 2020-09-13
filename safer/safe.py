@@ -45,7 +45,7 @@ class Safer(object):
 		# Log in the console
 		stream_handler = logging.StreamHandler()
 		stream_handler.setLevel(logging.DEBUG)
-		#self.logger.addHandler(stream_handler)
+		self.logger.addHandler(stream_handler)
 
 		# Config
 		self.cfg_dir = path.join(path.expanduser('~'), '.safemywork')
