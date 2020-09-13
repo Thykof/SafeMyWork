@@ -5,7 +5,7 @@ from shutil import copytree, copy2, rmtree
 import logging
 from logging.handlers import RotatingFileHandler
 from os import path, listdir, mkdir, walk, remove, chdir
-from yaml import load, dump
+from json import load, dump
 import json
 
 
@@ -49,7 +49,7 @@ class Safer:
 
 		# Config
 		self.cfg_dir = path.join(path.expanduser('~'), '.safemywork')
-		self.cfg_file = path.join(self.cfg_dir, 'config.yml')
+		self.cfg_file = path.join(self.cfg_dir, 'config.json')
 		if config is None:
 			self.get_config(delicate_dirs, destination)
 		else:
@@ -68,8 +68,8 @@ class Safer:
 	def get_config(self, delicate_dirs, destination):
 		if path.exists(self.cfg_file):
 			self.logger.info('Read config file')
-			with open(self.cfg_file, 'r') as ymlfile:
-				self.config = load(ymlfile)
+			with open(self.cfg_file, 'r') as json_file:
+				self.config = load(json_file)
 			if destination is None:
 				self.destination = self.config['safe_dir']
 			else:
@@ -107,8 +107,8 @@ class Safer:
 		if not path.exists(self.cfg_dir):
 			self.logger.info('Make directory: ' + self.cfg_dir)
 			mkdir(self.cfg_dir)
-		with open(self.cfg_file, 'w') as ymlfile:
-			dump(self.config, ymlfile)
+		with open(self.cfg_file, 'w') as json_file:
+			dump(self.config, json_file)
 
 	def set_destination(self, destination):
 		self.destination = destination
