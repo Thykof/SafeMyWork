@@ -136,7 +136,7 @@ class AutoSavingGrid(Gtk.Grid):
 		can = True
 		for thread in threading.enumerate():
 			if thread.name == 'scan' and thread.is_alive():
-					can = False
+				can = False
 		if can:  # No thread are already saving files
 			self.thread = Thread(self.execute, self.after_execute, name='scan')
 			self.thread.start()
