@@ -39,4 +39,5 @@ jobs:
     - name: Upload zip
       uses: actions/upload-artifact@v2
       with:
-        name: dist.zip
+        name: SafeMyWork-${{ runner.os }}
+        path: dist.zip
