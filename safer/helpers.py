@@ -57,16 +57,16 @@ def split_path(path):
 	return dirs
 
 def store(content, pathdir, filename):
-    json_file = ospath.join(pathdir, filename)
-    with open(json_file, 'w', encoding='utf-8') as myfile:
-        myfile.write(json.dumps(content, indent=2))
+	json_file = ospath.join(pathdir, filename)
+	with open(json_file, 'w', encoding='utf-8') as myfile:
+		myfile.write(json.dumps(content, indent=2))
 
 def get_folder_size(folder):
-    total_size = ospath.getsize(folder)
-    for item in listdir(folder):
-        itempath = ospath.join(folder, item)
-        if ospath.isfile(itempath):
-            total_size += ospath.getsize(itempath)
-        elif ospath.isdir(itempath):
-            total_size += get_folder_size(itempath)
-    return total_size
+	total_size = ospath.getsize(folder)
+	for item in listdir(folder):
+		itempath = ospath.join(folder, item)
+		if ospath.isfile(itempath):
+			total_size += ospath.getsize(itempath)
+		elif ospath.isdir(itempath):
+			total_size += get_folder_size(itempath)
+	return total_size

@@ -11,7 +11,7 @@ class DelDirDialog(Gtk.Dialog):
 	def __init__(self, parent, list_delicate):
 		Gtk.Dialog.__init__(self, "", parent, 0,
 			(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-			 Gtk.STOCK_OK, Gtk.ResponseType.OK))
+			Gtk.STOCK_OK, Gtk.ResponseType.OK))
 		self.set_modal(True)
 		self.set_resizable(False)
 		self.set_border_width(10)

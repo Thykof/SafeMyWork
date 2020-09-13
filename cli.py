@@ -1,4 +1,4 @@
-from cli.copy import copy
+from cli.main import copy
 
 if __name__ == '__main__':
     copy()

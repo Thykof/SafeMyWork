@@ -13,7 +13,7 @@ from safer import helpers as h
 
 MAX_DIR_SIZE = 3000000000
 
-class Safer(object):
+class Safer:
 	"""Manage the creation of the duplicate directory of the folder placed under supervision.
 
 	Filename, folder, path to folder and extension can be exclude.
@@ -92,8 +92,8 @@ class Safer(object):
 				'local_path': '',
 				'external_path': '',
 				'timedelta': 1,
-				'advanced': False,
-				}
+				'advanced': False
+			}
 			self.save_config()
 
 	def save_config(self):

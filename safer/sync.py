@@ -32,7 +32,7 @@ def save_files(files, dst, src):  #TODO: unit test
 			errors.append(filename)
 	return errors
 
-class Sync(object):
+class Sync:
 	def __init__(self, local_path, ext_path):
 		super(Sync, self).__init__()
 		# Varaibles to set:
@@ -124,7 +124,7 @@ class Sync(object):
 			ext_path = self.ext_path
 
 		self.scan_compare(local_path, ext_path)
-		self.compare_results = self.compare()
+		self.compare()
 		self.solve_conflicts()
 		return self.sync()
 
