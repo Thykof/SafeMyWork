@@ -33,8 +33,8 @@ jobs:
     - name: Build
       run: cxfreeze cli.py --target-dir dist
     - uses: montudor/action-zip@v0.1.0
-        with:
-          args: zip -qq -r dist.zip dist
+      with:
+        args: zip -qq -r dist.zip dist
     - uses: actions/upload-artifact@v2
-        with:
-          name: dist.zip
+      with:
+        name: dist.zip
