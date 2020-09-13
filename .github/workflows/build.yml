@@ -34,9 +34,9 @@ jobs:
       run: cxfreeze cli.py --target-dir dist
     - name: Create zip
       uses: papeloto/action-zip@v1
-        with:
-          files: dist
-          dest: dist.zip
+      with:
+        files: dist
+        dest: dist.zip
     - name: Upload zip
       uses: actions/upload-artifact@v2
       with:
