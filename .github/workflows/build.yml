@@ -36,5 +36,5 @@ jobs:
         with:
           args: zip -qq -r dist.zip dist
     - uses: actions/upload-artifact@v2
-      with:
-        name: dist.zip
+        with:
+          name: dist.zip
