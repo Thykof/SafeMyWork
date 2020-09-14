@@ -15,7 +15,7 @@ nb_copies_done = 0
 @click.option('-s', '--safe_dir', default=None, help='Destination folder.')
 @click.option('-w', '--delicate_dirs', required=True, help='Folder to save.')
 @click.option('-n', '--count', default=0, help='Number of iterations.')
-@click.option('-t', '--type', help='Number of iterations.')
+@click.option('-t', '--type', help='copy or filter of update.')
 def copy(delta, safe_dir, delicate_dirs, count, type):
     config = {
         'safe_dir': safe_dir,
@@ -27,7 +27,6 @@ def copy(delta, safe_dir, delicate_dirs, count, type):
         'filename': [],
         'extention': []
     }
-    print(config, count)
 
     loop = asyncio.get_event_loop()
 
@@ -44,9 +43,9 @@ def copy(delta, safe_dir, delicate_dirs, count, type):
         global nb_copies_done
         func()
         nb_copies_done += 1
-        if nb_copies_done < count:
+        if nb_copies_done < count or count == 0:
             timer = threading.Timer(delta, perpetual_scan)
             timer.start()
 
-    # delta *= 60
+    delta *= 60
     perpetual_scan()
