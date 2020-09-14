@@ -1,6 +1,10 @@
 #!/usr/bin/python3
 
+from os import path
+
+
 from safer import helpers
+
 
 class BaseTest(object):
 	def setup_method(self, test_method):
@@ -14,10 +18,11 @@ class TestHelpers(BaseTest):
 		assert result == ['elt2']
 
 	def test_path_without_root(self):
-		path = 'foo/bar'
-		assert helpers.path_without_root(path) == 'bar'
+		p = path.join('foo', path.join('bar', 'jack'))
+		assert helpers.path_without_root(p) == path.join('bar', 'jack')
 		assert helpers.path_without_root('foo') == ''
 		assert helpers.path_without_root('') == ''
+		assert helpers.path_without_root(path.join('foo bar', 'jack')) == 'jack'
 
 
 	def test_missing_item(self):
@@ -29,6 +34,8 @@ class TestHelpers(BaseTest):
 		assert helpers.missing_item([], [1]) == []
 
 	def test_split_path(self):
-		path = '/home/user/documents/python/django/db/mysql'
-		paths = helpers.split_path(path)
+		paths = helpers.split_path('/home/user/documents/python/django/db/mysql')
 		assert paths == ['mysql', 'db', 'django', 'python', 'documents', 'user', 'home']
+
+		paths = helpers.split_path('/home/user/my documents/python/django/db/mysql')
+		assert paths == ['mysql', 'db', 'django', 'python', 'my documents', 'user', 'home']

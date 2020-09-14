@@ -314,9 +314,8 @@ class Safer:
 		dirs_to_make = list()  # List of directory to make in the safe root directory
 		chdir(path.dirname(directory))
 		directory_walk = path.basename(directory)
-		for dirpath, dirnames, filenames in walk(directory_walk):  # walk() return a generator
+		for dirpath, _, filenames in walk(directory_walk):  # walk() return a generator
 			# dirpath = directory, for the first time
-			# dirpath = subdirs of directory
 			if self.stop:
 				break
 			self.logger.info(dirpath)
@@ -361,7 +360,8 @@ class Safer:
 		results = dict()
 		results['list_files'] = list_files
 		results['dirs_to_make'] = dirs_to_make
-		json_filename = 'analysisW' + '_'.join(directory.split('/')) + '.json'
+
+		json_filename = 'analysisW' + '_'.join(directory.replace('\\', '/').split('/')) + '.json'
 		json_file = path.join(self.destination, json_filename)
 		self.logger.info('Store analysis: ' + json_file)
 		with open(json_file, 'w', encoding='utf-8') as myfile:
@@ -402,11 +402,16 @@ class Safer:
 		for filename in to_save:
 			dst = path.join(safe_path, filename)
 			self.logger.info('Copy: '+ dst)
-			try:
-				copy2(path.join(path_delicate, filename), dst)
-			except FileNotFoundError:
-				print('FileNotFoundError copy save files: ' + filename)
+			src = path.join(path_delicate, filename)
+			if not path.exists(src):
+				print("Source file not found: ", src)
 				errors.append(filename)
+				continue
+			if not path.exists(path.dirname(dst)):
+				print("Destnation folder does not exist:", dst)
+				errors.append(filename)
+				continue
+			copy2(src, dst)
 		return errors
 
 	def update_files(self, to_update, safe_path, path_delicate):
