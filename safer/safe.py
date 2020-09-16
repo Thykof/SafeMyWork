@@ -332,7 +332,7 @@ class Safer:
 			# Exclude a path
 			can = True
 			for dirname in self.config['dirpath']:
-				if dirpath.find(dirname) != -1:
+				if dirpath.find(dirname) != -1 and dirname != '':
 					can = False
 
 			if can:
@@ -420,15 +420,18 @@ class Safer:
 		for file_path in to_update:
 			src = path.join(path_delicate, file_path)
 			dst = path.join(safe_path, file_path)
+			self.logger.info('Update: '+ file_path)
 			try:
-				self.logger.info('Update: '+ file_path)
 				with open(src, 'rb') as myfile:
 					content = myfile.read()
-				with open(dst, 'wb') as myfile:
-					myfile.write(content)
 			except FileNotFoundError:
 				print('FileNotFoundError open update_files: ' + src, ' ' + dst)
 				errors.append(file_path)
+			try:
+				with open(dst, 'wb') as myfile:
+					myfile.write(content)
+			except PermissionError:
+				print('PermissionError write update_files: ' + src, ' ' + dst)
 		return errors
 
 	def remove_files(self, to_del, safe_path_last):

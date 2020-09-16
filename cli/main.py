@@ -15,29 +15,38 @@ nb_copies_done = 0
 @click.option('-s', '--safe_dir', default=None, help='Destination folder.')
 @click.option('-w', '--delicate_dirs', required=True, help='Folder to save.')
 @click.option('-n', '--count', default=0, help='Number of iterations.')
-@click.option('-t', '--type', help='copy or filter of update.')
-def copy(delta, safe_dir, delicate_dirs, count, type):
+@click.option('-t', '--type', help='copy or filter or update.')
+@click.option('--extentions', default='', help='extention to exclude separeted by comma (pdf, txt...) (not when type is copy)')
+@click.option('--dirpath', default='', help='A path to exclude (not when type is copy)')
+@click.option('--dirname', default='', help='A folder name to exclude (not when type is copy)')
+def scan(delta, safe_dir, delicate_dirs, count, type, extentions, dirpath, dirname):
     config = {
+        'timedelta': delta,
         'safe_dir': safe_dir,
         'delicate_dirs': [delicate_dirs],
-        'advanced': False, # disable MAX_DIR_SIZE limit
+        'advanced': True, # disable MAX_DIR_SIZE limit
         # Exclusion rules:
-        'dirname': [".git"],
-        'dirpath': [],
+        'dirname': [dirname],
+        'dirpath': [dirpath],
         'filename': [],
-        'extention': []
+        'extention': extentions.split(','),
+        # other options
+        'local_path': '',
+        'external_path': ''
     }
 
     loop = asyncio.get_event_loop()
 
     safer = Safer(config=config)
 
-    if type is None:
+    if type == 'filter':
         func = lambda: safer.save_with_filters(loop)
     elif type == 'copy':
         func = safer.copy_files
     elif type == 'update':
         func = lambda: safer.update(loop)
+    else:
+        func = lambda: safer.save_with_filters(loop)
 
     def perpetual_scan():
         global nb_copies_done
