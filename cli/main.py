@@ -14,11 +14,11 @@ nb_copies_done = 0
 @click.option('-d', '--delta', default=10, help='Number of minutes between copies.')
 @click.option('-s', '--safe_dir', default=None, help='Destination folder.')
 @click.option('-w', '--delicate_dirs', required=True, help='Folder to save.')
-@click.option('-n', '--count', default=0, help='Number of iterations.')
-@click.option('-t', '--type', help='copy or filter or update.')
-@click.option('--extentions', default='', help='extention to exclude separeted by comma (pdf, txt...) (not when type is copy)')
-@click.option('--dirpath', default='', help='A path to exclude (not when type is copy)')
-@click.option('--dirname', default='', help='A folder name to exclude (not when type is copy)')
+@click.option('-n', '--count', default=0, help='Number of iterations, 0 for infinite loop (default 0).')
+@click.option('-t', '--type', default='filter', help='`copy` or `filter` or `update` (default `filter`).')
+@click.option('--extentions', default='', help='File extentions to exclude separeted by comma (pdf, txt...) (useless when `type` is copy)')
+@click.option('--dirpath', default='', help='A path to exclude (useless when `type` is copy)')
+@click.option('--dirname', default='', help='A folder name to exclude (useless when `type` is copy)')
 def scan(delta, safe_dir, delicate_dirs, count, type, extentions, dirpath, dirname):
     config = {
         'timedelta': delta,
@@ -45,8 +45,6 @@ def scan(delta, safe_dir, delicate_dirs, count, type, extentions, dirpath, dirna
         func = safer.copy_files
     elif type == 'update':
         func = lambda: safer.update(loop)
-    else:
-        func = lambda: safer.save_with_filters(loop)
 
     def perpetual_scan():
         global nb_copies_done
