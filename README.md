@@ -7,14 +7,40 @@ SafeMyWork saves all files in the given directory into another directory to keep
 ## What for?
 SafeMyWork is intended for people who **handle a lot of files** which can be texts, images, songs... The aim is to **avoid losing** documents.
 
+### GUI (Linux)
+
 Run SafeMyWork and select your working folders. Then while you are working, every a certain amount of time, all files in this folder will be copied into a separate folder. It keeps your files safe if you forget to save your work or delete accidentally files.
 
 It can also synchronize two folders.
 
+### CLI (Linux & Windows)
+
+*Command line interface*
+
+Download the latest release here: <https://github.com/Thykof/SafeMyWork/releases>. Unzip.
+
+#### Windows
+
+Open a terminal window (`cmd.exe`) and type `cli.exe --help` to see how to use the command line interface.
+
+
+#### Linux (Ubuntu)
+
+Open a terminal window and type `cli --help` to see how to use the command line interface.
+
+### Example
+
+The command...
+
+    cli -w /home/username/work-folder --extentions txt,pdf -t filter -d 5 --dirname .git -n 2 --dirpath build/classes
+
+...will copie all files in `/home/username/work-folder` except the files ending with `txt` and `pdf`
+and except the folders named `.git` and except the folder `build/classes` every 5 minutes and it will do this 2 times.
+
 ## Current state
 
 ### Version
-The current version is 0.5.
+The current version is 0.6.0.
 
 ### Features
  - watch different directories
@@ -46,7 +72,7 @@ The current version is 0.5.
 ## Launch the app
 Run `python3 main.py`.
 
-## Documentation
+## Generate the documentation
 You will need to have [Sphinx](http://sphinx-doc.org/) installed.
 Then run `python3 -m pip install sphinx_rtd_theme` for the ReadTheDocs theme.
 To build the doc:

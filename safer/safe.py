@@ -5,7 +5,7 @@ from shutil import copytree, copy2, rmtree
 import logging
 from logging.handlers import RotatingFileHandler
 from os import path, listdir, mkdir, walk, remove, chdir
-from yaml import load, dump
+from json import load, dump
 import json
 
 
@@ -13,7 +13,7 @@ from safer import helpers as h
 
 MAX_DIR_SIZE = 3000000000
 
-class Safer(object):
+class Safer:
 	"""Manage the creation of the duplicate directory of the folder placed under supervision.
 
 	Filename, folder, path to folder and extension can be exclude.
@@ -45,11 +45,11 @@ class Safer(object):
 		# Log in the console
 		stream_handler = logging.StreamHandler()
 		stream_handler.setLevel(logging.DEBUG)
-		#self.logger.addHandler(stream_handler)
+		self.logger.addHandler(stream_handler)
 
 		# Config
 		self.cfg_dir = path.join(path.expanduser('~'), '.safemywork')
-		self.cfg_file = path.join(self.cfg_dir, 'config.yml')
+		self.cfg_file = path.join(self.cfg_dir, 'config.json')
 		if config is None:
 			self.get_config(delicate_dirs, destination)
 		else:
@@ -68,8 +68,8 @@ class Safer(object):
 	def get_config(self, delicate_dirs, destination):
 		if path.exists(self.cfg_file):
 			self.logger.info('Read config file')
-			with open(self.cfg_file, 'r') as ymlfile:
-				self.config = load(ymlfile)
+			with open(self.cfg_file, 'r') as json_file:
+				self.config = load(json_file)
 			if destination is None:
 				self.destination = self.config['safe_dir']
 			else:
@@ -92,8 +92,8 @@ class Safer(object):
 				'local_path': '',
 				'external_path': '',
 				'timedelta': 1,
-				'advanced': False,
-				}
+				'advanced': False
+			}
 			self.save_config()
 
 	def save_config(self):
@@ -107,8 +107,8 @@ class Safer(object):
 		if not path.exists(self.cfg_dir):
 			self.logger.info('Make directory: ' + self.cfg_dir)
 			mkdir(self.cfg_dir)
-		with open(self.cfg_file, 'w') as ymlfile:
-			dump(self.config, ymlfile)
+		with open(self.cfg_file, 'w') as json_file:
+			dump(self.config, json_file)
 
 	def set_destination(self, destination):
 		self.destination = destination
@@ -314,9 +314,8 @@ class Safer(object):
 		dirs_to_make = list()  # List of directory to make in the safe root directory
 		chdir(path.dirname(directory))
 		directory_walk = path.basename(directory)
-		for dirpath, dirnames, filenames in walk(directory_walk):  # walk() return a generator
+		for dirpath, _, filenames in walk(directory_walk):  # walk() return a generator
 			# dirpath = directory, for the first time
-			# dirpath = subdirs of directory
 			if self.stop:
 				break
 			self.logger.info(dirpath)
@@ -333,7 +332,7 @@ class Safer(object):
 			# Exclude a path
 			can = True
 			for dirname in self.config['dirpath']:
-				if dirpath.find(dirname) != -1:
+				if dirpath.find(dirname) != -1 and dirname != '':
 					can = False
 
 			if can:
@@ -361,7 +360,8 @@ class Safer(object):
 		results = dict()
 		results['list_files'] = list_files
 		results['dirs_to_make'] = dirs_to_make
-		json_filename = 'analysisW' + '_'.join(directory.split('/')) + '.json'
+
+		json_filename = 'analysisW' + '_'.join(directory.replace('\\', '/').split('/')) + '.json'
 		json_file = path.join(self.destination, json_filename)
 		self.logger.info('Store analysis: ' + json_file)
 		with open(json_file, 'w', encoding='utf-8') as myfile:
@@ -402,11 +402,16 @@ class Safer(object):
 		for filename in to_save:
 			dst = path.join(safe_path, filename)
 			self.logger.info('Copy: '+ dst)
-			try:
-				copy2(path.join(path_delicate, filename), dst)
-			except FileNotFoundError:
-				print('FileNotFoundError copy save files: ' + filename)
+			src = path.join(path_delicate, filename)
+			if not path.exists(src):
+				print("Source file not found: ", src)
 				errors.append(filename)
+				continue
+			if not path.exists(path.dirname(dst)):
+				print("Destnation folder does not exist:", dst)
+				errors.append(filename)
+				continue
+			copy2(src, dst)
 		return errors
 
 	def update_files(self, to_update, safe_path, path_delicate):
@@ -415,15 +420,18 @@ class Safer(object):
 		for file_path in to_update:
 			src = path.join(path_delicate, file_path)
 			dst = path.join(safe_path, file_path)
+			self.logger.info('Update: '+ file_path)
 			try:
-				self.logger.info('Update: '+ file_path)
 				with open(src, 'rb') as myfile:
 					content = myfile.read()
-				with open(dst, 'wb') as myfile:
-					myfile.write(content)
 			except FileNotFoundError:
 				print('FileNotFoundError open update_files: ' + src, ' ' + dst)
 				errors.append(file_path)
+			try:
+				with open(dst, 'wb') as myfile:
+					myfile.write(content)
+			except PermissionError:
+				print('PermissionError write update_files: ' + src, ' ' + dst)
 		return errors
 
 	def remove_files(self, to_del, safe_path_last):
