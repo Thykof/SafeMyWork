@@ -136,7 +136,7 @@ class AutoSavingGrid(Gtk.Grid):
 		can = True
 		for thread in threading.enumerate():
 			if thread.name == 'scan' and thread.is_alive():
-					can = False
+				can = False
 		if can:  # No thread are already saving files
 			self.thread = Thread(self.execute, self.after_execute, name='scan')
 			self.thread.start()
@@ -183,7 +183,7 @@ class AutoSavingGrid(Gtk.Grid):
 		Call by the switch."""
 		self.text.set_text('Watching activate')
 		self.scan_now()
-		self.timer = threading.Timer(self.safer.config['timedelta']*10, self.start_scan)
+		self.timer = threading.Timer(self.safer.config['timedelta'] * 60, self.start_scan)
 		self.timer.start()
 
 	def stop_watching(self):

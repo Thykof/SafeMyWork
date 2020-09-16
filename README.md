@@ -14,7 +14,7 @@ It can also synchronize two folders.
 ## Current state
 
 ### Version
-The current version is 0.5.
+The current version is 0.6.0.
 
 ### Features
  - watch different directories
