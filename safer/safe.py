@@ -278,8 +278,9 @@ class Safer:
 				# dirs_to_make: new directories, not yet copying
 				dirs_to_make = h.missing_item(dirs_to_save, dirs_maked)
 				for dirname in dirs_to_make:
-					self.logger.info('Make directory: ' + path.join(safe_path_last, dirname))
-					h.create_dir(path, self.logger.join(safe_path_last, dirname))
+					directory_to_create = path.join(safe_path_last, dirname)
+					self.logger.info('Make directory: ' + directory_to_create)
+					h.create_dir(directory_to_create, self.logger)
 
 				# Copy new files
 				to_copy = h.missing_item(to_save, saved)
