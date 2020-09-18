@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 
 import asyncio
-from shutil import copytree, copy2, rmtree
+from shutil import copytree, copy2, rmtree, Error
 import logging
 from logging.handlers import RotatingFileHandler
-from os import path, listdir, mkdir, walk, remove, chdir
+from os import path, listdir, walk, remove, chdir
 from json import load, dump
 import json
 
@@ -37,7 +37,7 @@ class Safer:
 		self.logger = logging.getLogger()
 		self.logger.setLevel(logging.DEBUG)
 		# Log in a file
-		file_handler = RotatingFileHandler('activity.log', maxBytes=1000000, backupCount=50)
+		file_handler = RotatingFileHandler('activity.log', maxBytes=1000000, backupCount=50, encoding='utf-8')
 		file_handler.setLevel(logging.DEBUG)
 		formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
 		file_handler.setFormatter(formatter)
@@ -106,7 +106,7 @@ class Safer:
 		self.logger.info('Write config file')
 		if not path.exists(self.cfg_dir):
 			self.logger.info('Make directory: ' + self.cfg_dir)
-			mkdir(self.cfg_dir)
+			h.create_dir(self, self.logger.cfg_dir)
 		with open(self.cfg_file, 'w') as json_file:
 			dump(self.config, json_file)
 
@@ -126,7 +126,7 @@ class Safer:
 		try:
 			self.delicate_dirs.remove(delicate_dir)
 		except ValueError:
-			print('ERROR: del delicate dir, ValueError, safer')
+			self.logger.error('ERROR: del delicate dir, ValueError, safer')
 		self.safe_dirs = self.get_dst_path()
 
 	def get_dst_path(self):
@@ -138,7 +138,7 @@ class Safer:
 		# Make destination directories
 		if not path.exists(self.destination):
 			self.logger.info('Make directory: ' + self.destination)
-			mkdir(self.destination)  # e.g. safe_docs
+			h.create_dir(self, self.logger.destination)  # e.g. safe_docs
 
 		safe_dirs = dict()
 		for path_delicate in self.delicate_dirs:
@@ -147,7 +147,7 @@ class Safer:
 			root_destination = path.join(self.destination, safe_dirname)  # e.g. delicate_dir/my_work
 			if not path.exists(root_destination):
 				self.logger.info('Make directory: ' + root_destination)
-				mkdir(root_destination)  # e.g. safe_docs/my_work
+				h.create_dir(root_destination, self.logger)  # e.g. safe_docs/my_work
 			# Get versions
 			version_copy = self.get_version(root_destination, 'COPY')
 			version_filter = self.get_version(root_destination)
@@ -199,7 +199,7 @@ class Safer:
 				safe_path_filter = safe_path['FILTER']
 				self.logger.info(path_delicate)
 				self.logger.info('Make directory: ' + safe_path_filter)
-				mkdir(safe_path_filter)  # e.g. safe_docs/my_work/my_workV--n
+				h.create_dir(safe_path_filter, self.logger)  # e.g. safe_docs/my_work/my_workV--n
 
 				if loop is None:
 					loop = asyncio.get_event_loop()
@@ -213,7 +213,7 @@ class Safer:
 					dirpath = path.join(safe_path_filter, dirname)
 					self.logger.info('Make directory: ' + dirpath)
 					if not path.exists(dirpath):
-						mkdir(dirpath)  # e.g. safe_docs/my_work/my_workV--n/folder
+						h.create_dir(dirpath, self.logger)  # e.g. safe_docs/my_work/my_workV--n/folder
 				errors.extend(self.save_files(to_save, safe_path_filter, path_delicate))
 
 		self.logger.info('Done')
@@ -229,11 +229,15 @@ class Safer:
 			if safe_path['activate']:
 				size = h.get_folder_size(path_delicate)
 				if size > MAX_DIR_SIZE and not self.config['advanced']:
-					self.logger.info('Limit size reached, abort')
+					self.logger.warning('Limit size reached, abort')
 					error.append(path_delicate)
 				else:
 					self.logger.info('Saving ' + path_delicate)
-					copytree(path_delicate, safe_path['COPY'])
+					try:
+						copytree(path_delicate, safe_path['COPY'])
+					except Error as e:
+						error.append(str(e))
+						self.logger.error(str(e))
 
 		self.logger.info('Done')
 		self.safe_dirs = self.get_dst_path()
@@ -261,7 +265,7 @@ class Safer:
 				safe_path_last = safe_path['LAST']
 				if not path.exists(safe_path_last):
 					self.logger.info('Make directory: ' + safe_path_last)
-					mkdir(safe_path_last)  # e.g. safe_docs/my_work/my_workUPTODATE
+					h.create_dir(safe_path_last, self.logger)  # e.g. safe_docs/my_work/my_workUPTODATE
 
 				if loop is None:
 					loop = asyncio.get_event_loop()
@@ -275,7 +279,7 @@ class Safer:
 				dirs_to_make = h.missing_item(dirs_to_save, dirs_maked)
 				for dirname in dirs_to_make:
 					self.logger.info('Make directory: ' + path.join(safe_path_last, dirname))
-					mkdir(path.join(safe_path_last, dirname))
+					h.create_dir(path, self.logger.join(safe_path_last, dirname))
 
 				# Copy new files
 				to_copy = h.missing_item(to_save, saved)
@@ -401,17 +405,21 @@ class Safer:
 		errors = list()
 		for filename in to_save:
 			dst = path.join(safe_path, filename)
-			self.logger.info('Copy: '+ dst)
+			self.logger.debug('Copy: '+ dst)
 			src = path.join(path_delicate, filename)
 			if not path.exists(src):
-				print("Source file not found: ", src)
+				self.logger.error("Source file not found: ", src)
 				errors.append(filename)
 				continue
 			if not path.exists(path.dirname(dst)):
-				print("Destnation folder does not exist:", dst)
+				self.logger.error("Destnation folder does not exist:", dst)
 				errors.append(filename)
 				continue
-			copy2(src, dst)
+			try:
+				copy2(src, dst)
+			except FileNotFoundError as error:
+				self.logger.error(str(error))
+				errors.append(filename)
 		return errors
 
 	def update_files(self, to_update, safe_path, path_delicate):
@@ -420,18 +428,18 @@ class Safer:
 		for file_path in to_update:
 			src = path.join(path_delicate, file_path)
 			dst = path.join(safe_path, file_path)
-			self.logger.info('Update: '+ file_path)
+			self.logger.debug('Update: '+ file_path)
 			try:
 				with open(src, 'rb') as myfile:
 					content = myfile.read()
 			except FileNotFoundError:
-				print('FileNotFoundError open update_files: ' + src, ' ' + dst)
+				self.logger.error('FileNotFoundError open update_files: ' + src, ' ' + dst)
 				errors.append(file_path)
 			try:
 				with open(dst, 'wb') as myfile:
 					myfile.write(content)
 			except PermissionError:
-				print('PermissionError write update_files: ' + src, ' ' + dst)
+				self.logger.error('PermissionError write update_files: ' + src, ' ' + dst)
 		return errors
 
 	def remove_files(self, to_del, safe_path_last):
@@ -443,6 +451,6 @@ class Safer:
 			try:
 				remove(target)
 			except FileNotFoundError:
-				print('FileNotFoundError remove remove_files :' + target)
+				self.logger.error('FileNotFoundError remove remove_files :' + target)
 				errors.append(target)
 		return errors

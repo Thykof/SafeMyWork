@@ -2,7 +2,8 @@
 
 """Define some functions."""
 
-from os import path, listdir
+from os import path, listdir, mkdir
+# from sys import exit
 import json
 
 def combine_list(list1, list2):
@@ -77,3 +78,13 @@ def get_folder_size(folder):
 		elif path.isdir(itempath):
 			total_size += get_folder_size(itempath)
 	return total_size
+
+def create_dir(name, logger=None):
+	try:
+		mkdir(name)
+	except OSError as e:
+		if logger:
+			logger.error(str(e))
+		else:
+			print(str(e))
+		# exit()
