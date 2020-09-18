@@ -44,7 +44,7 @@ class Safer:
 		self.logger.addHandler(file_handler)
 		# Log in the console
 		stream_handler = logging.StreamHandler()
-		stream_handler.setLevel(logging.DEBUG)
+		stream_handler.setLevel(logging.INFO)
 		self.logger.addHandler(stream_handler)
 
 		# Config
@@ -105,7 +105,7 @@ class Safer:
 		self.config['delicate_dirs'] = self.delicate_dirs
 		self.logger.info('Write config file')
 		if not path.exists(self.cfg_dir):
-			self.logger.info('Make directory: ' + self.cfg_dir)
+			self.logger.debug('Make directory: ' + self.cfg_dir)
 			h.create_dir(self, self.logger.cfg_dir)
 		with open(self.cfg_file, 'w') as json_file:
 			dump(self.config, json_file)
@@ -137,7 +137,7 @@ class Safer:
 		"""
 		# Make destination directories
 		if not path.exists(self.destination):
-			self.logger.info('Make directory: ' + self.destination)
+			self.logger.debug('Make directory: ' + self.destination)
 			h.create_dir(self, self.logger.destination)  # e.g. safe_docs
 
 		safe_dirs = dict()
@@ -146,7 +146,7 @@ class Safer:
 			# Make safe directory for each delicate folder
 			root_destination = path.join(self.destination, safe_dirname)  # e.g. delicate_dir/my_work
 			if not path.exists(root_destination):
-				self.logger.info('Make directory: ' + root_destination)
+				self.logger.debug('Make directory: ' + root_destination)
 				h.create_dir(root_destination, self.logger)  # e.g. safe_docs/my_work
 			# Get versions
 			version_copy = self.get_version(root_destination, 'COPY')
@@ -197,8 +197,8 @@ class Safer:
 				continue
 			if safe_path['activate']:
 				safe_path_filter = safe_path['FILTER']
-				self.logger.info(path_delicate)
-				self.logger.info('Make directory: ' + safe_path_filter)
+				self.logger.debug(path_delicate)
+				self.logger.debug('Make directory: ' + safe_path_filter)
 				h.create_dir(safe_path_filter, self.logger)  # e.g. safe_docs/my_work/my_workV--n
 
 				if loop is None:
@@ -211,7 +211,7 @@ class Safer:
 				for dirname in dirs_to_make:
 					#dirname = h.path_without_root(dirname)
 					dirpath = path.join(safe_path_filter, dirname)
-					self.logger.info('Make directory: ' + dirpath)
+					self.logger.debug('Make directory: ' + dirpath)
 					if not path.exists(dirpath):
 						h.create_dir(dirpath, self.logger)  # e.g. safe_docs/my_work/my_workV--n/folder
 				errors.extend(self.save_files(to_save, safe_path_filter, path_delicate))
@@ -264,7 +264,7 @@ class Safer:
 				self.logger.info(path_delicate)
 				safe_path_last = safe_path['LAST']
 				if not path.exists(safe_path_last):
-					self.logger.info('Make directory: ' + safe_path_last)
+					self.logger.debug('Make directory: ' + safe_path_last)
 					h.create_dir(safe_path_last, self.logger)  # e.g. safe_docs/my_work/my_workUPTODATE
 
 				if loop is None:
@@ -278,8 +278,9 @@ class Safer:
 				# dirs_to_make: new directories, not yet copying
 				dirs_to_make = h.missing_item(dirs_to_save, dirs_maked)
 				for dirname in dirs_to_make:
-					self.logger.info('Make directory: ' + path.join(safe_path_last, dirname))
-					h.create_dir(path, self.logger.join(safe_path_last, dirname))
+					directory_to_create = path.join(safe_path_last, dirname)
+					self.logger.debug('Make directory: ' + directory_to_create)
+					h.create_dir(directory_to_create, self.logger)
 
 				# Copy new files
 				to_copy = h.missing_item(to_save, saved)

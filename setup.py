@@ -14,7 +14,7 @@ with io.open('requirements.txt') as f:
 
 setup(
     name='SafeMyWork',
-    version='0.6.1',
+    version='0.6.2',
     description='Autosave your work',
     long_description=readme,
     author='Thykof',

@@ -40,7 +40,7 @@ and except the folders named `.git` and except the folder `build/classes` every 
 ## Current state
 
 ### Version
-The current version is 0.6.1.
+The current version is 0.6.2.
 
 ### Features
  - watch different directories
