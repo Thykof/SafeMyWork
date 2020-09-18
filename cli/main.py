@@ -29,7 +29,7 @@ def scan(delta, safe_dir, delicate_dirs, count, type, extentions, dirpath, dirna
         'dirname': [dirname],
         'dirpath': [dirpath],
         'filename': [],
-        'extention': extentions.split(',') if extentions is not '' else [],
+        'extention': extentions.split(',') if extentions != '' else [],
         # other options
         'local_path': '',
         'external_path': ''
