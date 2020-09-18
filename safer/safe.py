@@ -44,7 +44,7 @@ class Safer:
 		self.logger.addHandler(file_handler)
 		# Log in the console
 		stream_handler = logging.StreamHandler()
-		stream_handler.setLevel(logging.INFO)
+		stream_handler.setLevel(logging.DEBUG)
 		self.logger.addHandler(stream_handler)
 
 		# Config

@@ -3,7 +3,7 @@
 """Define some functions."""
 
 from os import path, listdir, mkdir
-from sys import exit
+# from sys import exit
 import json
 
 def combine_list(list1, list2):
@@ -87,4 +87,4 @@ def create_dir(name, logger=None):
 			logger.error(str(e))
 		else:
 			print(str(e))
-		exit()
+		# exit()
