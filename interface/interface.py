@@ -77,7 +77,7 @@ class MyWindow(Gtk.ApplicationWindow):
 		'''Open the about dialog.'''
 		about_dialog = Gtk.AboutDialog(transient_for=self)
 		about_dialog.set_program_name('SafeMyWork')
-		about_dialog.set_version('0.6.0')
+		about_dialog.set_version('0.6.1')
 		about_dialog.set_website('https://github.com/Thykof/SafeMyWork')
 		about_dialog.set_website_label('Github')
 		about_dialog.set_authors(['Nathan Seva'])

@@ -5,7 +5,7 @@
 
 Welcome to SafeMyWork's documentation!
 **************************************
-The current version is 0.6.0.
+The current version is 0.6.1.
 
 https://github.com/Thykof/SafeMyWork
 
