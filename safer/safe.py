@@ -37,7 +37,7 @@ class Safer:
 		self.logger = logging.getLogger()
 		self.logger.setLevel(logging.DEBUG)
 		# Log in a file
-		file_handler = RotatingFileHandler('activity.log', maxBytes=1000000, backupCount=50)
+		file_handler = RotatingFileHandler('activity.log', maxBytes=1000000, backupCount=50, encoding='utf-8')
 		file_handler.setLevel(logging.DEBUG)
 		formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
 		file_handler.setFormatter(formatter)
