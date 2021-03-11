@@ -106,7 +106,7 @@ class Safer:
 		self.logger.info('Write config file')
 		if not path.exists(self.cfg_dir):
 			self.logger.debug('Make directory: ' + self.cfg_dir)
-			h.create_dir(self, self.logger.cfg_dir)
+			h.create_dir(self.cfg_dir, self.logger)
 		with open(self.cfg_file, 'w') as json_file:
 			dump(self.config, json_file)
 
@@ -138,7 +138,7 @@ class Safer:
 		# Make destination directories
 		if not path.exists(self.destination):
 			self.logger.debug('Make directory: ' + self.destination)
-			h.create_dir(self, self.logger.destination)  # e.g. safe_docs
+			h.create_dir(self.destination, self.logger)  # e.g. safe_docs
 
 		safe_dirs = dict()
 		for path_delicate in self.delicate_dirs:
